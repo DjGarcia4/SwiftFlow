@@ -85,7 +85,7 @@ const buttonClasses = computed(() => {
     "items-center",
     "justify-center",
     "font-semibold",
-    "rounded-2xl",
+    "rounded-xl",
     "transition-all",
     "duration-200",
     "focus:outline-none",
@@ -96,7 +96,7 @@ const buttonClasses = computed(() => {
     "backdrop-blur-sm",
     "cursor-pointer",
     "gap-2",
-    "p-2",
+    "py-1 px-2",
   ];
 
   // Size classes
