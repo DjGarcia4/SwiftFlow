@@ -11,12 +11,12 @@
     >
       <!-- WPM Card -->
       <Transition
-        enter-active-class="transition-all duration-500 ease-out"
-        enter-from-class="opacity-0 scale-75  translate-y-4"
-        enter-to-class="opacity-100 scale-100 translate-y-0"
-        leave-active-class="transition-all duration-300 ease-in"
-        leave-from-class="opacity-100 scale-100 translate-y-0"
-        leave-to-class="opacity-0 scale-75 translate-y-4"
+        enter-active-class="transition-all duration-600 ease-out"
+        enter-from-class="opacity-0 scale-75 translate-y-8 rotate-3"
+        enter-to-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-active-class="transition-all duration-400 ease-in"
+        leave-from-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-to-class="opacity-0 scale-75 translate-y-8 rotate-3"
       >
         <div
           v-if="isCompleted"
@@ -33,12 +33,12 @@
 
       <!-- Accuracy Card -->
       <Transition
-        enter-active-class="transition-all duration-500 ease-out delay-100"
-        enter-from-class="opacity-0 scale-75 translate-y-4"
-        enter-to-class="opacity-100 scale-100 translate-y-0"
-        leave-active-class="transition-all duration-300 ease-in"
-        leave-from-class="opacity-100 scale-100 translate-y-0"
-        leave-to-class="opacity-0 scale-75 translate-y-4"
+        enter-active-class="transition-all duration-600 ease-out delay-150"
+        enter-from-class="opacity-0 scale-75 translate-y-8 -rotate-3"
+        enter-to-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-active-class="transition-all duration-400 ease-in"
+        leave-from-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-to-class="opacity-0 scale-75 translate-y-8 -rotate-3"
       >
         <div
           v-if="isCompleted"
@@ -55,12 +55,12 @@
 
       <!-- Time Card -->
       <Transition
-        enter-active-class="transition-all duration-500 ease-out delay-200"
-        enter-from-class="opacity-0 scale-75 translate-y-4"
-        enter-to-class="opacity-100 scale-100 translate-y-0"
-        leave-active-class="transition-all duration-300 ease-in"
-        leave-from-class="opacity-100 scale-100 translate-y-0"
-        leave-to-class="opacity-0 scale-75 translate-y-4"
+        enter-active-class="transition-all duration-600 ease-out delay-200"
+        enter-from-class="opacity-0 scale-75 translate-y-8 rotate-2"
+        enter-to-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-active-class="transition-all duration-400 ease-in"
+        leave-from-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-to-class="opacity-0 scale-75 translate-y-8 rotate-2"
       >
         <div
           v-if="isCompleted"
@@ -77,12 +77,12 @@
 
       <!-- Errors Card (only when completed) -->
       <Transition
-        enter-active-class="transition-all duration-500 ease-out delay-300"
-        enter-from-class="opacity-0 scale-75 translate-y-4"
-        enter-to-class="opacity-100 scale-100 translate-y-0"
-        leave-active-class="transition-all duration-300 ease-in"
-        leave-from-class="opacity-100 scale-100 translate-y-0"
-        leave-to-class="opacity-0 scale-75 translate-y-4"
+        enter-active-class="transition-all duration-600 ease-out delay-300"
+        enter-from-class="opacity-0 scale-75 translate-y-8 -rotate-2"
+        enter-to-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-active-class="transition-all duration-400 ease-in"
+        leave-from-class="opacity-100 scale-100 translate-y-0 rotate-0"
+        leave-to-class="opacity-0 scale-75 translate-y-8 -rotate-2"
       >
         <div
           v-if="isCompleted"
@@ -247,22 +247,33 @@
         <div
           class="relative text-left max-w-4xl lg:max-w-5xl mx-auto px-2 sm:px-0"
         >
-          <div
-            class="relative font-mono text-base sm:text-lg lg:text-xl leading-relaxed transition-all duration-300 ease-in-out"
+          <Transition
+            enter-active-class="transition-all duration-700 ease-out"
+            enter-from-class="opacity-0 translate-y-4 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition-all duration-300 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-4 scale-95"
           >
-            <span
-              v-for="(char, index) in visibleText"
-              :key="index"
-              :class="getCharacterClass(index)"
+            <div
+              key="text-content"
+              class="relative font-mono text-base sm:text-lg lg:text-xl leading-relaxed transition-all duration-300 ease-in-out"
             >
-              {{ char }}
-            </span>
+              <span
+                v-for="(char, index) in visibleText"
+                :key="`${currentTextIndex}-${index}`"
+                :class="getCharacterClass(index)"
+                :style="{ animationDelay: `${index * 2}ms` }"
+              >
+                {{ char }}
+              </span>
 
-            <!-- <span
-              v-if="!isCompleted && userInput.length < visibleText.length"
-              class="inline-block w-0.5 h-7 bg-gradient-to-b from-emerald-400 to-cyan-400 cursor-blink ml-0.5 rounded-full shadow-lg"
-            ></span> -->
-          </div>
+              <!-- <span
+                v-if="!isCompleted && userInput.length < visibleText.length"
+                class="inline-block w-0.5 h-7 bg-gradient-to-b from-emerald-400 to-cyan-400 cursor-blink ml-0.5 rounded-full shadow-lg"
+              ></span> -->
+            </div>
+          </Transition>
         </div>
       </div>
     </div>
@@ -514,18 +525,19 @@ const triggerConfetti = () => {
 };
 
 const getCharacterClass = (index) => {
-  const baseClasses = "transition-all duration-200 select-none";
+  const baseClasses =
+    "transition-all duration-300 ease-out select-none transform";
 
   if (index < configStore.userInput.length) {
     if (configStore.userInput[index] === visibleText.value[index]) {
-      return `${baseClasses} text-emerald-300 font-medium`;
+      return `${baseClasses} text-emerald-300 font-medium scale-105 animate-pulse-once`;
     } else {
-      return `${baseClasses} text-red-400 bg-red-900/30 rounded-sm font-medium`;
+      return `${baseClasses} text-red-400 bg-red-900/30 rounded-sm font-medium animate-shake`;
     }
   } else if (index === configStore.userInput.length) {
-    return `${baseClasses} text-white bg-emerald-500/20 rounded-sm font-medium`;
+    return `${baseClasses} text-white bg-emerald-500/20 rounded-sm font-medium animate-glow`;
   } else {
-    return `${baseClasses} text-slate-500 font-light`;
+    return `${baseClasses} text-slate-500 font-light hover:text-slate-400`;
   }
 };
 
@@ -554,9 +566,10 @@ const next = () => {
   // Reset everything for new text
   configStore.resetTypingSession();
 
+  // Add a small delay to allow the transition to complete
   setTimeout(() => {
     typingInput.value?.focus();
-  }, 100);
+  }, 200);
 };
 
 const previous = () => {
@@ -569,9 +582,10 @@ const previous = () => {
   // Reset everything for new text
   configStore.resetTypingSession();
 
+  // Add a small delay to allow the transition to complete
   setTimeout(() => {
     typingInput.value?.focus();
-  }, 100);
+  }, 200);
 };
 
 onMounted(() => {
@@ -579,10 +593,12 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (timer.value) {
-    clearInterval(timer.value);
+  // Clear any timers from the config store
+  if (configStore.timer) {
+    clearInterval(configStore.timer);
+    configStore.timer = null;
   }
-  clearInactivityTimer();
+  configStore.clearInactivityTimer();
 });
 </script>
 
@@ -626,6 +642,59 @@ onUnmounted(() => {
 
 .animate-shake {
   animation: shake 0.5s ease-in-out;
+}
+
+@keyframes pulse-once {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-once {
+  animation: pulse-once 0.4s ease-out;
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.3);
+    transform: scale(1);
+  }
+}
+
+.animate-glow {
+  animation: glow 1.5s ease-in-out infinite;
+}
+
+@keyframes text-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-text-reveal {
+  animation: text-reveal 0.6s ease-out forwards;
 }
 
 @keyframes type-flow {
