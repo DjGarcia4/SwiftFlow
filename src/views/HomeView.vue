@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="p-6">
     <ToolBar />
     <ParagraphToType />
   </div>
