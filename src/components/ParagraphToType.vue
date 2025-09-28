@@ -114,7 +114,7 @@
 
       <div
         ref="typingContainer"
-        class="bg-gradient-to-br from-slate-800/40 to-slate-900/60 rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-600/30 backdrop-blur-2xl text-white text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container shadow-2xl h-[200px] sm:h-[300px]"
+        class="bg-gradient-to-br from-slate-800/40 to-slate-900/60 rounded-2xl sm:rounded-3xl px-6 py-10 sm:p-10 border border-slate-600/30 backdrop-blur-2xl text-white text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container shadow-2xl h-[200px] sm:h-[300px]"
         :class="{
           'paused-overlay': configStore.isPaused,
           'overflow-y-auto': !configStore.isPaused,
@@ -123,17 +123,19 @@
         @click="focusInput"
       >
         <!-- Counter in top-right corner -->
-        <div class="absolute top-2 right-2 z-20">
+        <div
+          class="absolute top-1 right-1 xs:top-2 xs:right-2 sm:top-2 sm:right-2 z-20"
+        >
           <div
-            class="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur-xl rounded-xl px-3 py-2 border border-slate-600/50 shadow-lg"
+            class="inline-flex items-center gap-1.5 xs:gap-2 sm:gap-3 bg-slate-900/90 backdrop-blur-xl rounded-lg xs:rounded-xl sm:rounded-2xl px-2 py-1.5 xs:px-3 xs:py-2 sm:px-2 sm:py-2 border border-slate-600/50 shadow-lg hover:shadow-xl transition-all duration-200 min-w-0"
           >
             <!-- Time Counter -->
             <div
               v-if="configStore.type === 'time'"
-              class="flex items-center gap-1"
+              class="flex items-center gap-1.5 sm:gap-2"
             >
               <svg
-                class="w-4 h-4 text-emerald-400"
+                class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-emerald-400 flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -145,21 +147,23 @@
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                 ></path>
               </svg>
-              <span class="text-sm font-bold text-emerald-300"
-                >{{ configStore.timeElapsed }}s</span
-              >
-              <span class="text-xs text-slate-400"
-                >/ {{ configStore.selectedTime }}s</span
-              >
+              <div class="flex items-baseline gap-0.5 xs:gap-1">
+                <span class="text-xs xs:text-sm font-bold text-emerald-300"
+                  >{{ configStore.timeElapsed }}s</span
+                >
+                <span class="text-xs text-slate-400"
+                  >/ {{ configStore.selectedTime }}s</span
+                >
+              </div>
             </div>
 
             <!-- Words Counter -->
             <div
               v-if="configStore.type === 'words'"
-              class="flex items-center gap-1"
+              class="flex items-center gap-1.5 sm:gap-2"
             >
               <svg
-                class="w-4 h-4 text-blue-400"
+                class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-blue-400 flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -171,21 +175,24 @@
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 ></path>
               </svg>
-              <span class="text-sm font-bold text-blue-300">{{
-                configStore.typedWords
-              }}</span>
-              <span class="text-xs text-slate-400"
-                >/ {{ configStore.selectedWords }}</span
-              >
+              <div class="flex items-baseline gap-0.5 xs:gap-1">
+                <span
+                  class="text-xs xs:text-sm sm:text-base font-bold text-blue-300"
+                  >{{ configStore.typedWords }}</span
+                >
+                <span class="text-xs sm:text-sm text-slate-400"
+                  >/ {{ configStore.selectedWords }}</span
+                >
+              </div>
             </div>
 
             <!-- Characters Counter (default) -->
             <div
               v-if="configStore.type !== 'time' && configStore.type !== 'words'"
-              class="flex items-center gap-1"
+              class="flex items-center gap-1.5 sm:gap-2"
             >
               <svg
-                class="w-4 h-4 text-purple-400"
+                class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -197,12 +204,15 @@
                   d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
                 ></path>
               </svg>
-              <span class="text-sm font-bold text-purple-300">{{
-                configStore.userInput.length
-              }}</span>
-              <span class="text-xs text-slate-400"
-                >/ {{ referenceText.length }}</span
-              >
+              <div class="flex items-baseline gap-0.5 xs:gap-1">
+                <span
+                  class="text-xs xs:text-sm sm:text-base font-bold text-purple-300"
+                  >{{ configStore.userInput.length }}</span
+                >
+                <span class="text-xs sm:text-sm text-slate-400"
+                  >/ {{ referenceText.length }}</span
+                >
+              </div>
             </div>
           </div>
         </div>
