@@ -1,8 +1,9 @@
 <template>
-  <div class="relative">
+  <div class="relative space-y-6">
     <div
+      v-if="isCompleted"
       :class="[
-        'grid gap-4 sm:gap-6 text-center mb-8 sm:mb-12',
+        'grid gap-4 sm:gap-6 text-center ',
         isCompleted
           ? 'grid-cols-2 sm:grid-cols-4'
           : 'grid-cols-1 sm:grid-cols-4',
@@ -11,7 +12,7 @@
       <!-- WPM Card -->
       <Transition
         enter-active-class="transition-all duration-500 ease-out"
-        enter-from-class="opacity-0 scale-75 translate-y-4"
+        enter-from-class="opacity-0 scale-75  translate-y-4"
         enter-to-class="opacity-100 scale-100 translate-y-0"
         leave-active-class="transition-all duration-300 ease-in"
         leave-from-class="opacity-100 scale-100 translate-y-0"
@@ -22,7 +23,7 @@
           class="bg-gradient-to-br from-emerald-500/20 to-teal-600/20 rounded-2xl p-4 sm:p-6 backdrop-blur-xl border border-emerald-400/30 shadow-2xl hover:scale-105 transition-all duration-300"
         >
           <div class="text-2xl sm:text-3xl font-bold text-emerald-300 mb-1">
-            {{ wpm }}
+            {{ configStore.wpm }}
           </div>
           <div class="text-xs sm:text-sm text-emerald-200/80 font-medium">
             WPM
@@ -44,7 +45,7 @@
           class="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-2xl p-4 sm:p-6 backdrop-blur-xl border border-blue-400/30 shadow-2xl hover:scale-105 transition-all duration-300"
         >
           <div class="text-2xl sm:text-3xl font-bold text-blue-300 mb-1">
-            {{ accuracy }}%
+            {{ configStore.accuracy }}%
           </div>
           <div class="text-xs sm:text-sm text-blue-200/80 font-medium">
             Precisión
@@ -66,7 +67,7 @@
           class="bg-gradient-to-br from-purple-500/20 to-pink-600/20 rounded-2xl p-4 sm:p-6 backdrop-blur-xl border border-purple-400/30 shadow-2xl hover:scale-105 transition-all duration-300"
         >
           <div class="text-2xl sm:text-3xl font-bold text-purple-300 mb-1">
-            {{ timeElapsed }}s
+            {{ configStore.timeElapsed }}s
           </div>
           <div class="text-xs sm:text-sm text-purple-200/80 font-medium">
             Tiempo
@@ -88,7 +89,7 @@
           class="bg-gradient-to-br from-amber-500/20 to-orange-600/20 rounded-2xl p-4 sm:p-6 backdrop-blur-xl border border-amber-400/30 shadow-2xl hover:scale-105 transition-all duration-300"
         >
           <div class="text-2xl sm:text-3xl font-bold text-amber-300 mb-1">
-            {{ errors }}
+            {{ configStore.errors }}
           </div>
           <div class="text-xs sm:text-sm text-amber-200/80 font-medium">
             Errores
@@ -100,7 +101,7 @@
     <div class="relative">
       <input
         ref="typingInput"
-        v-model="userInput"
+        v-model="configStore.userInput"
         @input="handleTyping"
         @keydown="handleKeydown"
         class="absolute inset-0 w-full h-full opacity-0 cursor-default"
@@ -115,22 +116,106 @@
         ref="typingContainer"
         class="bg-gradient-to-br from-slate-800/40 to-slate-900/60 rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-600/30 backdrop-blur-2xl text-white text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container shadow-2xl h-[200px] sm:h-[300px]"
         :class="{
-          'paused-overlay': isPaused,
-          'overflow-y-auto': !isPaused,
-          'overflow-hidden': isPaused,
+          'paused-overlay': configStore.isPaused,
+          'overflow-y-auto': !configStore.isPaused,
+          'overflow-hidden': configStore.isPaused,
         }"
         @click="focusInput"
       >
+        <!-- Counter in top-right corner -->
+        <div class="absolute top-2 right-2 z-20">
+          <div
+            class="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur-xl rounded-xl px-3 py-2 border border-slate-600/50 shadow-lg"
+          >
+            <!-- Time Counter -->
+            <div
+              v-if="configStore.type === 'time'"
+              class="flex items-center gap-1"
+            >
+              <svg
+                class="w-4 h-4 text-emerald-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              <span class="text-sm font-bold text-emerald-300"
+                >{{ configStore.timeElapsed }}s</span
+              >
+              <span class="text-xs text-slate-400"
+                >/ {{ configStore.selectedTime }}s</span
+              >
+            </div>
+
+            <!-- Words Counter -->
+            <div
+              v-if="configStore.type === 'words'"
+              class="flex items-center gap-1"
+            >
+              <svg
+                class="w-4 h-4 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+              <span class="text-sm font-bold text-blue-300">{{
+                configStore.typedWords
+              }}</span>
+              <span class="text-xs text-slate-400"
+                >/ {{ configStore.selectedWords }}</span
+              >
+            </div>
+
+            <!-- Characters Counter (default) -->
+            <div
+              v-if="configStore.type !== 'time' && configStore.type !== 'words'"
+              class="flex items-center gap-1"
+            >
+              <svg
+                class="w-4 h-4 text-purple-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                ></path>
+              </svg>
+              <span class="text-sm font-bold text-purple-300">{{
+                configStore.userInput.length
+              }}</span>
+              <span class="text-xs text-slate-400"
+                >/ {{ referenceText.length }}</span
+              >
+            </div>
+          </div>
+        </div>
         <div
           class="absolute top-0 left-0 h-1.5 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 transition-all duration-500 ease-out progress-glow rounded-full"
           :style="{
-            width: `${(userInput.length / referenceText.length) * 100}%`,
+            width: `${progressPercentage}%`,
           }"
         ></div>
 
         <!-- Pause Overlay -->
         <div
-          v-if="isPaused"
+          v-if="configStore.isPaused"
           class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center rounded-2xl sm:rounded-3xl z-10 pointer-events-none"
         >
           <div class="text-center">
@@ -191,7 +276,7 @@
 
       <!-- Show pause button when not paused -->
       <IconButton
-        v-if="!isPaused"
+        v-if="!configStore.isPaused"
         icon="pause"
         variant="primary"
         size="lg"
@@ -202,7 +287,7 @@
 
       <!-- Show play button when paused -->
       <IconButton
-        v-if="isPaused"
+        v-if="configStore.isPaused"
         icon="play"
         variant="primary"
         size="lg"
@@ -224,76 +309,82 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import IconButton from "@/components/common/IconButton.vue";
 import { paragraphs } from "@/constants/paragraphs";
+import { useConfigStore } from "@/stores/config";
 import confetti from "canvas-confetti";
+
+// Config store
+const configStore = useConfigStore();
+
+// Local component state
+const currentTextIndex = ref(0);
+const typingInput = ref(null);
+const typingContainer = ref(null);
+
 // Current reference text from the collection
 const referenceText = computed(() => {
   return paragraphs[currentTextIndex.value];
 });
 
-const userInput = ref("");
-const startTime = ref(null);
-const timeElapsed = ref(0);
-const timer = ref(null);
-const typingInput = ref(null);
-const typingContainer = ref(null);
-const isPaused = ref(false);
-const currentTextIndex = ref(0);
-const inactivityTimer = ref(null);
-const INACTIVITY_TIMEOUT = 3000; // 3 seconds of inactivity
+// Set the reference text in the store when it changes
+watch(
+  referenceText,
+  (newText) => {
+    configStore.setReferenceText(newText);
+  },
+  { immediate: true }
+);
 
-const wpm = computed(() => {
-  if (!startTime.value || timeElapsed.value === 0) return 0;
-  const words = userInput.value.trim().split(/\s+/).length;
-  const minutes = timeElapsed.value / 60;
-  return Math.round(words / minutes);
-});
+// Use computed properties from the store
+const { totalWords, totalCharacters, typedCharacters, progressPercentage } =
+  configStore;
 
-const accuracy = computed(() => {
-  if (userInput.value.length === 0) return 100;
-  let correctChars = 0;
-  for (let i = 0; i < userInput.value.length; i++) {
-    if (userInput.value[i] === referenceText.value[i]) {
-      correctChars++;
-    }
-  }
-  return Math.round((correctChars / userInput.value.length) * 100);
-});
-
+// Local isCompleted that uses the component's referenceText
 const isCompleted = computed(() => {
-  return userInput.value.length >= referenceText.value.length;
-});
+  if (!referenceText.value) return false;
 
-// Additional stats for completion
-const totalWords = computed(() => {
-  return referenceText.value.trim().split(/\s+/).length;
-});
-
-const typedWords = computed(() => {
-  return userInput.value
-    .trim()
-    .split(/\s+/)
-    .filter((word) => word.length > 0).length;
-});
-
-const totalCharacters = computed(() => {
-  return referenceText.value.length;
-});
-
-const typedCharacters = computed(() => {
-  return userInput.value.length;
-});
-
-const errors = computed(() => {
-  let errorCount = 0;
-  for (let i = 0; i < userInput.value.length; i++) {
-    if (userInput.value[i] !== referenceText.value[i]) {
-      errorCount++;
-    }
+  // Always complete if the entire text is finished, regardless of time/word limits
+  if (configStore.userInput.length >= referenceText.value.length) {
+    console.log(
+      "Text completed! User input length:",
+      configStore.userInput.length,
+      "Reference text length:",
+      referenceText.value.length
+    );
+    return true;
   }
-  return errorCount;
+
+  // Time-based completion
+  if (configStore.type === "time") {
+    return configStore.timeElapsed >= configStore.selectedTime;
+  }
+
+  // Words-based completion
+  if (configStore.type === "words") {
+    return configStore.typedWords >= configStore.selectedWords;
+  }
+
+  // Default: complete when all text is typed
+  return configStore.userInput.length >= referenceText.value.length;
+});
+
+// Watch for completion and trigger confetti
+watch(isCompleted, (completed) => {
+  if (completed) {
+    console.log("Session completed! Triggering confetti from watcher...");
+
+    // Stop the timer and clear inactivity timer when completed
+    if (configStore.timer) {
+      clearInterval(configStore.timer);
+      configStore.timer = null;
+    }
+    configStore.clearInactivityTimer();
+
+    // Trigger confetti
+    triggerConfetti();
+  }
 });
 
 // Show all text from the beginning
@@ -306,15 +397,25 @@ const currentCharIndexInVisible = computed(() => {
   return Math.min(userInput.value.length, visibleText.value.length);
 });
 
+// Watch for config changes and reset session
+watch(
+  () => [configStore.type, configStore.selectedTime, configStore.selectedWords],
+  () => {
+    // Reset the typing session when config changes
+    restart();
+  },
+  { deep: true }
+);
+
 const focusInput = () => {
   typingInput.value?.focus();
 };
 
 const scrollToCurrentPosition = () => {
-  if (!typingContainer.value || userInput.value.length === 0) return;
+  if (!typingContainer.value || configStore.userInput.length === 0) return;
 
   // Get the current character element
-  const currentCharIndex = userInput.value.length;
+  const currentCharIndex = configStore.userInput.length;
   const charElements = typingContainer.value.querySelectorAll("span");
 
   if (charElements[currentCharIndex]) {
@@ -341,74 +442,25 @@ const scrollToCurrentPosition = () => {
 };
 
 const handleTyping = () => {
-  // Auto-resume if paused (from inactivity or manual pause)
-  if (isPaused.value) {
-    isPaused.value = false;
-    if (startTime.value && userInput.value.length > 0) {
-      startTimer();
-    }
-  }
-
-  if (!startTime.value) {
-    startTime.value = Date.now();
-    startTimer();
-  }
-
-  // Reset inactivity timer on typing activity
-  resetInactivityTimer();
+  // Use the store's handleTyping function with completion callback
+  configStore.handleTyping(() => {
+    // Trigger confetti celebration when completed
+    console.log("Session completed! Triggering confetti...");
+    triggerConfetti();
+  });
 
   // Auto-scroll to keep current position visible
   scrollToCurrentPosition();
-
-  // Stop timer when completed and trigger confetti
-  if (isCompleted.value && timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-    clearInactivityTimer();
-    // Trigger confetti celebration
-    triggerConfetti();
-  }
 };
 
 const handleKeydown = (event) => {
-  if (event.key === "Backspace" && userInput.value.length === 0) {
+  if (event.key === "Backspace" && configStore.userInput.length === 0) {
     event.preventDefault();
   }
 };
 
-const startTimer = () => {
-  timer.value = setInterval(() => {
-    if (startTime.value) {
-      timeElapsed.value = Math.floor((Date.now() - startTime.value) / 1000);
-    }
-  }, 1000);
-};
-
-const resetInactivityTimer = () => {
-  // Clear existing inactivity timer
-  if (inactivityTimer.value) {
-    clearTimeout(inactivityTimer.value);
-  }
-
-  // Only set inactivity timer if not paused and not completed
-  if (!isPaused.value && !isCompleted.value && startTime.value) {
-    inactivityTimer.value = setTimeout(() => {
-      // Auto-pause after inactivity
-      isPaused.value = true;
-      if (timer.value) {
-        clearInterval(timer.value);
-        timer.value = null;
-      }
-    }, INACTIVITY_TIMEOUT);
-  }
-};
-
-const clearInactivityTimer = () => {
-  if (inactivityTimer.value) {
-    clearTimeout(inactivityTimer.value);
-    inactivityTimer.value = null;
-  }
-};
+// Use store functions for timer management
+const { startTimer, resetInactivityTimer, clearInactivityTimer } = configStore;
 
 const triggerConfetti = () => {
   // Create multiple bursts of confetti
@@ -448,13 +500,13 @@ const triggerConfetti = () => {
 const getCharacterClass = (index) => {
   const baseClasses = "transition-all duration-200 select-none";
 
-  if (index < userInput.value.length) {
-    if (userInput.value[index] === visibleText.value[index]) {
+  if (index < configStore.userInput.length) {
+    if (configStore.userInput[index] === visibleText.value[index]) {
       return `${baseClasses} text-emerald-300 font-medium`;
     } else {
       return `${baseClasses} text-red-400 bg-red-900/30 rounded-sm font-medium`;
     }
-  } else if (index === userInput.value.length) {
+  } else if (index === configStore.userInput.length) {
     return `${baseClasses} text-white bg-emerald-500/20 rounded-sm font-medium`;
   } else {
     return `${baseClasses} text-slate-500 font-light`;
@@ -462,43 +514,21 @@ const getCharacterClass = (index) => {
 };
 
 const restart = () => {
-  userInput.value = "";
-  startTime.value = null;
-  timeElapsed.value = 0;
-  isPaused.value = false;
-  if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-  }
-  clearInactivityTimer();
-
+  configStore.resetTypingSession();
   setTimeout(() => {
     typingInput.value?.focus();
   }, 100);
 };
 
 const pause = () => {
-  if (!isPaused.value && timer.value) {
-    isPaused.value = true;
-    clearInterval(timer.value);
-    timer.value = null;
-  }
-  clearInactivityTimer();
+  configStore.pause();
 };
 
 const play = () => {
-  if (isPaused.value) {
-    isPaused.value = false;
-    if (startTime.value && userInput.value.length > 0) {
-      // Resume timer from where it was paused
-      startTimer();
-      // Reset inactivity timer when resuming
-      resetInactivityTimer();
-    }
-    setTimeout(() => {
-      typingInput.value?.focus();
-    }, 100);
-  }
+  configStore.play();
+  setTimeout(() => {
+    typingInput.value?.focus();
+  }, 100);
 };
 
 const next = () => {
@@ -506,16 +536,7 @@ const next = () => {
   currentTextIndex.value = (currentTextIndex.value + 1) % paragraphs.length;
 
   // Reset everything for new text
-  userInput.value = "";
-  startTime.value = null;
-  timeElapsed.value = 0;
-  isPaused.value = false;
-
-  if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-  }
-  clearInactivityTimer();
+  configStore.resetTypingSession();
 
   setTimeout(() => {
     typingInput.value?.focus();
@@ -530,16 +551,7 @@ const previous = () => {
       : currentTextIndex.value - 1;
 
   // Reset everything for new text
-  userInput.value = "";
-  startTime.value = null;
-  timeElapsed.value = 0;
-  isPaused.value = false;
-
-  if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-  }
-  clearInactivityTimer();
+  configStore.resetTypingSession();
 
   setTimeout(() => {
     typingInput.value?.focus();

@@ -1,6 +1,6 @@
 <template>
   <Nav />
-  <div class="max-w-screen-xl mt-10 md:mt-20 mx-auto">
+  <div class="max-w-screen-xl mt-10 mx-auto">
     <RouterView />
   </div>
 </template>
