@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 sm:p-6 relative">
+  <div class="relative">
     <div
       :class="[
         'grid gap-4 sm:gap-6 text-center mb-8 sm:mb-12',

@@ -9,7 +9,13 @@
       @click="$emit('click', $event)"
     >
       <template #icon>
-        <component :is="iconComponent" class="w-4 h-4" />
+        <div
+          v-if="icon === 'letter'"
+          class="w-4 h-4 flex items-center justify-center font-bold text-sm"
+        >
+          A
+        </div>
+        <component :is="iconComponent" class="w-4 h-4" v-else />
       </template>
       {{ text }}
     </ButtonCustom>
@@ -35,8 +41,14 @@
     :full-width="fullWidth"
     @click="$emit('click', $event)"
   >
-    <template #icon>
-      <component :is="iconComponent" class="w-4 h-4" />
+    <template v-if="icon" #icon>
+      <div
+        v-if="icon === 'letter'"
+        class="w-4 h-4 flex items-center justify-center font-bold text-sm"
+      >
+        A
+      </div>
+      <component :is="iconComponent" class="w-4 h-4" v-else />
     </template>
     {{ text }}
   </ButtonCustom>
@@ -95,6 +107,7 @@ const props = defineProps({
         "clock",
         "back",
         "next",
+        "letter",
       ].includes(value),
   },
   variant: {
@@ -103,7 +116,7 @@ const props = defineProps({
   },
   size: {
     type: String,
-    default: "md",
+    default: "xs",
   },
   disabled: {
     type: Boolean,
