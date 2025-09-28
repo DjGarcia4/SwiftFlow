@@ -127,7 +127,7 @@
           class="absolute top-1 right-1 xs:top-2 xs:right-2 sm:top-2 sm:right-2 z-20"
         >
           <div
-            class="inline-flex items-center gap-1.5 xs:gap-2 sm:gap-3 bg-slate-900/90 backdrop-blur-xl rounded-lg xs:rounded-xl sm:rounded-2xl px-2 py-1.5 xs:px-3 xs:py-2 sm:px-2 sm:py-2 border border-slate-600/50 shadow-lg hover:shadow-xl transition-all duration-200 min-w-0"
+            class="inline-flex items-center gap-1.5 xs:gap-2 sm:gap-3 bg-slate-900/90 backdrop-blur-xl rounded-lg xs:rounded-xl sm:rounded-2xl px-2 py-1.5 xs:px-3 xs:py-2 sm:px-2 sm:py-2 border border-slatze-600/50 shadow-lg hover:shadow-xl transition-all duration-200 min-w-0"
           >
             <!-- Time Counter -->
             <div
