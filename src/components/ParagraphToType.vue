@@ -99,6 +99,101 @@
     </div>
 
     <div class="relative">
+      <!-- Counter positioned outside the scrolling container -->
+      <div
+        class="absolute top-1 right-1 xs:top-2 xs:right-2 sm:top-2 sm:right-2 z-20"
+      >
+        <div
+          class="inline-flex items-center gap-1.5 xs:gap-2 sm:gap-3 bg-slate-900/90 backdrop-blur-xl rounded-lg xs:rounded-xl sm:rounded-2xl px-2 py-1.5 xs:px-3 xs:py-2 sm:px-2 sm:py-2 border border-slate-600/50 shadow-lg hover:shadow-xl transition-all duration-200 min-w-0"
+        >
+          <!-- Time Counter -->
+          <div
+            v-if="configStore.type === 'time'"
+            class="flex items-center gap-1.5 sm:gap-2"
+          >
+            <svg
+              class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-emerald-400 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <div class="flex items-baseline gap-0.5 xs:gap-1">
+              <span class="text-xs xs:text-sm font-bold text-emerald-300"
+                >{{ configStore.timeElapsed }}s</span
+              >
+              <span class="text-xs text-slate-400"
+                >/ {{ configStore.selectedTime }}s</span
+              >
+            </div>
+          </div>
+
+          <!-- Words Counter -->
+          <div
+            v-if="configStore.type === 'words'"
+            class="flex items-center gap-1.5 sm:gap-2"
+          >
+            <svg
+              class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-blue-400 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
+            <div class="flex items-baseline gap-0.5 xs:gap-1">
+              <span
+                class="text-xs xs:text-sm sm:text-base font-bold text-blue-300"
+                >{{ configStore.typedWords }}</span
+              >
+              <span class="text-xs sm:text-sm text-slate-400"
+                >/ {{ configStore.selectedWords }}</span
+              >
+            </div>
+          </div>
+
+          <!-- Characters Counter (default) -->
+          <div
+            v-if="configStore.type !== 'time' && configStore.type !== 'words'"
+            class="flex items-center gap-1.5 sm:gap-2"
+          >
+            <svg
+              class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+              ></path>
+            </svg>
+            <div class="flex items-baseline gap-0.5 xs:gap-1">
+              <span
+                class="text-xs xs:text-sm sm:text-base font-bold text-purple-300"
+                >{{ configStore.userInput.length }}</span
+              >
+              <span class="text-xs sm:text-sm text-slate-400"
+                >/ {{ referenceText.length }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
       <input
         ref="typingInput"
         v-model="configStore.userInput"
@@ -112,6 +207,26 @@
         spellcheck="false"
       />
 
+      <!-- Pause Overlay positioned outside the scrolling container -->
+      <div
+        v-if="configStore.isPaused"
+        class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center rounded-2xl sm:rounded-3xl z-10 pointer-events-none"
+      >
+        <div class="text-center">
+          <div class="mb-4">
+            <svg
+              class="w-16 h-16 mx-auto text-amber-400 animate-pulse"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+            </svg>
+          </div>
+          <div class="text-xl font-semibold text-amber-300 mb-2">Pausado</div>
+          <div class="text-sm text-slate-300">Escribe para continuar</div>
+        </div>
+      </div>
+
       <div
         ref="typingContainer"
         class="bg-gradient-to-br from-slate-800/40 to-slate-900/60 rounded-2xl sm:rounded-3xl px-6 py-10 sm:p-10 border border-slate-600/30 backdrop-blur-2xl text-white text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container shadow-2xl h-[200px] sm:h-[300px]"
@@ -122,126 +237,12 @@
         }"
         @click="focusInput"
       >
-        <!-- Counter in top-right corner -->
-        <div
-          class="absolute top-1 right-1 xs:top-2 xs:right-2 sm:top-2 sm:right-2 z-20"
-        >
-          <div
-            class="inline-flex items-center gap-1.5 xs:gap-2 sm:gap-3 bg-slate-900/90 backdrop-blur-xl rounded-lg xs:rounded-xl sm:rounded-2xl px-2 py-1.5 xs:px-3 xs:py-2 sm:px-2 sm:py-2 border border-slatze-600/50 shadow-lg hover:shadow-xl transition-all duration-200 min-w-0"
-          >
-            <!-- Time Counter -->
-            <div
-              v-if="configStore.type === 'time'"
-              class="flex items-center gap-1.5 sm:gap-2"
-            >
-              <svg
-                class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-emerald-400 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              <div class="flex items-baseline gap-0.5 xs:gap-1">
-                <span class="text-xs xs:text-sm font-bold text-emerald-300"
-                  >{{ configStore.timeElapsed }}s</span
-                >
-                <span class="text-xs text-slate-400"
-                  >/ {{ configStore.selectedTime }}s</span
-                >
-              </div>
-            </div>
-
-            <!-- Words Counter -->
-            <div
-              v-if="configStore.type === 'words'"
-              class="flex items-center gap-1.5 sm:gap-2"
-            >
-              <svg
-                class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-blue-400 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                ></path>
-              </svg>
-              <div class="flex items-baseline gap-0.5 xs:gap-1">
-                <span
-                  class="text-xs xs:text-sm sm:text-base font-bold text-blue-300"
-                  >{{ configStore.typedWords }}</span
-                >
-                <span class="text-xs sm:text-sm text-slate-400"
-                  >/ {{ configStore.selectedWords }}</span
-                >
-              </div>
-            </div>
-
-            <!-- Characters Counter (default) -->
-            <div
-              v-if="configStore.type !== 'time' && configStore.type !== 'words'"
-              class="flex items-center gap-1.5 sm:gap-2"
-            >
-              <svg
-                class="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
-                ></path>
-              </svg>
-              <div class="flex items-baseline gap-0.5 xs:gap-1">
-                <span
-                  class="text-xs xs:text-sm sm:text-base font-bold text-purple-300"
-                  >{{ configStore.userInput.length }}</span
-                >
-                <span class="text-xs sm:text-sm text-slate-400"
-                  >/ {{ referenceText.length }}</span
-                >
-              </div>
-            </div>
-          </div>
-        </div>
         <div
           class="absolute top-0 left-0 h-1.5 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 transition-all duration-500 ease-out progress-glow rounded-full"
           :style="{
             width: `${progressPercentage}%`,
           }"
         ></div>
-
-        <!-- Pause Overlay -->
-        <div
-          v-if="configStore.isPaused"
-          class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center rounded-2xl sm:rounded-3xl z-10 pointer-events-none"
-        >
-          <div class="text-center">
-            <div class="mb-4">
-              <svg
-                class="w-16 h-16 mx-auto text-amber-400 animate-pulse"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            </div>
-            <div class="text-xl font-semibold text-amber-300 mb-2">Pausado</div>
-            <div class="text-sm text-slate-300">Escribe para continuar</div>
-          </div>
-        </div>
 
         <div
           class="relative text-left max-w-4xl lg:max-w-5xl mx-auto px-2 sm:px-0"
@@ -452,6 +453,11 @@ const scrollToCurrentPosition = () => {
 };
 
 const handleTyping = () => {
+  // Don't handle typing if session is already completed
+  if (isCompleted.value) {
+    return;
+  }
+
   // Use the store's handleTyping function with completion callback
   configStore.handleTyping(() => {
     // Trigger confetti celebration when completed

@@ -152,11 +152,22 @@ export const useConfigStore = defineStore("config", () => {
 
   // Typing functions
   const startTimer = () => {
+    // Don't start timer if session is already completed
+    if (isCompleted.value) {
+      return;
+    }
+
+    // Clear any existing timer first
+    if (timer.value) {
+      clearInterval(timer.value);
+      timer.value = null;
+    }
+
     timer.value = setInterval(() => {
-      if (startTime.value && !isPaused.value) {
+      if (startTime.value && !isPaused.value && !isCompleted.value) {
         timeElapsed.value = Math.floor((Date.now() - startTime.value) / 1000);
 
-        // Check if time limit is reached and complete the session
+        // Check if time limit is reached and complete the session immediately
         if (type.value === "time" && timeElapsed.value >= selectedTime.value) {
           console.log("Time limit reached! Triggering completion...");
           clearInterval(timer.value);
@@ -166,6 +177,7 @@ export const useConfigStore = defineStore("config", () => {
           if (onComplete.value) {
             onComplete.value();
           }
+          return; // Exit the interval immediately
         }
       }
     }, 1000);
@@ -186,18 +198,23 @@ export const useConfigStore = defineStore("config", () => {
   };
 
   const handleTyping = (onCompleteCallback) => {
+    // Don't start timer if session is already completed
+    if (isCompleted.value) {
+      return;
+    }
+
     // Set the completion callback
     onComplete.value = onCompleteCallback;
 
     // Auto-resume if paused (from inactivity or manual pause)
     if (isPaused.value) {
       isPaused.value = false;
-      if (startTime.value && userInput.value.length > 0) {
+      if (startTime.value && userInput.value.length > 0 && !isCompleted.value) {
         startTimer();
       }
     }
 
-    if (!startTime.value) {
+    if (!startTime.value && !isCompleted.value) {
       startTime.value = Date.now();
       startTimer();
     }

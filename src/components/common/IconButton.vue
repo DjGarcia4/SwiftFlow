@@ -15,7 +15,7 @@
         >
           A
         </div>
-        <component :is="iconComponent" class="w-4 h-4" v-else />
+        <component :is="iconComponent" class="w-6 h-6" v-else />
       </template>
       {{ text }}
     </ButtonCustom>
