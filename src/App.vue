@@ -1,7 +1,11 @@
 <template>
-  <Nav />
-  <div class="max-w-screen-xl mt-10 mx-auto">
-    <RouterView />
+  <div class="h-screen flex flex-col">
+    <Nav />
+    <div class="flex-1 overflow-y-auto">
+      <div class="max-w-screen-xl mx-auto">
+        <RouterView />
+      </div>
+    </div>
   </div>
 </template>
 
