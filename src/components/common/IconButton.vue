@@ -77,6 +77,8 @@ import {
   ClockIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
+  AtSymbolIcon,
+  HashtagIcon,
 } from "@heroicons/vue/24/outline";
 
 // Props
@@ -108,6 +110,8 @@ const props = defineProps({
         "back",
         "next",
         "letter",
+        "punctuation",
+        "number",
       ].includes(value),
   },
   variant: {
@@ -158,6 +162,8 @@ const iconMap = {
   clock: ClockIcon,
   back: ArrowLeftIcon,
   next: ArrowRightIcon,
+  punctuation: AtSymbolIcon,
+  number: HashtagIcon,
 };
 
 // Computed icon component

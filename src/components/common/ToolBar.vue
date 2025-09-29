@@ -4,6 +4,27 @@
   >
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
+      <!-- Content type selection -->
+      <div class="flex items-center justify-center gap-2">
+        <IconButton
+          v-for="contentType in configStore.contentTypes"
+          :value="contentType"
+          :key="contentType"
+          :icon="contentType === 'punctuation' ? 'punctuation' : 'number'"
+          :variant="
+            configStore.selectedContentTypes === contentType
+              ? 'primary'
+              : 'secondary'
+          "
+          size="sm"
+          :text="`${contentType == 'punctuation' ? 'Puntuación' : 'Números'}`"
+          @click="configStore.handleContentTypes(contentType)"
+        />
+      </div>
+
+      <!-- Divisor -->
+      <div class="h-px w-full bg-gray-500"></div>
+
       <!-- Type selection -->
       <div class="flex items-center justify-center gap-2">
         <IconButton
@@ -50,6 +71,24 @@
 
     <!-- Desktop Layout (horizontal) -->
     <div class="hidden sm:flex items-center justify-center gap-2 lg:gap-4">
+      <!-- Type content -->
+      <div class="flex items-center gap-2">
+        <IconButton
+          v-for="type in configStore.contentTypes"
+          :value="type"
+          :key="type"
+          :icon="type === 'punctuation' ? 'punctuation' : 'number'"
+          :variant="
+            configStore.selectedContentTypes === type ? 'primary' : 'secondary'
+          "
+          size="sm"
+          :text="`${type == 'punctuation' ? 'Puntuación' : 'Números'}`"
+          @click="configStore.handleContentTypes(type)"
+        />
+      </div>
+
+      <!-- Divisor -->
+      <div class="h-4 w-px bg-gray-500"></div>
       <!-- Type selection -->
       <div class="flex items-center gap-2">
         <IconButton

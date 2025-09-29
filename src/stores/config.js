@@ -6,8 +6,10 @@ export const useConfigStore = defineStore("config", () => {
   const type = ref("time");
   const selectedTime = ref(15);
   const selectedWords = ref(100);
+  const selectedContentTypes = ref("punctuation");
 
   const types = ref(["time", "words"]);
+  const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
   const words = ref([10, 25, 50, 100]);
 
@@ -19,6 +21,7 @@ export const useConfigStore = defineStore("config", () => {
   const isPaused = ref(false);
   const inactivityTimer = ref(null);
   const referenceText = ref("");
+  const originalReferenceText = ref(""); // Keep track of original text
   const INACTIVITY_TIMEOUT = 3000; // 3 seconds of inactivity
 
   // Configuration handlers
@@ -34,6 +37,25 @@ export const useConfigStore = defineStore("config", () => {
 
   const handleWords = (newWords) => {
     selectedWords.value = newWords;
+    resetTypingSession();
+  };
+
+  const handleContentTypes = (selectedContentType) => {
+    if (selectedContentType === selectedContentTypes.value) {
+      selectedContentTypes.value = null;
+    } else {
+      selectedContentTypes.value = selectedContentType;
+    }
+
+    // Re-format the text based on the new selection
+    if (originalReferenceText.value) {
+      if (selectedContentTypes.value === "punctuation") {
+        referenceText.value = originalReferenceText.value; // Show original when selected
+      } else {
+        referenceText.value = formatReferenceText(originalReferenceText.value); // Format when deselected
+      }
+    }
+
     resetTypingSession();
   };
 
@@ -265,25 +287,52 @@ export const useConfigStore = defineStore("config", () => {
   };
 
   const setReferenceText = (text) => {
-    referenceText.value = text;
+    // Always store the original text
+    originalReferenceText.value = text;
+
+    // Apply formatting if punctuation mode is NOT selected (deselected)
+    if (selectedContentTypes.value === "punctuation") {
+      referenceText.value = text; // Show original when selected
+    } else {
+      referenceText.value = formatReferenceText(text); // Format when deselected
+    }
     resetTypingSession();
   };
 
   // Callback for completion (to be set by component)
   const onComplete = ref(null);
 
+  const formatReferenceText = (text) => {
+    let formattedText = text.toLowerCase();
+
+    formattedText = formattedText.normalize("NFD");
+
+    formattedText = formattedText.replace(/[\u0300-\u036f]/g, "");
+
+    formattedText = formattedText.replace(
+      /[\.,?!;:\-—"“”‘’'()\[\]{}/&\*@#\$%\^+=_~`<>]/g,
+      ""
+    );
+
+    formattedText = formattedText.trim();
+
+    return formattedText;
+  };
+
   return {
     // Configuration
     type,
     selectedTime,
     selectedWords,
+    selectedContentTypes,
+    contentTypes,
     times,
     words,
     types,
     handleType,
     handleTime,
     handleWords,
-
+    handleContentTypes,
     // Typing state
     userInput,
     startTime,
@@ -292,6 +341,7 @@ export const useConfigStore = defineStore("config", () => {
     isPaused,
     inactivityTimer,
     referenceText,
+    originalReferenceText,
 
     // Computed properties
     wpm,
@@ -311,6 +361,7 @@ export const useConfigStore = defineStore("config", () => {
     play,
     resetTypingSession,
     setReferenceText,
+    formatReferenceText,
     clearInactivityTimer,
     resetInactivityTimer,
     onComplete,

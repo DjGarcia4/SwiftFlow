@@ -98,6 +98,31 @@
       </Transition>
     </div>
 
+    <!-- Completion Message -->
+    <Transition
+      enter-active-class="transition-all duration-600 ease-out delay-400"
+      enter-from-class="opacity-0 scale-95 translate-y-4"
+      enter-to-class="opacity-100 scale-100 translate-y-0"
+      leave-active-class="transition-all duration-300 ease-in"
+      leave-from-class="opacity-100 scale-100 translate-y-0"
+      leave-to-class="opacity-0 scale-95 translate-y-4"
+    >
+      <div v-if="isCompleted" class="text-center mb-6">
+        <div
+          class="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500/20 to-teal-600/20 rounded-2xl px-6 py-4 backdrop-blur-xl border border-emerald-400/30 shadow-lg"
+        >
+          <div class="text-emerald-300 font-semibold">
+            Presiona
+            <kbd
+              class="px-2 py-1 bg-slate-700 text-emerald-300 rounded-md font-mono text-sm border border-slate-600 mx-1"
+              >ESPACIO</kbd
+            >
+            para empezar de nuevo
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <div class="relative">
       <!-- Counter positioned outside the scrolling container -->
       <div
@@ -345,18 +370,39 @@ const currentTextIndex = ref(0);
 const typingInput = ref(null);
 const typingContainer = ref(null);
 
-// Current reference text from the collection
-const referenceText = computed(() => {
+// Global keydown listener for space key when completed
+const handleGlobalKeydown = (event) => {
+  if (event.key === " " && isCompleted.value) {
+    event.preventDefault();
+    restart();
+  }
+};
+
+// Current reference text from the collection (raw text)
+const rawReferenceText = computed(() => {
   return paragraphs[currentTextIndex.value];
+});
+
+// Use the formatted reference text from the store
+const referenceText = computed(() => {
+  return configStore.referenceText;
 });
 
 // Set the reference text in the store when it changes
 watch(
-  referenceText,
+  rawReferenceText,
   (newText) => {
     configStore.setReferenceText(newText);
   },
   { immediate: true }
+);
+
+// Watch for content type changes - the store handles the formatting
+watch(
+  () => configStore.selectedContentTypes,
+  () => {
+    // The store will handle re-formatting automatically
+  }
 );
 
 // Use computed properties from the store
@@ -404,8 +450,14 @@ watch(isCompleted, (completed) => {
     }
     configStore.clearInactivityTimer();
 
+    // Add global keydown listener for space key restart
+    document.addEventListener("keydown", handleGlobalKeydown);
+
     // Trigger confetti
     triggerConfetti();
+  } else {
+    // Remove global keydown listener when not completed
+    document.removeEventListener("keydown", handleGlobalKeydown);
   }
 });
 
@@ -481,6 +533,13 @@ const handleTyping = () => {
 };
 
 const handleKeydown = (event) => {
+  // Handle space key when session is completed to restart
+  if (event.key === " " && isCompleted.value) {
+    event.preventDefault();
+    restart();
+    return;
+  }
+
   if (event.key === "Backspace" && configStore.userInput.length === 0) {
     event.preventDefault();
   }
@@ -599,6 +658,9 @@ onUnmounted(() => {
     configStore.timer = null;
   }
   configStore.clearInactivityTimer();
+
+  // Remove global keydown listener
+  document.removeEventListener("keydown", handleGlobalKeydown);
 });
 </script>
 
