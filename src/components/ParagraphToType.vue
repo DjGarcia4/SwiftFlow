@@ -111,6 +111,20 @@
       </Transition>
     </div>
 
+    <!-- Results chart: WPM over time, with error markers -->
+    <Transition
+      enter-active-class="transition-all duration-500 ease-out delay-100"
+      enter-from-class="opacity-0 translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+    >
+      <div
+        v-if="isCompleted && configStore.wpmHistory.length >= 2"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray"
+      >
+        <WpmChart :history="configStore.wpmHistory" />
+      </div>
+    </Transition>
+
     <!-- Completion Message -->
     <Transition
       enter-active-class="transition-all duration-500 ease-out delay-200"
@@ -400,6 +414,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import IconButton from "@/components/common/IconButton.vue";
+import WpmChart from "@/components/common/WpmChart.vue";
 import { ClockIcon, DocumentTextIcon, HashtagIcon, PauseIcon, FireIcon } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/constants/paragraphs";
 import { generateRandomWords } from "@/constants/words";
@@ -509,6 +524,9 @@ watch(isCompleted, (completed) => {
     }
     configStore.clearInactivityTimer();
     configStore.updateBestWpm();
+    // One last sample so the results chart's final point matches the
+    // final stats exactly, even if completion landed between ticks
+    configStore.recordWpmSample();
 
     // Add global keydown listener for space key restart
     document.addEventListener("keydown", handleGlobalKeydown);

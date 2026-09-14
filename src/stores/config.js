@@ -26,6 +26,7 @@ export const useConfigStore = defineStore("config", () => {
   const referenceText = ref("");
   const originalReferenceText = ref(""); // Keep track of original text
   const zenFinished = ref(false); // Manually ended a "zen" (no limit) session
+  const wpmHistory = ref([]); // { time, wpm, errors } samples for the results chart
   const INACTIVITY_TIMEOUT = 3000; // 3 seconds of inactivity
 
   // Momentum state (best WPM record + live streak)
@@ -229,6 +230,7 @@ export const useConfigStore = defineStore("config", () => {
     timer.value = setInterval(() => {
       if (startTime.value && !isPaused.value && !isCompleted.value) {
         timeElapsed.value = Math.floor((Date.now() - startTime.value) / 1000);
+        recordWpmSample();
 
         // Check if time limit is reached and complete the session immediately
         if (type.value === "time" && timeElapsed.value >= selectedTime.value) {
@@ -243,6 +245,17 @@ export const useConfigStore = defineStore("config", () => {
         }
       }
     }, 1000);
+  };
+
+  // Snapshots the current wpm/errors for the results chart. Called once per
+  // second while typing, and once more right when a session completes (so
+  // the chart's last point matches the final stats exactly).
+  const recordWpmSample = () => {
+    wpmHistory.value.push({
+      time: timeElapsed.value,
+      wpm: wpm.value,
+      errors: errors.value,
+    });
   };
 
   const clearInactivityTimer = () => {
@@ -318,6 +331,7 @@ export const useConfigStore = defineStore("config", () => {
     timeElapsed.value = 0;
     isPaused.value = false;
     zenFinished.value = false;
+    wpmHistory.value = [];
 
     if (timer.value) {
       clearInterval(timer.value);
@@ -401,6 +415,7 @@ export const useConfigStore = defineStore("config", () => {
     referenceText,
     originalReferenceText,
     zenFinished,
+    wpmHistory,
 
     // Computed properties
     wpm,
@@ -426,6 +441,7 @@ export const useConfigStore = defineStore("config", () => {
     setReferenceText,
     extendReferenceText,
     finishZen,
+    recordWpmSample,
     formatReferenceText,
     clearInactivityTimer,
     resetInactivityTimer,

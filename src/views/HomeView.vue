@@ -7,8 +7,8 @@
     -->
     <div
       class="hidden sm:block fixed top-20 left-1/2 z-20 max-w-[95vw] -translate-x-1/2 transition-opacity duration-200"
-      :class="isTyping ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'"
-      :aria-hidden="isTyping"
+      :class="hideConfig ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'"
+      :aria-hidden="hideConfig"
     >
       <ToolBar />
     </div>
@@ -17,8 +17,8 @@
     <button
       type="button"
       class="sm:hidden fixed bottom-4 left-4 z-20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-faded-gray bg-paper-white text-primary shadow-sm transition-opacity duration-200 active:scale-95"
-      :class="isTyping ? 'opacity-0 pointer-events-none' : 'opacity-100'"
-      :aria-hidden="isTyping"
+      :class="hideConfig ? 'opacity-0 pointer-events-none' : 'opacity-100'"
+      :aria-hidden="hideConfig"
       aria-label="Configurar"
       @click="configOpen = true"
     >
@@ -80,7 +80,8 @@ import { useConfigStore } from "@/stores/config";
 const configStore = useConfigStore();
 const configOpen = ref(false);
 
-// Hide ToolBar/FAB when user is actively typing (but show when paused)
+// Hide the ToolBar/FAB while actively typing (but show when paused) and
+// while looking at the results screen — there's nothing to configure there.
 const isTyping = computed(() => {
   return (
     configStore.userInput.length > 0 &&
@@ -89,9 +90,11 @@ const isTyping = computed(() => {
   );
 });
 
-// Close the mobile config sheet automatically if typing starts
-watch(isTyping, (typing) => {
-  if (typing) configOpen.value = false;
+const hideConfig = computed(() => isTyping.value || configStore.isCompleted);
+
+// Close the mobile config sheet automatically if typing starts or finishes
+watch(hideConfig, (hidden) => {
+  if (hidden) configOpen.value = false;
 });
 </script>
 
