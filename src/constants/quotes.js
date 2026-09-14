@@ -27,6 +27,21 @@ export const quotes = [
   { text: "La ignorancia es la noche de la mente, pero una noche sin luna ni estrellas.", author: "Confucio" },
   { text: "Lo que no te mata te hace más fuerte.", author: "Friedrich Nietzsche" },
   { text: "La educación es el arma más poderosa que puedes usar para cambiar el mundo.", author: "Nelson Mandela" },
+  { text: "El éxito no es definitivo, el fracaso no es fatal: lo que cuenta es el valor para continuar.", author: "Winston Churchill" },
+  { text: "La gente olvidará lo que dijiste, pero nunca olvidará cómo la hiciste sentir.", author: "Maya Angelou" },
+  { text: "Dime y lo olvido, enséñame y lo recuerdo, involúcrame y lo aprendo.", author: "Benjamin Franklin" },
+  { text: "El optimismo es la fe que conduce al logro; nada se puede hacer sin esperanza.", author: "Helen Keller" },
+  { text: "Todo niño es un artista. El problema es cómo seguir siendo artista una vez que crecemos.", author: "Pablo Picasso" },
+  { text: "La simplicidad es la máxima sofisticación.", author: "Leonardo da Vinci" },
+  { text: "Si he visto más lejos es porque estoy sentado sobre hombros de gigantes.", author: "Isaac Newton" },
+  { text: "A pesar de todo, sigo creyendo que la gente es realmente buena de corazón.", author: "Anne Frank" },
+  { text: "El secreto para salir adelante es comenzar.", author: "Mark Twain" },
+  { text: "La mente lo es todo. En lo que piensas, te conviertes.", author: "Buda" },
+  { text: "La inteligencia es la capacidad de adaptarse al cambio.", author: "Stephen Hawking" },
+  { text: "Para ser irremplazable, uno siempre debe ser diferente.", author: "Coco Chanel" },
+  { text: "No temo al hombre que practicó diez mil patadas una vez, sino al que practicó una patada diez mil veces.", author: "Bruce Lee" },
+  { text: "Un niño, un maestro, un libro y un lápiz pueden cambiar el mundo.", author: "Malala Yousafzai" },
+  { text: "Si puedes soñarlo, puedes hacerlo.", author: "Walt Disney" },
 ];
 
 // Picks a random quote, avoiding immediately repeating the last one.

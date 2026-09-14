@@ -14,6 +14,12 @@
       >
         — {{ currentQuoteAuthor }}
       </p>
+      <p
+        v-else-if="isCompleted && configStore.type === 'code' && currentCodeLanguage"
+        class="text-center text-sm sm:text-base font-bold text-pencil-gray"
+      >
+        {{ currentCodeLanguage }}
+      </p>
     </Transition>
 
     <div
@@ -153,6 +159,13 @@
               >
               <span class="text-xs text-pencil-gray font-bold uppercase">wpm</span>
             </div>
+            <!-- Before typing starts, show which language this snippet is -->
+            <div
+              v-else-if="configStore.type === 'code' && currentCodeLanguage"
+              class="inline-flex items-center rounded-lg bg-primary-tint px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-primary"
+            >
+              {{ currentCodeLanguage }}
+            </div>
           </Transition>
         </div>
 
@@ -247,18 +260,20 @@
         </div>
       </div>
 
-      <input
+      <!-- A textarea (not a single-line input) so "code" mode can capture
+           real Enter/newline keystrokes. -->
+      <textarea
         ref="typingInput"
         v-model="configStore.userInput"
         @input="handleTyping"
         @keydown="handleKeydown"
-        class="absolute inset-0 w-full h-full opacity-0 cursor-default"
+        class="absolute inset-0 w-full h-full resize-none opacity-0 cursor-default"
         :disabled="isCompleted"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
-      />
+      ></textarea>
 
       <!-- Pause Overlay -->
       <div
@@ -295,7 +310,7 @@
           <div
             ref="textContentEl"
             key="text-content"
-            class="relative font-mono text-2xl sm:text-3xl leading-[1.9] tracking-wide"
+            class="relative font-mono text-2xl sm:text-3xl leading-[1.9] tracking-wide whitespace-pre-wrap"
           >
             <!-- Smooth animated caret -->
             <div
@@ -325,7 +340,7 @@
                 v-else
                 :data-char-index="group.index"
                 :class="getCharacterClass(group.index)"
-                >{{ " " }}</span
+                >{{ group.char }}</span
               >
             </span>
           </div>
@@ -389,6 +404,7 @@ import { ClockIcon, DocumentTextIcon, HashtagIcon, PauseIcon, FireIcon } from "@
 import { paragraphs } from "@/constants/paragraphs";
 import { generateRandomWords } from "@/constants/words";
 import { getRandomQuote } from "@/constants/quotes";
+import { getRandomCodeSnippet } from "@/constants/code";
 import { useConfigStore } from "@/stores/config";
 
 // Config store
@@ -398,6 +414,8 @@ const configStore = useConfigStore();
 const lastParagraph = ref(null);
 const lastQuoteText = ref(null);
 const currentQuoteAuthor = ref("");
+const lastCodeText = ref(null);
+const currentCodeLanguage = ref("");
 const typingInput = ref(null);
 const typingContainer = ref(null);
 const textContentEl = ref(null);
@@ -430,10 +448,11 @@ const pickRandomParagraph = () => {
 
 // Loads a new, random reference text appropriate for the current mode: a
 // freshly generated random-words text for "words", a random quote (with
-// its author) for "quote", or a random curated paragraph for "time"/"zen"
-// (both keep extending it forever — see handleTyping). Called on mount, on
-// restart, and whenever the mode/time/word-count selection changes —
-// everything is always random.
+// its author) for "quote", a random code snippet (with its language) for
+// "code", or a random curated paragraph for "time"/"zen" (both keep
+// extending it forever — see handleTyping). Called on mount, on restart,
+// and whenever the mode/time/word-count selection changes — everything is
+// always random.
 const refreshReferenceText = () => {
   if (configStore.type === "words") {
     configStore.setReferenceText(generateRandomWords(configStore.selectedWords));
@@ -445,6 +464,17 @@ const refreshReferenceText = () => {
     lastQuoteText.value = quote.text;
     currentQuoteAuthor.value = quote.author;
     configStore.setReferenceText(quote.text);
+    return;
+  }
+
+  if (configStore.type === "code") {
+    const snippet = getRandomCodeSnippet(
+      lastCodeText.value,
+      configStore.selectedCodeLanguage
+    );
+    lastCodeText.value = snippet.code;
+    currentCodeLanguage.value = snippet.language;
+    configStore.setReferenceText(snippet.code);
     return;
   }
 
@@ -502,12 +532,14 @@ const wordGroups = computed(() => {
 
   for (let i = 0; i < text.length; i++) {
     const ch = text[i];
-    if (ch === " ") {
+    if (ch === " " || ch === "\n") {
       if (currentWord.length) {
         groups.push({ type: "word", chars: currentWord });
         currentWord = [];
       }
-      groups.push({ type: "space", index: i });
+      // A literal "\n" here becomes an actual line break because the text
+      // container uses white-space: pre-wrap (needed for code mode).
+      groups.push({ type: "space", index: i, char: ch });
     } else {
       currentWord.push({ char: ch, index: i });
     }
@@ -554,9 +586,15 @@ watch(referenceText, () => {
 
 // Watch for config changes: reload the reference text (a fresh random
 // words text if the word count changed, or the same paragraph reloaded
-// otherwise) whenever the mode/time/word-count selection changes.
+// otherwise) whenever the mode/time/word-count/code-language selection
+// changes.
 watch(
-  () => [configStore.type, configStore.selectedTime, configStore.selectedWords],
+  () => [
+    configStore.type,
+    configStore.selectedTime,
+    configStore.selectedWords,
+    configStore.selectedCodeLanguage,
+  ],
   () => {
     refreshReferenceText();
     nextTick(updateCaretPosition);

@@ -4,26 +4,28 @@
   >
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
-      <!-- Content type selection -->
-      <div class="flex flex-wrap items-center justify-center gap-2">
-        <IconButton
-          v-for="contentType in configStore.contentTypes"
-          :value="contentType"
-          :key="contentType"
-          :icon="contentType === 'punctuation' ? 'punctuation' : 'number'"
-          :variant="
-            configStore.selectedContentTypes === contentType
-              ? 'primary'
-              : 'secondary'
-          "
-          size="sm"
-          :text="`${contentType == 'punctuation' ? 'Puntuación' : 'Números'}`"
-          @click="configStore.handleContentTypes(contentType)"
-        />
-      </div>
+      <!-- Content type selection (code is always typed as-is) -->
+      <template v-if="configStore.type !== 'code'">
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <IconButton
+            v-for="contentType in configStore.contentTypes"
+            :value="contentType"
+            :key="contentType"
+            :icon="contentType === 'punctuation' ? 'punctuation' : 'number'"
+            :variant="
+              configStore.selectedContentTypes === contentType
+                ? 'primary'
+                : 'secondary'
+            "
+            size="sm"
+            :text="`${contentType == 'punctuation' ? 'Puntuación' : 'Números'}`"
+            @click="configStore.handleContentTypes(contentType)"
+          />
+        </div>
 
-      <!-- Divisor -->
-      <div class="h-px w-full bg-faded-gray"></div>
+        <!-- Divisor -->
+        <div class="h-px w-full bg-faded-gray"></div>
+      </template>
 
       <!-- Type selection -->
       <div class="flex flex-wrap items-center justify-center gap-2">
@@ -40,7 +42,13 @@
       </div>
 
       <!-- Value selection (no limit to pick in zen mode) -->
-      <template v-if="configStore.type === 'time' || configStore.type === 'words'">
+      <template
+        v-if="
+          configStore.type === 'time' ||
+          configStore.type === 'words' ||
+          configStore.type === 'code'
+        "
+      >
         <!-- Divisor -->
         <div class="h-px w-full bg-faded-gray"></div>
 
@@ -67,6 +75,25 @@
             :text="`${word} `"
             @click="configStore.handleWords(word)"
           />
+          <template v-if="configStore.type === 'code'">
+            <IconButton
+              :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
+              size="sm"
+              text="Todos"
+              @click="configStore.handleCodeLanguage(null)"
+            />
+            <IconButton
+              v-for="language in configStore.languages"
+              :value="language"
+              :key="language"
+              :variant="
+                configStore.selectedCodeLanguage === language ? 'primary' : 'secondary'
+              "
+              size="sm"
+              :text="language"
+              @click="configStore.handleCodeLanguage(language)"
+            />
+          </template>
         </div>
       </template>
     </div>
@@ -76,24 +103,26 @@
     <div
       class="hidden sm:flex flex-nowrap items-center justify-center gap-1.5 lg:gap-3 overflow-x-auto"
     >
-      <!-- Type content -->
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <IconButton
-          v-for="type in configStore.contentTypes"
-          :value="type"
-          :key="type"
-          :icon="type === 'punctuation' ? 'punctuation' : 'number'"
-          :variant="
-            configStore.selectedContentTypes === type ? 'primary' : 'secondary'
-          "
-          size="xs"
-          :text="`${type == 'punctuation' ? 'Puntuación' : 'Números'}`"
-          @click="configStore.handleContentTypes(type)"
-        />
-      </div>
+      <!-- Type content (code is always typed as-is) -->
+      <template v-if="configStore.type !== 'code'">
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <IconButton
+            v-for="type in configStore.contentTypes"
+            :value="type"
+            :key="type"
+            :icon="type === 'punctuation' ? 'punctuation' : 'number'"
+            :variant="
+              configStore.selectedContentTypes === type ? 'primary' : 'secondary'
+            "
+            size="xs"
+            :text="`${type == 'punctuation' ? 'Puntuación' : 'Números'}`"
+            @click="configStore.handleContentTypes(type)"
+          />
+        </div>
 
-      <!-- Divisor -->
-      <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
+        <!-- Divisor -->
+        <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
+      </template>
       <!-- Type selection -->
       <div class="flex items-center gap-1.5 flex-shrink-0">
         <IconButton
@@ -109,7 +138,13 @@
       </div>
 
       <!-- Value selection (no limit to pick in zen mode) -->
-      <template v-if="configStore.type === 'time' || configStore.type === 'words'">
+      <template
+        v-if="
+          configStore.type === 'time' ||
+          configStore.type === 'words' ||
+          configStore.type === 'code'
+        "
+      >
         <!-- Divisor -->
         <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
 
@@ -136,6 +171,25 @@
             :text="`${word} `"
             @click="configStore.handleWords(word)"
           />
+          <template v-if="configStore.type === 'code'">
+            <IconButton
+              :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
+              size="xs"
+              text="Todos"
+              @click="configStore.handleCodeLanguage(null)"
+            />
+            <IconButton
+              v-for="language in configStore.languages"
+              :value="language"
+              :key="language"
+              :variant="
+                configStore.selectedCodeLanguage === language ? 'primary' : 'secondary'
+              "
+              size="xs"
+              :text="language"
+              @click="configStore.handleCodeLanguage(language)"
+            />
+          </template>
         </div>
       </template>
     </div>
@@ -153,6 +207,7 @@ const typeMeta = {
   time: { icon: "clock", label: "Tiempo" },
   words: { icon: "letter", label: "Palabras" },
   quote: { icon: "quote", label: "Cita" },
+  code: { icon: "code", label: "Código" },
   zen: { icon: "zen", label: "Zen" },
 };
 </script>

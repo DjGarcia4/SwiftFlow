@@ -81,6 +81,7 @@ import {
   HashtagIcon,
   SparklesIcon,
   ChatBubbleBottomCenterTextIcon,
+  CodeBracketIcon,
 } from "@heroicons/vue/24/outline";
 
 // Props
@@ -119,6 +120,7 @@ const props = defineProps({
         "number",
         "zen",
         "quote",
+        "code",
       ].includes(value),
   },
   variant: {
@@ -173,6 +175,7 @@ const iconMap = {
   number: HashtagIcon,
   zen: SparklesIcon,
   quote: ChatBubbleBottomCenterTextIcon,
+  code: CodeBracketIcon,
 };
 
 // Computed icon component

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import { codeLanguages } from "@/constants/code";
 
 export const useConfigStore = defineStore("config", () => {
   // Configuration state
@@ -7,11 +8,13 @@ export const useConfigStore = defineStore("config", () => {
   const selectedTime = ref(15);
   const selectedWords = ref(100);
   const selectedContentTypes = ref("punctuation");
+  const selectedCodeLanguage = ref(null); // null = "Todos" (mixed languages)
 
-  const types = ref(["time", "words", "quote", "zen"]);
+  const types = ref(["time", "words", "quote", "code", "zen"]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
   const words = ref([10, 25, 50, 100]);
+  const languages = ref(codeLanguages);
 
   // Typing state
   const userInput = ref("");
@@ -41,6 +44,14 @@ export const useConfigStore = defineStore("config", () => {
 
   const handleWords = (newWords) => {
     selectedWords.value = newWords;
+    resetTypingSession();
+  };
+
+  const handleCodeLanguage = (language) => {
+    // Clicking "Todos" passes null; clicking it again while already
+    // selected also falls back to null (mixed languages).
+    selectedCodeLanguage.value =
+      language === selectedCodeLanguage.value ? null : language;
     resetTypingSession();
   };
 
@@ -320,8 +331,9 @@ export const useConfigStore = defineStore("config", () => {
     // Always store the original text
     originalReferenceText.value = text;
 
-    // Apply formatting if punctuation mode is NOT selected (deselected)
-    if (selectedContentTypes.value === "punctuation") {
+    // Code is case- and symbol-sensitive — stripping punctuation or
+    // lowercasing it would break the syntax, so it always stays as-is.
+    if (type.value === "code" || selectedContentTypes.value === "punctuation") {
       referenceText.value = text; // Show original when selected
     } else {
       referenceText.value = formatReferenceText(text); // Format when deselected
@@ -368,14 +380,17 @@ export const useConfigStore = defineStore("config", () => {
     selectedTime,
     selectedWords,
     selectedContentTypes,
+    selectedCodeLanguage,
     contentTypes,
     times,
     words,
+    languages,
     types,
     handleType,
     handleTime,
     handleWords,
     handleContentTypes,
+    handleCodeLanguage,
     // Typing state
     userInput,
     startTime,

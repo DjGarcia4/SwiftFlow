@@ -106,6 +106,44 @@ export const spanishWords = [
   "quizás", "incluso", "apenas", "casi", "todavía", "aún", "recién", "pronto", "temprano",
   "realmente", "simplemente", "especialmente", "generalmente", "finalmente", "actualmente", "probablemente",
   "exactamente", "completamente",
+
+  // Clothing
+  "camisa", "pantalón", "zapato", "chaqueta", "sombrero", "vestido", "falda", "calcetín", "guante", "bufanda",
+  "cinturón", "bolsillo", "botón", "cremallera",
+
+  // Sports
+  "pelota", "cancha", "equipo", "entrenador", "árbitro", "gol", "carrera", "natación", "ciclismo", "tenis",
+  "baloncesto", "voleibol", "maratón", "medalla", "campeón", "competencia", "entrenamiento", "resistencia", "velocidad",
+
+  // Tools and everyday objects
+  "martillo", "destornillador", "tijera", "cuerda", "escalera", "linterna", "batería", "cable", "tornillo", "clavo",
+  "caja", "bolsa", "maleta", "mochila", "paraguas", "reloj", "cámara", "radio", "televisor", "calculadora",
+
+  // Weather and landscape
+  "relámpago", "trueno", "niebla", "rocío", "arcoíris", "huracán", "terremoto", "volcán", "glaciar", "desierto",
+  "selva", "pradera", "cascada", "cueva", "valle", "colina", "acantilado",
+
+  // Government and society
+  "ley", "justicia", "derecho", "votar", "elección", "presidente", "ministro", "embajada", "ejército", "policía",
+  "bandera", "constitución", "ciudadano", "democracia", "impuesto",
+
+  // Science
+  "átomo", "molécula", "célula", "gen", "virus", "bacteria", "planeta", "galaxia", "gravedad", "energía",
+  "materia", "elemento", "reacción", "experimento", "laboratorio", "microscopio", "telescopio", "órbita",
+
+  // Arts
+  "pintura", "escultura", "lienzo", "pincel", "melodía", "ritmo", "armonía", "poema", "novela", "ensayo",
+  "guion", "escenario", "actor", "actriz", "director", "obra",
+
+  // More emotions and abstract nouns
+  "orgullo", "vergüenza", "culpa", "envidia", "celos", "gratitud", "humildad", "arrogancia", "confianza", "duda",
+  "coraje", "valentía", "ternura",
+
+  // More verbs
+  "viajar", "volar", "conducir", "manejar", "cocinar", "limpiar", "lavar", "planchar", "coser", "reparar",
+  "pintar", "dibujar", "actuar", "dirigir", "filmar", "grabar", "publicar", "imprimir", "calcular", "medir",
+  "pesar", "sumar", "restar", "multiplicar", "dividir", "ahorrar", "invertir", "prestar", "rentar", "alquilar",
+  "mudar", "emigrar", "inmigrar",
 ];
 
 // Builds a random "words" mode text: `count` words picked from the list
