@@ -339,13 +339,6 @@
       :aria-hidden="isTypingActive"
     >
       <IconButton
-        icon="back"
-        variant="secondary"
-        size="lg"
-        tooltip="Anterior"
-        @click="previous"
-      />
-      <IconButton
         icon="restart"
         variant="secondary"
         size="lg"
@@ -353,25 +346,28 @@
         @click="restart"
       />
 
-      <!-- Show pause button when not paused -->
-      <IconButton
-        v-if="!isCompleted && !configStore.isPaused"
-        icon="pause"
-        variant="primary"
-        size="lg"
-        tooltip="Pausar"
-        @click="pause"
-      />
+      <!-- Pausing only makes sense once there's an actual session going -->
+      <template v-if="configStore.userInput.length > 0">
+        <!-- Show pause button when not paused -->
+        <IconButton
+          v-if="!isCompleted && !configStore.isPaused"
+          icon="pause"
+          variant="primary"
+          size="lg"
+          tooltip="Pausar"
+          @click="pause"
+        />
 
-      <!-- Show play button when paused -->
-      <IconButton
-        v-if="!isCompleted && configStore.isPaused"
-        icon="play"
-        variant="primary"
-        size="lg"
-        tooltip="Continuar"
-        @click="play"
-      />
+        <!-- Show play button when paused -->
+        <IconButton
+          v-if="!isCompleted && configStore.isPaused"
+          icon="play"
+          variant="primary"
+          size="lg"
+          tooltip="Continuar"
+          @click="play"
+        />
+      </template>
 
       <!-- Zen mode has no limit, so the only way to end it is manually -->
       <IconButton
@@ -381,14 +377,6 @@
         size="lg"
         tooltip="Terminar"
         @click="finishZen"
-      />
-
-      <IconButton
-        icon="next"
-        variant="secondary"
-        size="lg"
-        tooltip="Siguiente"
-        @click="next"
       />
     </div>
   </div>
@@ -444,8 +432,8 @@ const pickRandomParagraph = () => {
 // freshly generated random-words text for "words", a random quote (with
 // its author) for "quote", or a random curated paragraph for "time"/"zen"
 // (both keep extending it forever — see handleTyping). Called on mount, on
-// restart/next/previous, and whenever the mode/time/word-count selection
-// changes — everything is always random.
+// restart, and whenever the mode/time/word-count selection changes —
+// everything is always random.
 const refreshReferenceText = () => {
   if (configStore.type === "words") {
     configStore.setReferenceText(generateRandomWords(configStore.selectedWords));
@@ -681,28 +669,6 @@ const play = () => {
 
 const finishZen = () => {
   configStore.finishZen();
-};
-
-// Everything is random now, so "next" and "previous" both just draw a
-// fresh text — there's no ordered sequence to step through anymore.
-const next = () => {
-  refreshReferenceText();
-  nextTick(updateCaretPosition);
-
-  // Add a small delay to allow the transition to complete
-  setTimeout(() => {
-    typingInput.value?.focus();
-  }, 200);
-};
-
-const previous = () => {
-  refreshReferenceText();
-  nextTick(updateCaretPosition);
-
-  // Add a small delay to allow the transition to complete
-  setTimeout(() => {
-    typingInput.value?.focus();
-  }, 200);
 };
 
 onMounted(() => {

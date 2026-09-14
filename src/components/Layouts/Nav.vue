@@ -1,5 +1,5 @@
 <template>
-  <nav class="sticky top-0 z-50 bg-paper-white border-b-2 border-faded-gray">
+  <nav class="sticky top-0 z-50 bg-paper-white">
     <div
       class="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2"
     >
@@ -17,16 +17,6 @@
       </router-link>
 
       <div class="flex items-center gap-2">
-        <div class="hidden md:flex items-center gap-1">
-          <router-link
-            to="/"
-            class="px-4 py-2 rounded-xl text-sm font-extrabold uppercase tracking-[0.04em] text-pencil-gray hover:bg-primary-tint/60 hover:text-primary transition-colors duration-150"
-            active-class="bg-primary-tint/60 text-primary"
-          >
-            Practicar
-          </router-link>
-        </div>
-
         <button
           type="button"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-colors duration-150"
