@@ -31,48 +31,53 @@
           v-for="type in configStore.types"
           :value="type"
           :key="type"
-          :icon="type === 'time' ? 'clock' : 'letter'"
+          :icon="typeMeta[type].icon"
           :variant="configStore.type === type ? 'primary' : 'secondary'"
           size="sm"
-          :text="`${type == 'time' ? 'Tiempo' : 'Palabras'}`"
+          :text="typeMeta[type].label"
           @click="configStore.handleType(type)"
         />
       </div>
 
-      <!-- Divisor -->
-      <div class="h-px w-full bg-faded-gray"></div>
+      <!-- Value selection (no limit to pick in zen mode) -->
+      <template v-if="configStore.type === 'time' || configStore.type === 'words'">
+        <!-- Divisor -->
+        <div class="h-px w-full bg-faded-gray"></div>
 
-      <!-- Value selection -->
-      <div class="flex flex-wrap items-center justify-center gap-2">
-        <IconButton
-          v-if="configStore.type === 'time'"
-          v-for="time in configStore.times"
-          :value="time"
-          :key="time"
-          :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
-          size="sm"
-          :text="`${time}s`"
-          @click="configStore.handleTime(time)"
-        />
-        <IconButton
-          v-if="configStore.type === 'words'"
-          v-for="word in configStore.words"
-          :value="word"
-          :key="word"
-          :variant="
-            configStore.selectedWords === word ? 'primary' : 'secondary'
-          "
-          size="sm"
-          :text="`${word} `"
-          @click="configStore.handleWords(word)"
-        />
-      </div>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <IconButton
+            v-if="configStore.type === 'time'"
+            v-for="time in configStore.times"
+            :value="time"
+            :key="time"
+            :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
+            size="sm"
+            :text="`${time}s`"
+            @click="configStore.handleTime(time)"
+          />
+          <IconButton
+            v-if="configStore.type === 'words'"
+            v-for="word in configStore.words"
+            :value="word"
+            :key="word"
+            :variant="
+              configStore.selectedWords === word ? 'primary' : 'secondary'
+            "
+            size="sm"
+            :text="`${word} `"
+            @click="configStore.handleWords(word)"
+          />
+        </div>
+      </template>
     </div>
 
-    <!-- Desktop Layout (horizontal) -->
-    <div class="hidden sm:flex flex-wrap items-center justify-center gap-2 lg:gap-4">
+    <!-- Desktop Layout (horizontal, always a single line — scrolls sideways
+         on narrow windows instead of wrapping to a second row) -->
+    <div
+      class="hidden sm:flex flex-nowrap items-center justify-center gap-1.5 lg:gap-3 overflow-x-auto"
+    >
       <!-- Type content -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 flex-shrink-0">
         <IconButton
           v-for="type in configStore.contentTypes"
           :value="type"
@@ -81,56 +86,58 @@
           :variant="
             configStore.selectedContentTypes === type ? 'primary' : 'secondary'
           "
-          size="sm"
+          size="xs"
           :text="`${type == 'punctuation' ? 'Puntuación' : 'Números'}`"
           @click="configStore.handleContentTypes(type)"
         />
       </div>
 
       <!-- Divisor -->
-      <div class="h-4 w-px bg-faded-gray"></div>
+      <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
       <!-- Type selection -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 flex-shrink-0">
         <IconButton
           v-for="type in configStore.types"
           :value="type"
           :key="type"
-          :icon="type === 'time' ? 'clock' : 'letter'"
+          :icon="typeMeta[type].icon"
           :variant="configStore.type === type ? 'primary' : 'secondary'"
-          size="sm"
-          :text="`${type == 'time' ? 'Tiempo' : 'Palabras'}`"
+          size="xs"
+          :text="typeMeta[type].label"
           @click="configStore.handleType(type)"
         />
       </div>
 
-      <!-- Divisor -->
-      <div class="h-4 w-px bg-faded-gray"></div>
+      <!-- Value selection (no limit to pick in zen mode) -->
+      <template v-if="configStore.type === 'time' || configStore.type === 'words'">
+        <!-- Divisor -->
+        <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
 
-      <!-- Value selection -->
-      <div class="flex items-center gap-2">
-        <IconButton
-          v-if="configStore.type === 'time'"
-          v-for="time in configStore.times"
-          :value="time"
-          :key="time"
-          :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
-          size="sm"
-          :text="`${time}s`"
-          @click="configStore.handleTime(time)"
-        />
-        <IconButton
-          v-if="configStore.type === 'words'"
-          v-for="word in configStore.words"
-          :value="word"
-          :key="word"
-          :variant="
-            configStore.selectedWords === word ? 'primary' : 'secondary'
-          "
-          size="sm"
-          :text="`${word} `"
-          @click="configStore.handleWords(word)"
-        />
-      </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <IconButton
+            v-if="configStore.type === 'time'"
+            v-for="time in configStore.times"
+            :value="time"
+            :key="time"
+            :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
+            size="xs"
+            :text="`${time}s`"
+            @click="configStore.handleTime(time)"
+          />
+          <IconButton
+            v-if="configStore.type === 'words'"
+            v-for="word in configStore.words"
+            :value="word"
+            :key="word"
+            :variant="
+              configStore.selectedWords === word ? 'primary' : 'secondary'
+            "
+            size="xs"
+            :text="`${word} `"
+            @click="configStore.handleWords(word)"
+          />
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -140,6 +147,14 @@ import IconButton from "@/components/common/IconButton.vue";
 import { useConfigStore } from "@/stores/config";
 
 const configStore = useConfigStore();
+
+// Icon + label for each typing mode
+const typeMeta = {
+  time: { icon: "clock", label: "Tiempo" },
+  words: { icon: "letter", label: "Palabras" },
+  quote: { icon: "quote", label: "Cita" },
+  zen: { icon: "zen", label: "Zen" },
+};
 </script>
 
 <style scoped></style>

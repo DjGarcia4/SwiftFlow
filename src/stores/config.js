@@ -8,7 +8,7 @@ export const useConfigStore = defineStore("config", () => {
   const selectedWords = ref(100);
   const selectedContentTypes = ref("punctuation");
 
-  const types = ref(["time", "words"]);
+  const types = ref(["time", "words", "quote", "zen"]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
   const words = ref([10, 25, 50, 100]);
@@ -22,6 +22,7 @@ export const useConfigStore = defineStore("config", () => {
   const inactivityTimer = ref(null);
   const referenceText = ref("");
   const originalReferenceText = ref(""); // Keep track of original text
+  const zenFinished = ref(false); // Manually ended a "zen" (no limit) session
   const INACTIVITY_TIMEOUT = 3000; // 3 seconds of inactivity
 
   // Momentum state (best WPM record + live streak)
@@ -65,19 +66,11 @@ export const useConfigStore = defineStore("config", () => {
   // Typing computed properties
   const wpm = computed(() => {
     if (!startTime.value || timeElapsed.value === 0) {
-      console.log("WPM calculation: No start time or time elapsed is 0");
       return 0;
     }
     const words = userInput.value.trim().split(/\s+/).length;
     const minutes = timeElapsed.value / 60;
-    const wpmResult = Math.round(words / minutes);
-    console.log("WPM calculation:", {
-      words: words,
-      timeElapsed: timeElapsed.value,
-      minutes: minutes,
-      wpm: wpmResult,
-    });
-    return wpmResult;
+    return Math.round(words / minutes);
   });
 
   const accuracy = computed(() => {
@@ -102,11 +95,6 @@ export const useConfigStore = defineStore("config", () => {
       .trim()
       .split(/\s+/)
       .filter((word) => word.length > 0);
-    console.log("Typed words calculation:", {
-      userInput: userInput.value,
-      words: words,
-      count: words.length,
-    });
     return words.length;
   });
 
@@ -121,7 +109,6 @@ export const useConfigStore = defineStore("config", () => {
 
   const errors = computed(() => {
     if (!referenceText.value) {
-      console.log("No reference text for error counting");
       return 0;
     }
     let errorCount = 0;
@@ -130,9 +117,6 @@ export const useConfigStore = defineStore("config", () => {
         errorCount++;
       }
     }
-    console.log(
-      `Error count: ${errorCount}, userInput length: ${userInput.value.length}, referenceText length: ${referenceText.value.length}`
-    );
     return errorCount;
   });
 
@@ -163,14 +147,23 @@ export const useConfigStore = defineStore("config", () => {
   const isCompleted = computed(() => {
     if (!referenceText.value) return false;
 
-    // Always complete if the entire text is finished, regardless of time/word limits
-    if (userInput.value.length >= referenceText.value.length) {
-      return true;
-    }
-
-    // Time-based completion
+    // Time-based completion: the text keeps getting extended as the user
+    // approaches the end (see extendReferenceText), so completion here is
+    // purely a function of the clock — it should never end early just
+    // because a fast typist reached the end of the current text.
     if (type.value === "time") {
       return timeElapsed.value >= selectedTime.value;
+    }
+
+    // Zen mode has no limit — the text also keeps extending forever, and
+    // the session only ends when the user explicitly finishes it.
+    if (type.value === "zen") {
+      return zenFinished.value;
+    }
+
+    // Always complete if the entire text is finished, regardless of word limits
+    if (userInput.value.length >= referenceText.value.length) {
+      return true;
     }
 
     // Words-based completion
@@ -191,6 +184,11 @@ export const useConfigStore = defineStore("config", () => {
       return Math.min((typedWords.value / selectedWords.value) * 100, 100);
     }
 
+    // Zen mode has no target to fill toward
+    if (type.value === "zen") {
+      return 0;
+    }
+
     // Default: character-based progress
     if (!referenceText.value) return 0;
     return Math.min(
@@ -198,6 +196,11 @@ export const useConfigStore = defineStore("config", () => {
       100
     );
   });
+
+  // Manually ends a "zen" session (no time/word limit to trigger completion).
+  const finishZen = () => {
+    zenFinished.value = true;
+  };
 
   // Typing functions
   const startTimer = () => {
@@ -218,7 +221,6 @@ export const useConfigStore = defineStore("config", () => {
 
         // Check if time limit is reached and complete the session immediately
         if (type.value === "time" && timeElapsed.value >= selectedTime.value) {
-          console.log("Time limit reached! Triggering completion...");
           clearInterval(timer.value);
           timer.value = null;
           clearInactivityTimer();
@@ -304,6 +306,7 @@ export const useConfigStore = defineStore("config", () => {
     startTime.value = null;
     timeElapsed.value = 0;
     isPaused.value = false;
+    zenFinished.value = false;
 
     if (timer.value) {
       clearInterval(timer.value);
@@ -324,6 +327,19 @@ export const useConfigStore = defineStore("config", () => {
       referenceText.value = formatReferenceText(text); // Format when deselected
     }
     resetTypingSession();
+  };
+
+  // Appends more text to the current reference text WITHOUT resetting the
+  // typing session — used in "time" mode so a fast typist never runs out
+  // of text before the selected time is up.
+  const extendReferenceText = (extraText) => {
+    originalReferenceText.value = `${originalReferenceText.value} ${extraText}`;
+
+    if (selectedContentTypes.value === "punctuation") {
+      referenceText.value = `${referenceText.value} ${extraText}`;
+    } else {
+      referenceText.value = `${referenceText.value} ${formatReferenceText(extraText)}`;
+    }
   };
 
   // Callback for completion (to be set by component)
@@ -369,6 +385,7 @@ export const useConfigStore = defineStore("config", () => {
     inactivityTimer,
     referenceText,
     originalReferenceText,
+    zenFinished,
 
     // Computed properties
     wpm,
@@ -392,6 +409,8 @@ export const useConfigStore = defineStore("config", () => {
     play,
     resetTypingSession,
     setReferenceText,
+    extendReferenceText,
+    finishZen,
     formatReferenceText,
     clearInactivityTimer,
     resetInactivityTimer,

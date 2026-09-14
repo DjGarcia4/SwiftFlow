@@ -1,7 +1,21 @@
 <template>
   <div
-    class="fixed top-1/2 left-1/2 z-0 w-full max-w-4xl lg:max-w-5xl -translate-x-1/2 -translate-y-1/2 space-y-6 px-4 sm:px-6 max-h-[85vh] overflow-y-auto"
+    class="fixed top-1/2 left-1/2 z-0 w-full max-w-4xl lg:max-w-5xl -translate-x-1/2 -translate-y-1/2 space-y-6 px-4 sm:px-6 max-h-[min(85vh,calc(100vh-9rem))] overflow-y-auto"
   >
+    <!-- Author attribution for quote mode -->
+    <Transition
+      enter-active-class="transition-all duration-500 ease-out"
+      enter-from-class="opacity-0 translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+    >
+      <p
+        v-if="isCompleted && configStore.type === 'quote' && currentQuoteAuthor"
+        class="text-center text-sm sm:text-base font-bold text-pencil-gray"
+      >
+        — {{ currentQuoteAuthor }}
+      </p>
+    </Transition>
+
     <div
       v-if="isCompleted"
       class="grid gap-4 sm:gap-6 text-center grid-cols-2 sm:grid-cols-4"
@@ -199,9 +213,21 @@
               </div>
             </div>
 
+            <!-- Zen Counter: no limit, just elapsed time -->
+            <div v-if="configStore.type === 'zen'" class="flex items-center gap-2">
+              <ClockIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+              <span class="text-base sm:text-lg font-extrabold text-charcoal"
+                >{{ configStore.timeElapsed }}s</span
+              >
+            </div>
+
             <!-- Characters Counter (default) -->
             <div
-              v-if="configStore.type !== 'time' && configStore.type !== 'words'"
+              v-if="
+                configStore.type !== 'time' &&
+                configStore.type !== 'words' &&
+                configStore.type !== 'zen'
+              "
               class="flex items-center gap-2"
             >
               <HashtagIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
@@ -247,7 +273,7 @@
 
       <div
         ref="typingContainer"
-        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container h-[190px] xs:h-[200px] sm:h-[300px]"
+        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container h-[210px] xs:h-[230px] sm:h-[340px] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)]"
         :class="{
           'overflow-y-auto': !configStore.isPaused,
           'overflow-hidden': configStore.isPaused,
@@ -266,7 +292,7 @@
           <div
             ref="textContentEl"
             key="text-content"
-            class="relative font-mono text-xl sm:text-2xl leading-[1.9] tracking-wide"
+            class="relative font-mono text-2xl sm:text-3xl leading-[1.9] tracking-wide"
           >
             <!-- Smooth animated caret -->
             <div
@@ -280,7 +306,10 @@
             ></div>
 
             <span v-for="(group, groupIndex) in wordGroups" :key="groupIndex">
-              <span v-if="group.type === 'word'" class="inline-block">
+              <span
+                v-if="group.type === 'word'"
+                class="inline-block break-words max-w-full"
+              >
                 <span
                   v-for="c in group.chars"
                   :key="c.index"
@@ -341,6 +370,16 @@
         @click="play"
       />
 
+      <!-- Zen mode has no limit, so the only way to end it is manually -->
+      <IconButton
+        v-if="configStore.type === 'zen' && !isCompleted"
+        icon="check"
+        variant="primary"
+        size="lg"
+        tooltip="Terminar"
+        @click="finishZen"
+      />
+
       <IconButton
         icon="next"
         variant="secondary"
@@ -357,13 +396,17 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import IconButton from "@/components/common/IconButton.vue";
 import { ClockIcon, DocumentTextIcon, HashtagIcon, PauseIcon, FireIcon } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/constants/paragraphs";
+import { generateRandomWords } from "@/constants/words";
+import { getRandomQuote } from "@/constants/quotes";
 import { useConfigStore } from "@/stores/config";
 
 // Config store
 const configStore = useConfigStore();
 
 // Local component state
-const currentTextIndex = ref(0);
+const lastParagraph = ref(null);
+const lastQuoteText = ref(null);
+const currentQuoteAuthor = ref("");
 const typingInput = ref(null);
 const typingContainer = ref(null);
 const textContentEl = ref(null);
@@ -376,47 +419,54 @@ const handleGlobalKeydown = (event) => {
   }
 };
 
-// Current reference text from the collection (raw text)
-const rawReferenceText = computed(() => {
-  return paragraphs[currentTextIndex.value];
-});
-
 // Use the formatted reference text from the store
 const referenceText = computed(() => {
   return configStore.referenceText;
 });
 
-// Set the reference text in the store when it changes
-watch(
-  rawReferenceText,
-  (newText) => {
-    configStore.setReferenceText(newText);
-  },
-  { immediate: true }
-);
+// Picks a random paragraph, avoiding immediately repeating the last one.
+const pickRandomParagraph = () => {
+  if (paragraphs.length === 1) return paragraphs[0];
 
-// Local isCompleted that uses the component's referenceText
-const isCompleted = computed(() => {
-  if (!referenceText.value) return false;
+  let text;
+  do {
+    text = paragraphs[Math.floor(Math.random() * paragraphs.length)];
+  } while (text === lastParagraph.value);
 
-  // Always complete if the entire text is finished, regardless of time/word limits
-  if (configStore.userInput.length >= referenceText.value.length) {
-    return true;
-  }
+  lastParagraph.value = text;
+  return text;
+};
 
-  // Time-based completion
-  if (configStore.type === "time") {
-    return configStore.timeElapsed >= configStore.selectedTime;
-  }
-
-  // Words-based completion
+// Loads a new, random reference text appropriate for the current mode: a
+// freshly generated random-words text for "words", a random quote (with
+// its author) for "quote", or a random curated paragraph for "time"/"zen"
+// (both keep extending it forever — see handleTyping). Called on mount, on
+// restart/next/previous, and whenever the mode/time/word-count selection
+// changes — everything is always random.
+const refreshReferenceText = () => {
   if (configStore.type === "words") {
-    return configStore.typedWords >= configStore.selectedWords;
+    configStore.setReferenceText(generateRandomWords(configStore.selectedWords));
+    return;
   }
 
-  // Default: complete when all text is typed
-  return configStore.userInput.length >= referenceText.value.length;
-});
+  if (configStore.type === "quote") {
+    const quote = getRandomQuote(lastQuoteText.value);
+    lastQuoteText.value = quote.text;
+    currentQuoteAuthor.value = quote.author;
+    configStore.setReferenceText(quote.text);
+    return;
+  }
+
+  configStore.setReferenceText(pickRandomParagraph());
+};
+
+// Initialize the reference text as soon as the component is set up
+refreshReferenceText();
+
+// Delegate to the store's isCompleted so there's a single source of truth
+// (HomeView also reads configStore.isCompleted directly to know when to
+// show the toolbar again).
+const isCompleted = computed(() => configStore.isCompleted);
 
 // Whether the user is actively typing right now (controls hides while typing,
 // e.g. the nav/pause buttons) — mirrors the same idea used in HomeView.
@@ -511,12 +561,14 @@ watch(referenceText, () => {
   nextTick(updateCaretPosition);
 });
 
-// Watch for config changes and reset session
+// Watch for config changes: reload the reference text (a fresh random
+// words text if the word count changed, or the same paragraph reloaded
+// otherwise) whenever the mode/time/word-count selection changes.
 watch(
   () => [configStore.type, configStore.selectedTime, configStore.selectedWords],
   () => {
-    // Reset the typing session when config changes
-    restart();
+    refreshReferenceText();
+    nextTick(updateCaretPosition);
   },
   { deep: true }
 );
@@ -551,6 +603,10 @@ const scrollToCurrentPosition = () => {
   }
 };
 
+// How close (in characters) to the end of the text before we tack on
+// another random paragraph, so there's always a buffer of text ahead.
+const EXTEND_TEXT_THRESHOLD = 80;
+
 const handleTyping = () => {
   // Don't handle typing if session is already completed
   if (isCompleted.value) {
@@ -558,6 +614,15 @@ const handleTyping = () => {
   }
 
   configStore.handleTyping();
+
+  // In "time" and "zen" modes there's no fixed end — top up the text with
+  // another random paragraph once we're nearing the end of the current one.
+  if (configStore.type === "time" || configStore.type === "zen") {
+    const remaining = referenceText.value.length - configStore.userInput.length;
+    if (remaining < EXTEND_TEXT_THRESHOLD) {
+      configStore.extendReferenceText(pickRandomParagraph());
+    }
+  }
 
   // Auto-scroll to keep current position visible and glide the caret
   scrollToCurrentPosition();
@@ -593,7 +658,7 @@ const getCharacterClass = (index) => {
 };
 
 const restart = () => {
-  configStore.resetTypingSession();
+  refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {
     typingInput.value?.focus();
@@ -611,12 +676,14 @@ const play = () => {
   }, 100);
 };
 
-const next = () => {
-  // Move to next text in collection
-  currentTextIndex.value = (currentTextIndex.value + 1) % paragraphs.length;
+const finishZen = () => {
+  configStore.finishZen();
+};
 
-  // Reset everything for new text
-  configStore.resetTypingSession();
+// Everything is random now, so "next" and "previous" both just draw a
+// fresh text — there's no ordered sequence to step through anymore.
+const next = () => {
+  refreshReferenceText();
   nextTick(updateCaretPosition);
 
   // Add a small delay to allow the transition to complete
@@ -626,14 +693,7 @@ const next = () => {
 };
 
 const previous = () => {
-  // Move to previous text in collection
-  currentTextIndex.value =
-    currentTextIndex.value === 0
-      ? paragraphs.length - 1
-      : currentTextIndex.value - 1;
-
-  // Reset everything for new text
-  configStore.resetTypingSession();
+  refreshReferenceText();
   nextTick(updateCaretPosition);
 
   // Add a small delay to allow the transition to complete

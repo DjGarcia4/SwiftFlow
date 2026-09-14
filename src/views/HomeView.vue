@@ -48,7 +48,7 @@
           leave-from-class="opacity-100 translate-y-0"
           leave-to-class="opacity-0 translate-y-4"
         >
-          <div class="w-full max-w-md">
+          <div class="w-full max-w-md max-h-[85vh] overflow-y-auto">
             <div class="flex justify-end mb-2">
               <IconButton
                 icon="close"

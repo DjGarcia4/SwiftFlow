@@ -1,0 +1,128 @@
+// Manually curated list of common Spanish words, used to build the "words"
+// mode text on the fly (the same approach monkeytype uses: pick random
+// words from a frequency list instead of reusing a fixed paragraph).
+export const spanishWords = [
+  // Function words / articles / prepositions / conjunctions
+  "el", "la", "los", "las", "un", "una", "unos", "unas", "de", "del",
+  "que", "y", "a", "en", "su", "sus", "por", "con", "para", "como",
+  "más", "pero", "este", "esta", "ese", "esa", "eso", "esto", "si", "ya",
+  "o", "sin", "sobre", "entre", "hasta", "desde", "cuando", "donde", "porque", "aunque",
+
+  // Pronouns and other function words
+  "yo", "tú", "él", "ella", "usted", "nosotros", "ellos", "ellas", "me", "te",
+  "se", "nos", "les", "lo", "le", "mi", "tu", "algo", "nada", "alguien",
+
+  // Common verbs (infinitive)
+  "ser", "estar", "haber", "tener", "hacer", "poder", "decir", "ir", "ver", "dar",
+  "saber", "querer", "llegar", "pasar", "deber", "poner", "parecer", "quedar", "creer", "hablar",
+  "llevar", "dejar", "seguir", "encontrar", "llamar", "venir", "pensar", "salir", "volver", "tomar",
+  "conocer", "vivir", "sentir", "mirar", "contar", "empezar", "esperar", "buscar", "existir", "entrar",
+
+  // Common verbs (conjugated)
+  "es", "son", "está", "están", "hay", "tiene", "tienen", "puede", "pueden", "dice",
+  "quiere", "sabe", "viene", "vive", "siente", "mira", "busca", "entra", "llega", "trabaja",
+
+  // Nouns
+  "tiempo", "año", "día", "vez", "hombre", "mujer", "vida", "mano", "parte", "mundo",
+  "país", "casa", "agua", "noche", "punto", "forma", "gente", "caso", "número", "lugar",
+  "manera", "trabajo", "historia", "momento", "palabra", "hecho", "ejemplo", "problema", "gobierno", "grupo",
+  "sistema", "empresa", "persona", "nivel", "programa", "proceso", "información", "estudio", "proyecto", "producto",
+  "sociedad", "ciudad", "familia", "cultura", "arte", "música", "ciencia", "libro", "mesa", "puerta",
+  "ventana", "calle", "árbol", "cielo", "mar", "río", "sol", "luna", "animal", "color", "amor",
+
+  // Adjectives
+  "grande", "pequeño", "alto", "bajo", "nuevo", "viejo", "joven", "fácil", "difícil", "rápido",
+  "lento", "fuerte", "bueno", "malo", "hermoso", "claro", "oscuro", "caliente", "frío", "largo",
+  "corto", "feliz", "triste", "cierto", "mismo", "propio", "mejor", "peor", "primero", "último",
+
+  // Numbers and adverbs
+  "uno", "dos", "tres", "cuatro", "cinco", "mucho", "poco", "muy", "bien", "mal",
+  "aquí", "allí", "ahora", "siempre", "nunca", "también", "tampoco", "así", "luego", "después",
+
+  // More function words / connectors
+  "además", "sino", "tal", "cual", "cuyo", "quien", "quienes", "todos", "todas", "otros",
+  "otras", "varios", "varias", "ambos", "ninguno", "cualquier", "tras", "ante", "contra", "hacia",
+  "mediante", "durante", "dentro", "fuera", "cerca", "lejos", "encima", "debajo", "delante", "detrás", "alrededor",
+
+  // More pronouns and question words
+  "ustedes", "vosotros", "conmigo", "contigo", "consigo", "cuánto", "cuánta", "cuántos", "cuántas",
+  "quién", "cuál", "cuáles",
+
+  // More verbs (infinitive)
+  "abrir", "cerrar", "comenzar", "terminar", "comer", "beber", "dormir", "despertar", "caminar", "correr",
+  "saltar", "nadar", "escribir", "leer", "escuchar", "cantar", "bailar", "jugar", "ganar", "perder",
+  "cambiar", "mejorar", "crecer", "nacer", "morir", "construir", "destruir", "mover", "mantener", "ofrecer",
+  "recibir", "enviar", "comprar", "vender", "pagar", "ayudar", "permitir", "necesitar", "decidir", "intentar",
+  "lograr", "conseguir", "resolver", "explicar", "preguntar", "responder", "mostrar", "aparecer", "desaparecer",
+  "olvidar", "recordar", "imaginar", "soñar", "reír", "llorar", "sonreír", "gritar", "susurrar", "abrazar",
+  "besar", "tocar", "oler", "probar",
+
+  // More verbs (conjugated)
+  "hace", "hacen", "dan", "ven", "saben", "quieren", "pasa", "pasan", "pone", "ponen",
+  "sigue", "siguen", "encuentra", "encuentran", "piensa", "piensan", "sale", "salen", "vuelve", "vuelven",
+  "toma", "toman", "conoce", "conocen", "escribe", "escriben", "lee", "leen", "escucha", "escuchan",
+  "come", "comen", "bebe", "beben", "duerme", "duermen", "corre", "corren", "juega", "juegan",
+  "gana", "ganan", "pierde", "pierden", "cambia", "cambian", "crece", "crecen", "ayuda", "ayudan",
+  "necesita", "necesitan", "decide", "deciden",
+
+  // More nouns: family
+  "padre", "madre", "hijo", "hija", "hermano", "hermana", "abuelo", "abuela", "tío", "tía",
+  "primo", "prima", "esposo", "esposa", "niño", "niña", "bebé",
+
+  // More nouns: body
+  "cabeza", "cara", "ojo", "nariz", "boca", "oreja", "brazo", "pierna", "pie", "dedo",
+  "pelo", "piel", "corazón",
+
+  // More nouns: food and home
+  "comida", "pan", "leche", "carne", "pescado", "fruta", "verdura", "arroz", "sal", "azúcar",
+  "café", "té", "vino", "habitación", "cocina", "baño", "jardín", "techo", "pared", "suelo",
+  "silla", "cama", "espejo",
+
+  // More nouns: technology and emotions
+  "teléfono", "computadora", "internet", "pantalla", "mensaje", "correo", "aplicación", "dato", "red",
+  "emoción", "miedo", "alegría", "esperanza", "sorpresa", "enojo", "calma", "paz", "guerra",
+
+  // More nouns: time, calendar and professions
+  "semana", "mes", "hora", "minuto", "segundo", "mañana", "tarde", "primavera", "verano", "otoño",
+  "invierno", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo", "médico", "maestro",
+  "ingeniero", "abogado", "artista", "escritor", "científico", "estudiante", "cliente", "jefe",
+
+  // More nouns: places, nature and objects
+  "dinero", "precio", "mercado", "tienda", "banco", "escuela", "universidad", "hospital", "iglesia", "parque",
+  "playa", "campo", "bosque", "isla", "viento", "lluvia", "nieve", "tormenta", "hielo", "roca",
+  "arena", "oro", "plata", "hierro", "papel", "regalo", "fiesta", "boda", "sueño",
+
+  // More adjectives
+  "rico", "pobre", "limpio", "sucio", "seco", "húmedo", "suave", "duro", "ligero", "pesado",
+  "ancho", "estrecho", "profundo", "redondo", "cuadrado", "recto", "curvo", "dulce", "amargo", "salado",
+  "ácido", "sano", "enfermo", "cansado", "despierto", "dormido", "ocupado", "libre", "vacío", "lleno",
+  "abierto", "cerrado", "correcto", "incorrecto", "posible", "imposible", "seguro", "peligroso", "cómodo", "incómodo",
+  "moderno", "antiguo", "público", "privado", "real", "falso", "natural", "artificial", "útil", "inútil",
+  "importante", "necesario", "suficiente", "especial", "normal", "extraño", "curioso", "valiente", "tímido", "amable",
+  "generoso", "honesto", "sincero", "paciente", "tranquilo", "nervioso", "activo", "pasivo",
+
+  // More numbers and adverbs
+  "seis", "siete", "ocho", "nueve", "diez", "cien", "mil", "millón", "tercero", "cuarto", "quinto",
+  "quizás", "incluso", "apenas", "casi", "todavía", "aún", "recién", "pronto", "temprano",
+  "realmente", "simplemente", "especialmente", "generalmente", "finalmente", "actualmente", "probablemente",
+  "exactamente", "completamente",
+];
+
+// Builds a random "words" mode text: `count` words picked from the list
+// above, joined with spaces, never repeating the same word twice in a row.
+export const generateRandomWords = (count) => {
+  const result = [];
+  let lastWord = null;
+
+  for (let i = 0; i < count; i++) {
+    let word;
+    do {
+      word = spanishWords[Math.floor(Math.random() * spanishWords.length)];
+    } while (word === lastWord);
+
+    result.push(word);
+    lastWord = word;
+  }
+
+  return result.join(" ");
+};

@@ -8,7 +8,7 @@
       :full-width="fullWidth"
       @click="$emit('click', $event)"
     >
-      <template #icon>
+      <template v-if="icon" #icon>
         <div
           v-if="icon === 'letter'"
           class="w-4 h-4 flex items-center justify-center font-bold text-sm"
@@ -79,6 +79,8 @@ import {
   ArrowLeftIcon,
   AtSymbolIcon,
   HashtagIcon,
+  SparklesIcon,
+  ChatBubbleBottomCenterTextIcon,
 } from "@heroicons/vue/24/outline";
 
 // Props
@@ -87,10 +89,13 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  // Optional: some buttons (e.g. the plain time/word count pills) are
+  // text-only and render no icon at all.
   icon: {
     type: String,
-    required: true,
+    default: "",
     validator: (value) =>
+      value === "" ||
       [
         "play",
         "pause",
@@ -112,6 +117,8 @@ const props = defineProps({
         "letter",
         "punctuation",
         "number",
+        "zen",
+        "quote",
       ].includes(value),
   },
   variant: {
@@ -164,6 +171,8 @@ const iconMap = {
   next: ArrowRightIcon,
   punctuation: AtSymbolIcon,
   number: HashtagIcon,
+  zen: SparklesIcon,
+  quote: ChatBubbleBottomCenterTextIcon,
 };
 
 // Computed icon component
