@@ -156,7 +156,10 @@
           </Transition>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div
+          v-if="configStore.userInput.length > 0"
+          class="flex items-center gap-2"
+        >
           <!-- Streak badge -->
           <Transition
             enter-active-class="transition-all duration-200 ease-out"
