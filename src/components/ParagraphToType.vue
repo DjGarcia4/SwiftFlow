@@ -1,5 +1,7 @@
 <template>
-  <div class="relative space-y-6">
+  <div
+    class="fixed top-1/2 left-1/2 z-0 w-full max-w-4xl lg:max-w-5xl -translate-x-1/2 -translate-y-1/2 space-y-6 px-4 sm:px-6 max-h-[85vh] overflow-y-auto"
+  >
     <div
       v-if="isCompleted"
       class="grid gap-4 sm:gap-6 text-center grid-cols-2 sm:grid-cols-4"
@@ -112,104 +114,105 @@
       </div>
     </Transition>
 
-    <div class="relative">
-      <!-- Live WPM positioned outside the scrolling container -->
-      <Transition
-        enter-active-class="transition-all duration-200 ease-out"
-        enter-from-class="opacity-0 -translate-y-1"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition-all duration-150 ease-in"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 -translate-y-1"
-      >
-        <div
-          v-if="configStore.userInput.length > 0 && !isCompleted"
-          class="absolute top-2 left-2 xs:top-3 xs:left-3 sm:top-3 sm:left-3 z-20"
-        >
-          <div class="flex items-baseline gap-1.5">
-            <span
-              class="font-display text-2xl sm:text-3xl font-extrabold tabular-nums transition-colors duration-200"
-              :class="configStore.isBeatingBest ? 'text-success' : 'text-charcoal'"
-              >{{ configStore.wpm }}</span
+    <div v-if="!isCompleted" class="relative">
+      <!-- Header row: WPM (left) + streak/counter (right). Always in normal
+           flow, above the scrolling text, so it can never end up overlapping
+           it once the paragraph scrolls. -->
+      <div class="flex items-start justify-between gap-2 mb-3 sm:mb-4">
+        <div class="min-h-[1.75rem] sm:min-h-[2.25rem]">
+          <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 -translate-y-1"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 -translate-y-1"
+          >
+            <div
+              v-if="configStore.userInput.length > 0 && !isCompleted"
+              class="flex items-baseline gap-1.5"
             >
-            <span class="text-xs text-pencil-gray font-bold uppercase">wpm</span>
-          </div>
+              <span
+                class="font-display text-2xl sm:text-3xl font-extrabold tabular-nums transition-colors duration-200"
+                :class="configStore.isBeatingBest ? 'text-success' : 'text-charcoal'"
+                >{{ configStore.wpm }}</span
+              >
+              <span class="text-xs text-pencil-gray font-bold uppercase">wpm</span>
+            </div>
+          </Transition>
         </div>
-      </Transition>
 
-      <!-- Counter positioned outside the scrolling container -->
-      <div
-        class="absolute top-2 right-2 xs:top-3 xs:right-3 sm:top-3 sm:right-3 z-20 flex items-center gap-2"
-      >
-        <!-- Streak badge -->
-        <Transition
-          enter-active-class="transition-all duration-200 ease-out"
-          enter-from-class="opacity-0 scale-75"
-          enter-to-class="opacity-100 scale-100"
-          leave-active-class="transition-all duration-150 ease-in"
-          leave-from-class="opacity-100 scale-100"
-          leave-to-class="opacity-0 scale-75"
-        >
-          <div
-            v-if="configStore.currentStreak >= 15"
-            class="inline-flex items-center gap-1 bg-success-tint border-2 border-success rounded-xl px-2.5 py-1.5 animate-key-pop"
-            :key="Math.floor(configStore.currentStreak / 10)"
+        <div class="flex items-center gap-2">
+          <!-- Streak badge -->
+          <Transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 scale-75"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-75"
           >
-            <FireIcon class="w-3.5 h-3.5 text-success-dark" />
-            <span class="text-xs font-extrabold text-success-dark"
-              >{{ configStore.currentStreak }}</span
+            <div
+              v-if="configStore.currentStreak >= 15"
+              class="inline-flex items-center gap-1 bg-success-tint border-2 border-success rounded-xl px-2.5 py-1.5 animate-key-pop"
+              :key="Math.floor(configStore.currentStreak / 10)"
             >
-          </div>
-        </Transition>
-
-        <div
-          class="inline-flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 bg-paper-white rounded-xl px-3 py-1.5 border-2 border-faded-gray min-w-0"
-        >
-          <!-- Time Counter -->
-          <div
-            v-if="configStore.type === 'time'"
-            class="flex items-center gap-1.5 sm:gap-2"
-          >
-            <ClockIcon class="w-3.5 h-3.5 xs:w-4 xs:h-4 text-primary flex-shrink-0" />
-            <div class="flex items-baseline gap-0.5 xs:gap-1">
-              <span class="text-xs xs:text-sm font-extrabold text-charcoal"
-                >{{ configStore.timeElapsed }}s</span
-              >
-              <span class="text-xs text-pencil-gray"
-                >/ {{ configStore.selectedTime }}s</span
+              <FireIcon class="w-3.5 h-3.5 text-success-dark" />
+              <span class="text-xs font-extrabold text-success-dark"
+                >{{ configStore.currentStreak }}</span
               >
             </div>
-          </div>
+          </Transition>
 
-          <!-- Words Counter -->
           <div
-            v-if="configStore.type === 'words'"
-            class="flex items-center gap-1.5 sm:gap-2"
+            class="inline-flex items-center gap-2 sm:gap-3 bg-paper-white rounded-xl px-4 py-2 sm:px-5 sm:py-2.5 border-2 border-faded-gray min-w-0"
           >
-            <DocumentTextIcon class="w-3.5 h-3.5 xs:w-4 xs:h-4 text-primary flex-shrink-0" />
-            <div class="flex items-baseline gap-0.5 xs:gap-1">
-              <span class="text-xs xs:text-sm font-extrabold text-charcoal"
-                >{{ configStore.typedWords }}</span
-              >
-              <span class="text-xs text-pencil-gray"
-                >/ {{ configStore.selectedWords }}</span
-              >
+            <!-- Time Counter -->
+            <div
+              v-if="configStore.type === 'time'"
+              class="flex items-center gap-2"
+            >
+              <ClockIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+              <div class="flex items-baseline gap-1">
+                <span class="text-base sm:text-lg font-extrabold text-charcoal"
+                  >{{ configStore.timeElapsed }}s</span
+                >
+                <span class="text-xs sm:text-sm text-pencil-gray"
+                  >/ {{ configStore.selectedTime }}s</span
+                >
+              </div>
             </div>
-          </div>
 
-          <!-- Characters Counter (default) -->
-          <div
-            v-if="configStore.type !== 'time' && configStore.type !== 'words'"
-            class="flex items-center gap-1.5 sm:gap-2"
-          >
-            <HashtagIcon class="w-3.5 h-3.5 xs:w-4 xs:h-4 text-primary flex-shrink-0" />
-            <div class="flex items-baseline gap-0.5 xs:gap-1">
-              <span class="text-xs xs:text-sm font-extrabold text-charcoal"
-                >{{ configStore.userInput.length }}</span
-              >
-              <span class="text-xs text-pencil-gray"
-                >/ {{ referenceText.length }}</span
-              >
+            <!-- Words Counter -->
+            <div
+              v-if="configStore.type === 'words'"
+              class="flex items-center gap-2"
+            >
+              <DocumentTextIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+              <div class="flex items-baseline gap-1">
+                <span class="text-base sm:text-lg font-extrabold text-charcoal"
+                  >{{ configStore.typedWords }}</span
+                >
+                <span class="text-xs sm:text-sm text-pencil-gray"
+                  >/ {{ configStore.selectedWords }}</span
+                >
+              </div>
+            </div>
+
+            <!-- Characters Counter (default) -->
+            <div
+              v-if="configStore.type !== 'time' && configStore.type !== 'words'"
+              class="flex items-center gap-2"
+            >
+              <HashtagIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+              <div class="flex items-baseline gap-1">
+                <span class="text-base sm:text-lg font-extrabold text-charcoal"
+                  >{{ configStore.userInput.length }}</span
+                >
+                <span class="text-xs sm:text-sm text-pencil-gray"
+                  >/ {{ referenceText.length }}</span
+                >
+              </div>
             </div>
           </div>
         </div>
@@ -231,7 +234,7 @@
       <!-- Pause Overlay -->
       <div
         v-if="configStore.isPaused"
-        class="absolute inset-0 bg-paper-white/90 flex items-center justify-center rounded-card z-10 pointer-events-none"
+        class="absolute inset-0 bg-paper-white/90 flex items-center justify-center z-10 pointer-events-none"
       >
         <div class="text-center">
           <PauseIcon class="w-10 h-10 mx-auto text-primary mb-3" />
@@ -244,7 +247,7 @@
 
       <div
         ref="typingContainer"
-        class="bg-paper-white rounded-card px-6 py-10 sm:p-10 border-2 border-faded-gray text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container h-[200px] sm:h-[300px]"
+        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container h-[190px] xs:h-[200px] sm:h-[300px]"
         :class="{
           'overflow-y-auto': !configStore.isPaused,
           'overflow-hidden': configStore.isPaused,
@@ -252,7 +255,7 @@
         @click="focusInput"
       >
         <div
-          class="absolute top-0 left-0 h-1.5 transition-[width,background-color] duration-300 ease-out rounded-full"
+          class="absolute -top-3 left-0 h-1 transition-[width,background-color] duration-300 ease-out rounded-full"
           :class="configStore.isBeatingBest ? 'bg-success' : 'bg-primary'"
           :style="{ width: `${configStore.progressPercentage}%` }"
         ></div>
@@ -298,7 +301,11 @@
       </div>
     </div>
 
-    <div class="mt-8 sm:mt-12 text-center flex gap-3 justify-center">
+    <div
+      class="mt-6 sm:mt-12 text-center flex gap-2 sm:gap-3 justify-center transition-opacity duration-200"
+      :class="isTypingActive ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'"
+      :aria-hidden="isTypingActive"
+    >
       <IconButton
         icon="back"
         variant="secondary"
@@ -316,7 +323,7 @@
 
       <!-- Show pause button when not paused -->
       <IconButton
-        v-if="!configStore.isPaused"
+        v-if="!isCompleted && !configStore.isPaused"
         icon="pause"
         variant="primary"
         size="lg"
@@ -326,7 +333,7 @@
 
       <!-- Show play button when paused -->
       <IconButton
-        v-if="configStore.isPaused"
+        v-if="!isCompleted && configStore.isPaused"
         icon="play"
         variant="primary"
         size="lg"
@@ -409,6 +416,16 @@ const isCompleted = computed(() => {
 
   // Default: complete when all text is typed
   return configStore.userInput.length >= referenceText.value.length;
+});
+
+// Whether the user is actively typing right now (controls hides while typing,
+// e.g. the nav/pause buttons) — mirrors the same idea used in HomeView.
+const isTypingActive = computed(() => {
+  return (
+    configStore.userInput.length > 0 &&
+    !isCompleted.value &&
+    !configStore.isPaused
+  );
 });
 
 // Watch for completion
@@ -568,7 +585,7 @@ const getCharacterClass = (index) => {
     if (configStore.userInput[index] === visibleText.value[index]) {
       return `${baseClasses} text-success font-bold${isJustTyped ? " animate-key-pop" : ""}`;
     } else {
-      return `${baseClasses} text-red-600 bg-red-100 rounded-sm${isJustTyped ? " animate-key-shake" : ""}`;
+      return `${baseClasses} text-danger bg-danger-tint rounded-sm${isJustTyped ? " animate-key-shake" : ""}`;
     }
   } else {
     return `${baseClasses} text-pencil-gray`;
@@ -644,10 +661,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.typing-container:hover {
-  border-color: var(--color-faded-gray);
-}
-
 @keyframes key-pop {
   0% {
     transform: scale(1);

@@ -103,14 +103,14 @@ const buttonClasses = computed(() => {
     xs: "px-3.5 py-2 text-xs",
     sm: "px-5 py-2.5 text-sm",
     md: "px-6 py-3 text-sm",
-    lg: "px-7 py-4 text-base",
+    lg: "px-4 py-2.5 text-sm sm:px-7 sm:py-4 sm:text-base",
     xl: "px-9 py-5 text-base",
   };
 
   const variantClasses = {
     primary: [
       "bg-primary",
-      "text-paper-white",
+      "text-white",
       "border-primary-dark",
     ],
     secondary: [

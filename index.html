@@ -11,6 +11,18 @@
       rel="stylesheet"
     />
     <title>SwiftFlow</title>
+    <script>
+      (function () {
+        var stored = localStorage.getItem("swiftflow_theme");
+        var isDark = stored
+          ? stored === "dark"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.setAttribute(
+          "data-theme",
+          isDark ? "dark" : "light"
+        );
+      })();
+    </script>
   </head>
   <body class="w-screen h-screen bg-paper-white overflow-hidden">
     <div id="app" class="relative z-10"></div>

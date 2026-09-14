@@ -5,7 +5,7 @@
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
       <!-- Content type selection -->
-      <div class="flex items-center justify-center gap-2">
+      <div class="flex flex-wrap items-center justify-center gap-2">
         <IconButton
           v-for="contentType in configStore.contentTypes"
           :value="contentType"
@@ -26,7 +26,7 @@
       <div class="h-px w-full bg-faded-gray"></div>
 
       <!-- Type selection -->
-      <div class="flex items-center justify-center gap-2">
+      <div class="flex flex-wrap items-center justify-center gap-2">
         <IconButton
           v-for="type in configStore.types"
           :value="type"
@@ -43,7 +43,7 @@
       <div class="h-px w-full bg-faded-gray"></div>
 
       <!-- Value selection -->
-      <div class="flex items-center justify-center gap-2">
+      <div class="flex flex-wrap items-center justify-center gap-2">
         <IconButton
           v-if="configStore.type === 'time'"
           v-for="time in configStore.times"
@@ -70,7 +70,7 @@
     </div>
 
     <!-- Desktop Layout (horizontal) -->
-    <div class="hidden sm:flex items-center justify-center gap-2 lg:gap-4">
+    <div class="hidden sm:flex flex-wrap items-center justify-center gap-2 lg:gap-4">
       <!-- Type content -->
       <div class="flex items-center gap-2">
         <IconButton

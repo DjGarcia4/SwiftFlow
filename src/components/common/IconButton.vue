@@ -22,7 +22,7 @@
 
     <!-- Tooltip -->
     <div
-      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 text-xs font-bold text-paper-white bg-night-ink rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap z-50"
+      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 text-xs font-bold text-white bg-night-ink rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none whitespace-nowrap z-50"
     >
       {{ tooltip }}
       <!-- Tooltip arrow -->
