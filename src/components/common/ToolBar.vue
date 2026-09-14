@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-gradient-to-br from-slate-800/40 to-slate-900/60 rounded-xl sm:rounded-2xl lg:rounded-3xl p-3 sm:p-4 lg:p-5 border border-slate-600/30 backdrop-blur-2xl hover:border-gray-500 transition-all duration-300"
+    class="bg-paper-white rounded-card p-3 sm:p-4 lg:p-5 border-2 border-faded-gray"
   >
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
@@ -23,7 +23,7 @@
       </div>
 
       <!-- Divisor -->
-      <div class="h-px w-full bg-gray-500"></div>
+      <div class="h-px w-full bg-faded-gray"></div>
 
       <!-- Type selection -->
       <div class="flex items-center justify-center gap-2">
@@ -40,7 +40,7 @@
       </div>
 
       <!-- Divisor -->
-      <div class="h-px w-full bg-gray-500"></div>
+      <div class="h-px w-full bg-faded-gray"></div>
 
       <!-- Value selection -->
       <div class="flex items-center justify-center gap-2">
@@ -88,7 +88,7 @@
       </div>
 
       <!-- Divisor -->
-      <div class="h-4 w-px bg-gray-500"></div>
+      <div class="h-4 w-px bg-faded-gray"></div>
       <!-- Type selection -->
       <div class="flex items-center gap-2">
         <IconButton
@@ -104,7 +104,7 @@
       </div>
 
       <!-- Divisor -->
-      <div class="h-4 w-px bg-gray-500"></div>
+      <div class="h-4 w-px bg-faded-gray"></div>
 
       <!-- Value selection -->
       <div class="flex items-center gap-2">

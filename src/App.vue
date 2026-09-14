@@ -1,8 +1,8 @@
 <template>
-  <div class="h-screen flex flex-col">
+  <div class="h-screen flex flex-col bg-paper-white">
     <Nav />
     <div class="flex-1 overflow-y-auto">
-      <div class="max-w-screen-xl mx-auto">
+      <div class="max-w-[1200px] mx-auto w-full">
         <RouterView />
       </div>
     </div>

@@ -1,1 +1,63 @@
 @import "tailwindcss";
+
+@theme {
+  /* Colors — dev palette: indigo (action/brand) + emerald (correct/success) */
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-primary-tint: #e0e7ff;
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  --color-success-tint: #d1fae5;
+  --color-night-ink: #0f172a;
+  --color-paper-white: #ffffff;
+  --color-charcoal: #1e293b;
+  --color-pencil-gray: #64748b;
+  --color-faded-gray: #cbd5e1;
+
+  /* Typography */
+  --font-display: "Nunito", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+
+  --text-caption: 13px;
+  --text-caption--line-height: 1.23;
+
+  --text-nav-label: 15px;
+  --text-nav-label--line-height: 1.33;
+  --text-nav-label--letter-spacing: 0.053em;
+
+  --text-body: 17px;
+  --text-body--line-height: 1.18;
+
+  --text-subheading: 19px;
+  --text-subheading--line-height: 1.4;
+
+  --text-heading-sm: 32px;
+  --text-heading-sm--line-height: 1.2;
+
+  --text-heading: 48px;
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.02em;
+
+  --text-display: 64px;
+  --text-display--line-height: 1.2;
+  --text-display--letter-spacing: -0.02em;
+
+  /* Radius — chunky, consistent 12px (buttons/pills/nav), 16px for cards */
+  --radius-xl: 0.75rem;
+  --radius-card: 1rem;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--color-charcoal);
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+}

@@ -24,6 +24,9 @@ export const useConfigStore = defineStore("config", () => {
   const originalReferenceText = ref(""); // Keep track of original text
   const INACTIVITY_TIMEOUT = 3000; // 3 seconds of inactivity
 
+  // Momentum state (best WPM record + live streak)
+  const bestWpm = ref(Number(localStorage.getItem("swiftflow_best_wpm")) || 0);
+
   // Configuration handlers
   const handleType = (selectedType) => {
     type.value = selectedType;
@@ -131,6 +134,30 @@ export const useConfigStore = defineStore("config", () => {
       `Error count: ${errorCount}, userInput length: ${userInput.value.length}, referenceText length: ${referenceText.value.length}`
     );
     return errorCount;
+  });
+
+  const isBeatingBest = computed(() => {
+    return bestWpm.value > 0 && wpm.value > bestWpm.value;
+  });
+
+  const updateBestWpm = () => {
+    if (wpm.value > bestWpm.value) {
+      bestWpm.value = wpm.value;
+      localStorage.setItem("swiftflow_best_wpm", String(bestWpm.value));
+    }
+  };
+
+  const currentStreak = computed(() => {
+    if (!referenceText.value || userInput.value.length === 0) return 0;
+    let streak = 0;
+    for (let i = userInput.value.length - 1; i >= 0; i--) {
+      if (userInput.value[i] === referenceText.value[i]) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
   });
 
   const isCompleted = computed(() => {
@@ -353,6 +380,10 @@ export const useConfigStore = defineStore("config", () => {
     errors,
     isCompleted,
     progressPercentage,
+    bestWpm,
+    isBeatingBest,
+    updateBestWpm,
+    currentStreak,
 
     // Functions
     handleTyping,
