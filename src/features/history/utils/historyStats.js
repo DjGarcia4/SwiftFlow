@@ -78,3 +78,33 @@ export const computeDailyStreak = (results, now = new Date()) => {
 
   return streak;
 };
+
+const parseDayKey = (key) => {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(year, month, day);
+};
+
+// The longest run of consecutive practice days anywhere in history — unlike
+// computeDailyStreak (which only reports the streak ending today/yesterday,
+// i.e. whether it's still alive), this looks at the whole history, so a
+// streak achievement stays earned even after the streak itself later breaks.
+export const computeLongestDailyStreak = (results) => {
+  if (!results.length) return 0;
+
+  const days = [...new Set(results.map((r) => toLocalDayKey(r.date)))]
+    .map(parseDayKey)
+    .sort((a, b) => a - b);
+
+  let longest = 1;
+  let current = 1;
+
+  for (let i = 1; i < days.length; i++) {
+    const expectedNext = new Date(days[i - 1]);
+    expectedNext.setDate(expectedNext.getDate() + 1);
+
+    current = expectedNext.getTime() === days[i].getTime() ? current + 1 : 1;
+    longest = Math.max(longest, current);
+  }
+
+  return longest;
+};

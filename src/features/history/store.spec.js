@@ -126,6 +126,102 @@ describe("useHistoryStore", () => {
     expect(store.dailyStreak).toBe(1);
   });
 
+  it("derives achievements/unlockedAchievementsCount from results", () => {
+    const store = useHistoryStore();
+    expect(store.unlockedAchievementsCount).toBe(0);
+
+    store.recordResult({
+      mode: "time",
+      wpm: 20, // below every wpm threshold
+      accuracy: 80,
+      errors: 0,
+      timeElapsed: 15,
+    });
+
+    // Not asserting an exact count: recordResult stamps the real current
+    // time, and a couple of achievements (night_owl/early_bird) depend on
+    // the hour it happens to run at — asserting specific ids instead keeps
+    // this from flaking depending on when/where the test runs.
+    expect(store.unlockedAchievementsCount).toBeGreaterThanOrEqual(1);
+    expect(store.achievements.find((a) => a.id === "first_session").unlocked).toBe(true);
+    expect(store.achievements.find((a) => a.id === "sessions_10").unlocked).toBe(false);
+    expect(store.achievements.find((a) => a.id === "wpm_40").unlocked).toBe(false);
+  });
+
+  describe("newlyUnlocked", () => {
+    it("starts empty", () => {
+      const store = useHistoryStore();
+      expect(store.newlyUnlocked).toEqual([]);
+    });
+
+    it("recordResult queues achievements crossed by that session", () => {
+      const store = useHistoryStore();
+      store.recordResult({
+        mode: "time",
+        wpm: 20, // unlocks first_session, nothing wpm-related
+        accuracy: 80,
+        errors: 0,
+        timeElapsed: 15,
+      });
+
+      expect(store.newlyUnlocked.map((a) => a.id)).toContain("first_session");
+    });
+
+    it("does not re-queue an achievement already unlocked by a previous session", () => {
+      const store = useHistoryStore();
+      store.recordResult({
+        mode: "time",
+        wpm: 20,
+        accuracy: 80,
+        errors: 0,
+        timeElapsed: 15,
+      });
+      store.dismissNewlyUnlocked(); // clear the first_session toast
+
+      store.recordResult({
+        mode: "time",
+        wpm: 20,
+        accuracy: 80,
+        errors: 0,
+        timeElapsed: 15,
+      });
+
+      expect(store.newlyUnlocked.map((a) => a.id)).not.toContain("first_session");
+    });
+
+    it("dismissNewlyUnlocked removes only the front of the queue", () => {
+      // Two calls that each cross a new threshold; not asserting the exact
+      // array (real wall-clock time could also cross night_owl/early_bird
+      // on either call) — first_session is always first since it's first
+      // in the catalog, which is what dismiss should drop.
+      const store = useHistoryStore();
+      store.recordResult({
+        mode: "time",
+        wpm: 20, // unlocks first_session
+        accuracy: 80,
+        errors: 0,
+        timeElapsed: 15,
+      });
+      store.recordResult({
+        mode: "time",
+        wpm: 45, // crosses wpm_40
+        accuracy: 80,
+        errors: 0,
+        timeElapsed: 15,
+      });
+
+      const idsBefore = store.newlyUnlocked.map((a) => a.id);
+      expect(idsBefore[0]).toBe("first_session");
+      expect(idsBefore).toContain("wpm_40");
+
+      store.dismissNewlyUnlocked();
+
+      const idsAfter = store.newlyUnlocked.map((a) => a.id);
+      expect(idsAfter).not.toContain("first_session");
+      expect(idsAfter).toContain("wpm_40");
+    });
+  });
+
   it("clearHistory empties both state and storage", () => {
     const store = useHistoryStore();
     store.recordResult({

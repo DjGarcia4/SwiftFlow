@@ -117,6 +117,54 @@
         </div>
       </div>
 
+      <!-- Achievements -->
+      <div class="mb-6">
+        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
+          Logros ({{ historyStore.unlockedAchievementsCount }}/{{
+            historyStore.achievements.length
+          }})
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div
+            v-for="achievement in historyStore.achievements"
+            :key="achievement.id"
+            class="group relative rounded-card p-3 border-2 flex items-center gap-2.5"
+            :class="
+              achievement.unlocked ? '' : 'bg-faded-gray/10 border-faded-gray opacity-40'
+            "
+            :style="achievementStyle(achievement)"
+          >
+            <component
+              :is="achievementIcons[achievement.icon]"
+              class="w-5 h-5 flex-shrink-0"
+              :class="achievement.unlocked ? '' : 'text-pencil-gray'"
+            />
+            <div class="min-w-0">
+              <div
+                class="text-xs font-bold truncate"
+                :class="achievement.unlocked ? '' : 'text-pencil-gray'"
+              >
+                {{ achievement.title }}
+              </div>
+              <div class="text-[10px] text-pencil-gray truncate">
+                {{ achievement.description }}
+              </div>
+            </div>
+
+            <!-- Hover tooltip: the full "how to earn it" text, since the
+                 line above truncates on smaller cards. -->
+            <div
+              class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded-xl bg-night-ink px-3 py-2 text-center text-xs font-bold text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            >
+              {{ achievement.description }}
+              <div
+                class="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-night-ink"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Sessions list -->
       <div class="space-y-2 mb-6">
         <div
@@ -172,6 +220,10 @@ import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import { useHistoryStore } from "@/features/history/store";
 import { formatModeLabel as formatModeLabelUtil } from "@/features/history/utils/historyStats";
+import {
+  ACHIEVEMENT_ICONS as achievementIcons,
+  achievementTintStyle as achievementStyle,
+} from "@/features/history/achievementPresentation";
 
 const historyStore = useHistoryStore();
 

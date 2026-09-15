@@ -6,6 +6,7 @@ import {
   formatModeLabel,
   computePersonalBests,
   computeDailyStreak,
+  computeLongestDailyStreak,
 } from "./historyStats";
 
 const results = [
@@ -161,5 +162,47 @@ describe("computeDailyStreak", () => {
   it("counts multiple sessions on the same day as a single day", () => {
     const results = [{ date: daysAgo(0) }, { date: daysAgo(0) }, { date: daysAgo(0) }];
     expect(computeDailyStreak(results, now)).toBe(1);
+  });
+});
+
+describe("computeLongestDailyStreak", () => {
+  const base = new Date(2024, 5, 15, 14, 0, 0);
+  const dateOffset = (n) => {
+    const d = new Date(base);
+    d.setDate(d.getDate() + n);
+    d.setHours(9, 0, 0, 0);
+    return d.toISOString();
+  };
+
+  it("is 0 for an empty list", () => {
+    expect(computeLongestDailyStreak([])).toBe(0);
+  });
+
+  it("is 1 for a single day", () => {
+    expect(computeLongestDailyStreak([{ date: dateOffset(0) }])).toBe(1);
+  });
+
+  it("counts a consecutive run", () => {
+    const results = [0, 1, 2, 3].map((n) => ({ date: dateOffset(n) }));
+    expect(computeLongestDailyStreak(results)).toBe(4);
+  });
+
+  it("returns the longest run even if a later, shorter run is more recent", () => {
+    // A 5-day streak long ago, then a gap, then only 2 days recently — the
+    // achievement should still reflect the 5-day best, not the current 2.
+    const results = [
+      ...[0, 1, 2, 3, 4].map((n) => ({ date: dateOffset(n) })),
+      ...[20, 21].map((n) => ({ date: dateOffset(n) })),
+    ];
+    expect(computeLongestDailyStreak(results)).toBe(5);
+  });
+
+  it("ignores duplicate sessions on the same day", () => {
+    const results = [
+      { date: dateOffset(0) },
+      { date: dateOffset(0) },
+      { date: dateOffset(1) },
+    ];
+    expect(computeLongestDailyStreak(results)).toBe(2);
   });
 });

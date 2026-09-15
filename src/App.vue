@@ -6,12 +6,14 @@
         <RouterView />
       </div>
     </div>
+    <AchievementToast />
   </div>
 </template>
 
 <script setup>
 import { RouterView } from "vue-router";
 import Nav from "@/shared/layout/Nav.vue";
+import AchievementToast from "@/features/history/components/AchievementToast.vue";
 </script>
 
 <style scoped></style>
