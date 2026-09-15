@@ -141,4 +141,38 @@ describe("useConfigStore", () => {
       expect(store.bestWpm).toBe(5);
     });
   });
+
+  describe("config persistence", () => {
+    it("starts with the default configuration when nothing is saved", () => {
+      const store = useConfigStore();
+      expect(store.type).toBe("time");
+      expect(store.selectedTime).toBe(15);
+      expect(store.selectedContentTypes).toBe("punctuation");
+      expect(store.selectedCodeLanguage).toBeNull();
+    });
+
+    it("restores the last selection in a fresh store instance", () => {
+      const store = useConfigStore();
+      store.handleType("words");
+      store.handleWords(50);
+
+      setActivePinia(createPinia());
+      const reloaded = useConfigStore();
+
+      expect(reloaded.type).toBe("words");
+      expect(reloaded.selectedWords).toBe(50);
+    });
+
+    it("persists the code language selection", () => {
+      const store = useConfigStore();
+      store.handleType("code");
+      store.handleCodeLanguage("Python");
+
+      setActivePinia(createPinia());
+      const reloaded = useConfigStore();
+
+      expect(reloaded.type).toBe("code");
+      expect(reloaded.selectedCodeLanguage).toBe("Python");
+    });
+  });
 });

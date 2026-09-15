@@ -8,20 +8,43 @@ import {
   computeStreak,
 } from "@/features/typing-test/utils/typingMetrics";
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
+import {
+  loadConfig,
+  saveConfig,
+  sanitizeConfig,
+} from "@/features/typing-test/configRepository";
 
 export const useConfigStore = defineStore("config", () => {
-  // Configuration state
-  const type = ref("time");
-  const selectedTime = ref(15);
-  const selectedWords = ref(100);
-  const selectedContentTypes = ref("punctuation");
-  const selectedCodeLanguage = ref(null); // null = "Todos" (mixed languages)
-
   const types = ref(["time", "words", "quote", "code", "zen"]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
   const words = ref([10, 25, 50, 100]);
   const languages = ref(codeLanguages);
+
+  // Configuration state — restored from the last saved selection so
+  // reloading the page doesn't reset it back to the defaults.
+  const savedConfig = sanitizeConfig(loadConfig(), {
+    types: types.value,
+    times: times.value,
+    words: words.value,
+    languages: languages.value,
+  });
+
+  const type = ref(savedConfig.type);
+  const selectedTime = ref(savedConfig.selectedTime);
+  const selectedWords = ref(savedConfig.selectedWords);
+  const selectedContentTypes = ref(savedConfig.selectedContentTypes);
+  const selectedCodeLanguage = ref(savedConfig.selectedCodeLanguage); // null = "Todos" (mixed languages)
+
+  const persistConfig = () => {
+    saveConfig({
+      type: type.value,
+      selectedTime: selectedTime.value,
+      selectedWords: selectedWords.value,
+      selectedContentTypes: selectedContentTypes.value,
+      selectedCodeLanguage: selectedCodeLanguage.value,
+    });
+  };
 
   // Typing state
   const userInput = ref("");
@@ -42,16 +65,19 @@ export const useConfigStore = defineStore("config", () => {
   // Configuration handlers
   const handleType = (selectedType) => {
     type.value = selectedType;
+    persistConfig();
     resetTypingSession();
   };
 
   const handleTime = (newTime) => {
     selectedTime.value = newTime;
+    persistConfig();
     resetTypingSession();
   };
 
   const handleWords = (newWords) => {
     selectedWords.value = newWords;
+    persistConfig();
     resetTypingSession();
   };
 
@@ -60,6 +86,7 @@ export const useConfigStore = defineStore("config", () => {
     // selected also falls back to null (mixed languages).
     selectedCodeLanguage.value =
       language === selectedCodeLanguage.value ? null : language;
+    persistConfig();
     resetTypingSession();
   };
 
@@ -79,6 +106,7 @@ export const useConfigStore = defineStore("config", () => {
       }
     }
 
+    persistConfig();
     resetTypingSession();
   };
 
