@@ -9,9 +9,7 @@
         >
           <BoltIcon class="w-5 h-5 text-white" />
         </div>
-        <span
-          class="font-display text-lg font-extrabold tracking-tight text-charcoal"
-        >
+        <span class="font-display text-lg font-extrabold tracking-tight text-charcoal">
           SwiftFlow
         </span>
       </router-link>
@@ -20,9 +18,7 @@
         <button
           type="button"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-colors duration-150"
-          :aria-label="
-            themeStore.isDark ? 'Activar modo claro' : 'Activar modo oscuro'
-          "
+          :aria-label="themeStore.isDark ? 'Activar modo claro' : 'Activar modo oscuro'"
           @click="themeStore.toggleTheme"
         >
           <SunIcon v-if="themeStore.isDark" class="w-5 h-5" />
@@ -36,7 +32,7 @@
 <script setup>
 import { BoltIcon } from "@heroicons/vue/24/solid";
 import { SunIcon, MoonIcon } from "@heroicons/vue/24/outline";
-import { useThemeStore } from "@/stores/theme";
+import { useThemeStore } from "@/shared/stores/theme";
 
 const themeStore = useThemeStore();
 </script>

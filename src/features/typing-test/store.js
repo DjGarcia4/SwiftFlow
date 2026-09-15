@@ -1,6 +1,13 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { codeLanguages } from "@/constants/code";
+import { codeLanguages } from "@/features/typing-test/content/code";
+import {
+  computeWpm,
+  computeAccuracy,
+  computeErrors,
+  computeStreak,
+} from "@/features/typing-test/utils/typingMetrics";
+import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
 
 export const useConfigStore = defineStore("config", () => {
   // Configuration state
@@ -77,24 +84,12 @@ export const useConfigStore = defineStore("config", () => {
 
   // Typing computed properties
   const wpm = computed(() => {
-    if (!startTime.value || timeElapsed.value === 0) {
-      return 0;
-    }
-    const words = userInput.value.trim().split(/\s+/).length;
-    const minutes = timeElapsed.value / 60;
-    return Math.round(words / minutes);
+    if (!startTime.value) return 0;
+    return computeWpm(userInput.value, timeElapsed.value);
   });
 
   const accuracy = computed(() => {
-    if (userInput.value.length === 0) return 100;
-    if (!referenceText.value) return 100;
-    let correctChars = 0;
-    for (let i = 0; i < userInput.value.length; i++) {
-      if (userInput.value[i] === referenceText.value[i]) {
-        correctChars++;
-      }
-    }
-    return Math.round((correctChars / userInput.value.length) * 100);
+    return computeAccuracy(userInput.value, referenceText.value);
   });
 
   const totalWords = computed(() => {
@@ -120,16 +115,7 @@ export const useConfigStore = defineStore("config", () => {
   });
 
   const errors = computed(() => {
-    if (!referenceText.value) {
-      return 0;
-    }
-    let errorCount = 0;
-    for (let i = 0; i < userInput.value.length; i++) {
-      if (userInput.value[i] !== referenceText.value[i]) {
-        errorCount++;
-      }
-    }
-    return errorCount;
+    return computeErrors(userInput.value, referenceText.value);
   });
 
   const isBeatingBest = computed(() => {
@@ -144,16 +130,7 @@ export const useConfigStore = defineStore("config", () => {
   };
 
   const currentStreak = computed(() => {
-    if (!referenceText.value || userInput.value.length === 0) return 0;
-    let streak = 0;
-    for (let i = userInput.value.length - 1; i >= 0; i--) {
-      if (userInput.value[i] === referenceText.value[i]) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-    return streak;
+    return computeStreak(userInput.value, referenceText.value);
   });
 
   const isCompleted = computed(() => {
@@ -203,10 +180,7 @@ export const useConfigStore = defineStore("config", () => {
 
     // Default: character-based progress
     if (!referenceText.value) return 0;
-    return Math.min(
-      (userInput.value.length / referenceText.value.length) * 100,
-      100
-    );
+    return Math.min((userInput.value.length / referenceText.value.length) * 100, 100);
   });
 
   // Manually ends a "zen" session (no time/word limit to trigger completion).
@@ -371,23 +345,6 @@ export const useConfigStore = defineStore("config", () => {
   // Callback for completion (to be set by component)
   const onComplete = ref(null);
 
-  const formatReferenceText = (text) => {
-    let formattedText = text.toLowerCase();
-
-    formattedText = formattedText.normalize("NFD");
-
-    formattedText = formattedText.replace(/[\u0300-\u036f]/g, "");
-
-    formattedText = formattedText.replace(
-      /[\.,?!;:\-—"“”‘’'()\[\]{}/&\*@#\$%\^+=_~`<>]/g,
-      ""
-    );
-
-    formattedText = formattedText.trim();
-
-    return formattedText;
-  };
-
   return {
     // Configuration
     type,
@@ -442,7 +399,6 @@ export const useConfigStore = defineStore("config", () => {
     extendReferenceText,
     finishZen,
     recordWpmSample,
-    formatReferenceText,
     clearInactivityTimer,
     resetInactivityTimer,
     onComplete,

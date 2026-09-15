@@ -4,10 +4,7 @@ import { ref, watch } from "vue";
 const STORAGE_KEY = "swiftflow_theme";
 
 const applyTheme = (isDark) => {
-  document.documentElement.setAttribute(
-    "data-theme",
-    isDark ? "dark" : "light"
-  );
+  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
 };
 
 export const useThemeStore = defineStore("theme", () => {

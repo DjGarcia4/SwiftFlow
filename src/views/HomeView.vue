@@ -72,10 +72,10 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import ParagraphToType from "@/components/ParagraphToType.vue";
-import ToolBar from "@/components/common/ToolBar.vue";
-import IconButton from "@/components/common/IconButton.vue";
-import { useConfigStore } from "@/stores/config";
+import ParagraphToType from "@/features/typing-test/components/ParagraphToType.vue";
+import ToolBar from "@/features/typing-test/components/ToolBar.vue";
+import IconButton from "@/shared/components/IconButton.vue";
+import { useConfigStore } from "@/features/typing-test/store";
 
 const configStore = useConfigStore();
 const configOpen = ref(false);
@@ -84,9 +84,7 @@ const configOpen = ref(false);
 // while looking at the results screen — there's nothing to configure there.
 const isTyping = computed(() => {
   return (
-    configStore.userInput.length > 0 &&
-    !configStore.isCompleted &&
-    !configStore.isPaused
+    configStore.userInput.length > 0 && !configStore.isCompleted && !configStore.isPaused
   );
 });
 

@@ -21,7 +21,7 @@ export const codeSnippets = [
   },
   {
     language: "JavaScript",
-    code: "function isPalindrome(str) {\n  const clean = str.toLowerCase().replace(/[^a-z0-9]/g, \"\");\n  return clean === clean.split(\"\").reverse().join(\"\");\n}",
+    code: 'function isPalindrome(str) {\n  const clean = str.toLowerCase().replace(/[^a-z0-9]/g, "");\n  return clean === clean.split("").reverse().join("");\n}',
   },
   {
     language: "JavaScript",
@@ -37,7 +37,7 @@ export const codeSnippets = [
   },
   {
     language: "Python",
-    code: "class Animal:\n    def __init__(self, name):\n        self.name = name\n\n    def speak(self):\n        print(f\"{self.name} hace un sonido.\")",
+    code: 'class Animal:\n    def __init__(self, name):\n        self.name = name\n\n    def speak(self):\n        print(f"{self.name} hace un sonido.")',
   },
   {
     language: "Python",
@@ -45,7 +45,7 @@ export const codeSnippets = [
   },
   {
     language: "Python",
-    code: "with open(\"data.txt\", \"r\") as file:\n    lines = file.readlines()\n    for line in lines:\n        print(line.strip())",
+    code: 'with open("data.txt", "r") as file:\n    lines = file.readlines()\n    for line in lines:\n        print(line.strip())',
   },
   {
     language: "Python",
@@ -57,15 +57,15 @@ export const codeSnippets = [
   },
   {
     language: "JavaScript",
-    code: "function addTodo(list, task) {\n  return [...list, { task, done: false }];\n}\n\nconst todos = addTodo([], \"Comprar leche\");\nconsole.log(todos);",
+    code: 'function addTodo(list, task) {\n  return [...list, { task, done: false }];\n}\n\nconst todos = addTodo([], "Comprar leche");\nconsole.log(todos);',
   },
   {
     language: "JavaScript",
-    code: "function delay(ms) {\n  return new Promise((resolve) => {\n    setTimeout(resolve, ms);\n  });\n}\n\ndelay(1000).then(() => {\n  console.log(\"Listo!\");\n});",
+    code: 'function delay(ms) {\n  return new Promise((resolve) => {\n    setTimeout(resolve, ms);\n  });\n}\n\ndelay(1000).then(() => {\n  console.log("Listo!");\n});',
   },
   {
     language: "JavaScript",
-    code: "function greet({ name = \"amigo\", age } = {}) {\n  console.log(`Hola ${name}, tienes ${age} años.`);\n}\n\ngreet({ name: \"Ana\", age: 28 });",
+    code: 'function greet({ name = "amigo", age } = {}) {\n  console.log(`Hola ${name}, tienes ${age} años.`);\n}\n\ngreet({ name: "Ana", age: 28 });',
   },
   {
     language: "JavaScript",
@@ -73,7 +73,7 @@ export const codeSnippets = [
   },
   {
     language: "JavaScript",
-    code: "const button = document.querySelector(\"button\");\nbutton.addEventListener(\"click\", () => {\n  console.log(\"Botón presionado\");\n});",
+    code: 'const button = document.querySelector("button");\nbutton.addEventListener("click", () => {\n  console.log("Botón presionado");\n});',
   },
   {
     language: "Python",
@@ -81,15 +81,15 @@ export const codeSnippets = [
   },
   {
     language: "Python",
-    code: "student = {\"name\": \"Ana\", \"age\": 22}\nfor key, value in student.items():\n    print(f\"{key}: {value}\")",
+    code: 'student = {"name": "Ana", "age": 22}\nfor key, value in student.items():\n    print(f"{key}: {value}")',
   },
   {
     language: "Python",
-    code: "def log_call(func):\n    def wrapper(*args, **kwargs):\n        print(f\"Llamando a {func.__name__}\")\n        return func(*args, **kwargs)\n    return wrapper",
+    code: 'def log_call(func):\n    def wrapper(*args, **kwargs):\n        print(f"Llamando a {func.__name__}")\n        return func(*args, **kwargs)\n    return wrapper',
   },
   {
     language: "Python",
-    code: "try:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print(\"No se puede dividir por cero\")\nfinally:\n    print(\"Operación finalizada\")",
+    code: 'try:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print("No se puede dividir por cero")\nfinally:\n    print("Operación finalizada")',
   },
   {
     language: "Python",
@@ -101,7 +101,7 @@ export const codeSnippets = [
   },
   {
     language: "Java",
-    code: "public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hola, mundo!\");\n  }\n}",
+    code: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hola, mundo!");\n  }\n}',
   },
   {
     language: "Java",
@@ -109,7 +109,7 @@ export const codeSnippets = [
   },
   {
     language: "Java",
-    code: "public class Animal {\n  private String name;\n\n  public Animal(String name) {\n    this.name = name;\n  }\n\n  public void speak() {\n    System.out.println(name + \" hace un sonido.\");\n  }\n}",
+    code: 'public class Animal {\n  private String name;\n\n  public Animal(String name) {\n    this.name = name;\n  }\n\n  public void speak() {\n    System.out.println(name + " hace un sonido.");\n  }\n}',
   },
   {
     language: "Java",
@@ -117,7 +117,7 @@ export const codeSnippets = [
   },
   {
     language: "Java",
-    code: "import java.util.ArrayList;\n\nArrayList<String> names = new ArrayList<>();\nnames.add(\"Ana\");\nnames.add(\"Luis\");\nSystem.out.println(names);",
+    code: 'import java.util.ArrayList;\n\nArrayList<String> names = new ArrayList<>();\nnames.add("Ana");\nnames.add("Luis");\nSystem.out.println(names);',
   },
   {
     language: "Java",
@@ -125,11 +125,11 @@ export const codeSnippets = [
   },
   {
     language: "Java",
-    code: "public class Grade {\n  static String getGrade(int score) {\n    if (score >= 90) {\n      return \"A\";\n    } else if (score >= 70) {\n      return \"B\";\n    } else {\n      return \"C\";\n    }\n  }\n}",
+    code: 'public class Grade {\n  static String getGrade(int score) {\n    if (score >= 90) {\n      return "A";\n    } else if (score >= 70) {\n      return "B";\n    } else {\n      return "C";\n    }\n  }\n}',
   },
   {
     language: "Java",
-    code: "try {\n  int result = 10 / 0;\n} catch (ArithmeticException e) {\n  System.out.println(\"Error: \" + e.getMessage());\n} finally {\n  System.out.println(\"Fin del bloque\");\n}",
+    code: 'try {\n  int result = 10 / 0;\n} catch (ArithmeticException e) {\n  System.out.println("Error: " + e.getMessage());\n} finally {\n  System.out.println("Fin del bloque");\n}',
   },
   {
     language: "Java",
@@ -137,7 +137,7 @@ export const codeSnippets = [
   },
   {
     language: "Java",
-    code: "import java.util.HashMap;\n\nHashMap<String, Integer> ages = new HashMap<>();\nages.put(\"Ana\", 28);\nages.put(\"Luis\", 35);\nSystem.out.println(ages.get(\"Ana\"));",
+    code: 'import java.util.HashMap;\n\nHashMap<String, Integer> ages = new HashMap<>();\nages.put("Ana", 28);\nages.put("Luis", 35);\nSystem.out.println(ages.get("Ana"));',
   },
   {
     language: "Java",
@@ -145,7 +145,7 @@ export const codeSnippets = [
   },
   {
     language: "Java",
-    code: "class Vehicle {\n  void move() {\n    System.out.println(\"El vehículo se mueve\");\n  }\n}\n\nclass Car extends Vehicle {\n  void honk() {\n    System.out.println(\"Beep beep\");\n  }\n}",
+    code: 'class Vehicle {\n  void move() {\n    System.out.println("El vehículo se mueve");\n  }\n}\n\nclass Car extends Vehicle {\n  void honk() {\n    System.out.println("Beep beep");\n  }\n}',
   },
 ];
 

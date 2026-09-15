@@ -1,5 +1,5 @@
 <template>
-  <div class="relative group" v-if="tooltip">
+  <div v-if="tooltip" class="relative group">
     <ButtonCustom
       :variant="variant"
       :size="size"
@@ -15,7 +15,7 @@
         >
           A
         </div>
-        <component :is="iconComponent" class="w-6 h-6" v-else />
+        <component :is="iconComponent" v-else class="w-6 h-6" />
       </template>
       {{ text }}
     </ButtonCustom>
@@ -48,7 +48,7 @@
       >
         A
       </div>
-      <component :is="iconComponent" class="w-4 h-4" v-else />
+      <component :is="iconComponent" v-else class="w-4 h-4" />
     </template>
     {{ text }}
   </ButtonCustom>

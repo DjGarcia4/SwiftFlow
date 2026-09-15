@@ -74,12 +74,7 @@
 
       <!-- Error markers: surface ring + danger dot -->
       <g v-for="(marker, i) in errorMarkers" :key="i">
-        <circle
-          :cx="marker.x"
-          :cy="marker.y"
-          r="6"
-          fill="var(--color-paper-white)"
-        />
+        <circle :cx="marker.x" :cy="marker.y" r="6" fill="var(--color-paper-white)" />
         <circle :cx="marker.x" :cy="marker.y" r="4" fill="var(--color-danger)" />
       </g>
 
@@ -115,15 +110,8 @@
           stroke="var(--color-paper-white)"
           stroke-width="2"
         />
-        <g
-          :transform="`translate(${tooltipX}, ${padding.top + 4})`"
-        >
-          <rect
-            width="86"
-            height="34"
-            rx="8"
-            fill="var(--color-night-ink)"
-          />
+        <g :transform="`translate(${tooltipX}, ${padding.top + 4})`">
+          <rect width="86" height="34" rx="8" fill="var(--color-night-ink)" />
           <text x="8" y="14" font-size="11" font-weight="800" fill="white">
             {{ hoverPoint.wpm }} wpm
           </text>
@@ -238,7 +226,8 @@ const handleMove = (event) => {
 
   const rect = svgRef.value.getBoundingClientRect();
   const relativeX = ((event.clientX - rect.left) / rect.width) * width;
-  const time = ((relativeX - padding.left) / (width - padding.left - padding.right)) * maxTime.value;
+  const time =
+    ((relativeX - padding.left) / (width - padding.left - padding.right)) * maxTime.value;
 
   let closestIndex = 0;
   let closestDistance = Infinity;

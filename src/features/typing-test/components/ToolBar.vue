@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="bg-paper-white rounded-card p-3 sm:p-4 lg:p-5 border-2 border-faded-gray"
-  >
+  <div class="bg-paper-white rounded-card p-3 sm:p-4 lg:p-5 border-2 border-faded-gray">
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
       <!-- Content type selection (code is always typed as-is) -->
@@ -9,13 +7,11 @@
         <div class="flex flex-wrap items-center justify-center gap-2">
           <IconButton
             v-for="contentType in configStore.contentTypes"
-            :value="contentType"
             :key="contentType"
+            :value="contentType"
             :icon="contentType === 'punctuation' ? 'punctuation' : 'number'"
             :variant="
-              configStore.selectedContentTypes === contentType
-                ? 'primary'
-                : 'secondary'
+              configStore.selectedContentTypes === contentType ? 'primary' : 'secondary'
             "
             size="sm"
             :text="`${contentType == 'punctuation' ? 'Puntuación' : 'Números'}`"
@@ -31,8 +27,8 @@
       <div class="flex flex-wrap items-center justify-center gap-2">
         <IconButton
           v-for="type in configStore.types"
-          :value="type"
           :key="type"
+          :value="type"
           :icon="typeMeta[type].icon"
           :variant="configStore.type === type ? 'primary' : 'secondary'"
           size="sm"
@@ -53,28 +49,28 @@
         <div class="h-px w-full bg-faded-gray"></div>
 
         <div class="flex flex-wrap items-center justify-center gap-2">
-          <IconButton
-            v-if="configStore.type === 'time'"
-            v-for="time in configStore.times"
-            :value="time"
-            :key="time"
-            :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
-            size="sm"
-            :text="`${time}s`"
-            @click="configStore.handleTime(time)"
-          />
-          <IconButton
-            v-if="configStore.type === 'words'"
-            v-for="word in configStore.words"
-            :value="word"
-            :key="word"
-            :variant="
-              configStore.selectedWords === word ? 'primary' : 'secondary'
-            "
-            size="sm"
-            :text="`${word} `"
-            @click="configStore.handleWords(word)"
-          />
+          <template v-if="configStore.type === 'time'">
+            <IconButton
+              v-for="time in configStore.times"
+              :key="time"
+              :value="time"
+              :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
+              size="sm"
+              :text="`${time}s`"
+              @click="configStore.handleTime(time)"
+            />
+          </template>
+          <template v-if="configStore.type === 'words'">
+            <IconButton
+              v-for="word in configStore.words"
+              :key="word"
+              :value="word"
+              :variant="configStore.selectedWords === word ? 'primary' : 'secondary'"
+              size="sm"
+              :text="`${word} `"
+              @click="configStore.handleWords(word)"
+            />
+          </template>
           <template v-if="configStore.type === 'code'">
             <IconButton
               :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
@@ -84,8 +80,8 @@
             />
             <IconButton
               v-for="language in configStore.languages"
-              :value="language"
               :key="language"
+              :value="language"
               :variant="
                 configStore.selectedCodeLanguage === language ? 'primary' : 'secondary'
               "
@@ -108,12 +104,10 @@
         <div class="flex items-center gap-1.5 flex-shrink-0">
           <IconButton
             v-for="type in configStore.contentTypes"
-            :value="type"
             :key="type"
+            :value="type"
             :icon="type === 'punctuation' ? 'punctuation' : 'number'"
-            :variant="
-              configStore.selectedContentTypes === type ? 'primary' : 'secondary'
-            "
+            :variant="configStore.selectedContentTypes === type ? 'primary' : 'secondary'"
             size="xs"
             :text="`${type == 'punctuation' ? 'Puntuación' : 'Números'}`"
             @click="configStore.handleContentTypes(type)"
@@ -127,8 +121,8 @@
       <div class="flex items-center gap-1.5 flex-shrink-0">
         <IconButton
           v-for="type in configStore.types"
-          :value="type"
           :key="type"
+          :value="type"
           :icon="typeMeta[type].icon"
           :variant="configStore.type === type ? 'primary' : 'secondary'"
           size="xs"
@@ -149,28 +143,28 @@
         <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
 
         <div class="flex items-center gap-1.5 flex-shrink-0">
-          <IconButton
-            v-if="configStore.type === 'time'"
-            v-for="time in configStore.times"
-            :value="time"
-            :key="time"
-            :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
-            size="xs"
-            :text="`${time}s`"
-            @click="configStore.handleTime(time)"
-          />
-          <IconButton
-            v-if="configStore.type === 'words'"
-            v-for="word in configStore.words"
-            :value="word"
-            :key="word"
-            :variant="
-              configStore.selectedWords === word ? 'primary' : 'secondary'
-            "
-            size="xs"
-            :text="`${word} `"
-            @click="configStore.handleWords(word)"
-          />
+          <template v-if="configStore.type === 'time'">
+            <IconButton
+              v-for="time in configStore.times"
+              :key="time"
+              :value="time"
+              :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
+              size="xs"
+              :text="`${time}s`"
+              @click="configStore.handleTime(time)"
+            />
+          </template>
+          <template v-if="configStore.type === 'words'">
+            <IconButton
+              v-for="word in configStore.words"
+              :key="word"
+              :value="word"
+              :variant="configStore.selectedWords === word ? 'primary' : 'secondary'"
+              size="xs"
+              :text="`${word} `"
+              @click="configStore.handleWords(word)"
+            />
+          </template>
           <template v-if="configStore.type === 'code'">
             <IconButton
               :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
@@ -180,8 +174,8 @@
             />
             <IconButton
               v-for="language in configStore.languages"
-              :value="language"
               :key="language"
+              :value="language"
               :variant="
                 configStore.selectedCodeLanguage === language ? 'primary' : 'secondary'
               "
@@ -197,8 +191,8 @@
 </template>
 
 <script setup>
-import IconButton from "@/components/common/IconButton.vue";
-import { useConfigStore } from "@/stores/config";
+import IconButton from "@/shared/components/IconButton.vue";
+import { useConfigStore } from "@/features/typing-test/store";
 
 const configStore = useConfigStore();
 

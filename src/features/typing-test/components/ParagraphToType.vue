@@ -42,7 +42,11 @@
           <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
             {{ configStore.wpm }}
           </div>
-          <div class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide">WPM</div>
+          <div
+            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+          >
+            WPM
+          </div>
         </div>
       </Transition>
 
@@ -62,7 +66,9 @@
           <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
             {{ configStore.accuracy }}%
           </div>
-          <div class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide">
+          <div
+            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+          >
             Precisión
           </div>
         </div>
@@ -84,7 +90,11 @@
           <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
             {{ configStore.timeElapsed }}s
           </div>
-          <div class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide">Tiempo</div>
+          <div
+            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+          >
+            Tiempo
+          </div>
         </div>
       </Transition>
 
@@ -104,7 +114,9 @@
           <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
             {{ configStore.errors }}
           </div>
-          <div class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide">
+          <div
+            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+          >
             Errores
           </div>
         </div>
@@ -183,10 +195,7 @@
           </Transition>
         </div>
 
-        <div
-          v-if="configStore.userInput.length > 0"
-          class="flex items-center gap-2"
-        >
+        <div v-if="configStore.userInput.length > 0" class="flex items-center gap-2">
           <!-- Streak badge -->
           <Transition
             enter-active-class="transition-all duration-200 ease-out"
@@ -198,13 +207,13 @@
           >
             <div
               v-if="configStore.currentStreak >= 15"
-              class="inline-flex items-center gap-1 bg-success-tint border-2 border-success rounded-xl px-2.5 py-1.5 animate-key-pop"
               :key="Math.floor(configStore.currentStreak / 10)"
+              class="inline-flex items-center gap-1 bg-success-tint border-2 border-success rounded-xl px-2.5 py-1.5 animate-key-pop"
             >
               <FireIcon class="w-3.5 h-3.5 text-success-dark" />
-              <span class="text-xs font-extrabold text-success-dark"
-                >{{ configStore.currentStreak }}</span
-              >
+              <span class="text-xs font-extrabold text-success-dark">{{
+                configStore.currentStreak
+              }}</span>
             </div>
           </Transition>
 
@@ -212,10 +221,7 @@
             class="inline-flex items-center gap-2 sm:gap-3 bg-paper-white rounded-xl px-4 py-2 sm:px-5 sm:py-2.5 border-2 border-faded-gray min-w-0"
           >
             <!-- Time Counter -->
-            <div
-              v-if="configStore.type === 'time'"
-              class="flex items-center gap-2"
-            >
+            <div v-if="configStore.type === 'time'" class="flex items-center gap-2">
               <ClockIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
               <div class="flex items-baseline gap-1">
                 <span class="text-base sm:text-lg font-extrabold text-charcoal"
@@ -228,15 +234,14 @@
             </div>
 
             <!-- Words Counter -->
-            <div
-              v-if="configStore.type === 'words'"
-              class="flex items-center gap-2"
-            >
-              <DocumentTextIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+            <div v-if="configStore.type === 'words'" class="flex items-center gap-2">
+              <DocumentTextIcon
+                class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0"
+              />
               <div class="flex items-baseline gap-1">
-                <span class="text-base sm:text-lg font-extrabold text-charcoal"
-                  >{{ configStore.typedWords }}</span
-                >
+                <span class="text-base sm:text-lg font-extrabold text-charcoal">{{
+                  configStore.typedWords
+                }}</span>
                 <span class="text-xs sm:text-sm text-pencil-gray"
                   >/ {{ configStore.selectedWords }}</span
                 >
@@ -262,9 +267,9 @@
             >
               <HashtagIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
               <div class="flex items-baseline gap-1">
-                <span class="text-base sm:text-lg font-extrabold text-charcoal"
-                  >{{ configStore.userInput.length }}</span
-                >
+                <span class="text-base sm:text-lg font-extrabold text-charcoal">{{
+                  configStore.userInput.length
+                }}</span>
                 <span class="text-xs sm:text-sm text-pencil-gray"
                   >/ {{ referenceText.length }}</span
                 >
@@ -279,14 +284,14 @@
       <textarea
         ref="typingInput"
         v-model="configStore.userInput"
-        @input="handleTyping"
-        @keydown="handleKeydown"
         class="absolute inset-0 w-full h-full resize-none opacity-0 cursor-default"
         :disabled="isCompleted"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
+        @input="handleTyping"
+        @keydown="handleKeydown"
       ></textarea>
 
       <!-- Pause Overlay -->
@@ -318,9 +323,7 @@
           :style="{ width: `${configStore.progressPercentage}%` }"
         ></div>
 
-        <div
-          class="relative text-left max-w-4xl lg:max-w-5xl mx-auto px-2 sm:px-0"
-        >
+        <div class="relative text-left max-w-4xl lg:max-w-5xl mx-auto px-2 sm:px-0">
           <div
             ref="textContentEl"
             key="text-content"
@@ -364,7 +367,9 @@
 
     <div
       class="mt-6 sm:mt-12 text-center flex gap-2 sm:gap-3 justify-center transition-opacity duration-200"
-      :class="isTypingActive ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'"
+      :class="
+        isTypingActive ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'
+      "
       :aria-hidden="isTypingActive"
     >
       <IconButton
@@ -413,14 +418,21 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import IconButton from "@/components/common/IconButton.vue";
-import WpmChart from "@/components/common/WpmChart.vue";
-import { ClockIcon, DocumentTextIcon, HashtagIcon, PauseIcon, FireIcon } from "@heroicons/vue/24/outline";
-import { paragraphs } from "@/constants/paragraphs";
-import { generateRandomWords } from "@/constants/words";
-import { getRandomQuote } from "@/constants/quotes";
-import { getRandomCodeSnippet } from "@/constants/code";
-import { useConfigStore } from "@/stores/config";
+import IconButton from "@/shared/components/IconButton.vue";
+import WpmChart from "./WpmChart.vue";
+import {
+  ClockIcon,
+  DocumentTextIcon,
+  HashtagIcon,
+  PauseIcon,
+  FireIcon,
+} from "@heroicons/vue/24/outline";
+import { paragraphs } from "@/features/typing-test/content/paragraphs";
+import { generateRandomWords } from "@/features/typing-test/content/words";
+import { getRandomQuote } from "@/features/typing-test/content/quotes";
+import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
+import { useConfigStore } from "@/features/typing-test/store";
+import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
 
 // Config store
 const configStore = useConfigStore();
@@ -507,11 +519,7 @@ const isCompleted = computed(() => configStore.isCompleted);
 // Whether the user is actively typing right now (controls hides while typing,
 // e.g. the nav/pause buttons) — mirrors the same idea used in HomeView.
 const isTypingActive = computed(() => {
-  return (
-    configStore.userInput.length > 0 &&
-    !isCompleted.value &&
-    !configStore.isPaused
-  );
+  return configStore.userInput.length > 0 && !isCompleted.value && !configStore.isPaused;
 });
 
 // Watch for completion
@@ -543,32 +551,7 @@ const visibleText = computed(() => {
 
 // Group characters into words so the browser wraps at word boundaries
 // (individual per-character spans keep the exact index-based coloring/logic)
-const wordGroups = computed(() => {
-  const text = visibleText.value;
-  const groups = [];
-  let currentWord = [];
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (ch === " " || ch === "\n") {
-      if (currentWord.length) {
-        groups.push({ type: "word", chars: currentWord });
-        currentWord = [];
-      }
-      // A literal "\n" here becomes an actual line break because the text
-      // container uses white-space: pre-wrap (needed for code mode).
-      groups.push({ type: "space", index: i, char: ch });
-    } else {
-      currentWord.push({ char: ch, index: i });
-    }
-  }
-
-  if (currentWord.length) {
-    groups.push({ type: "word", chars: currentWord });
-  }
-
-  return groups;
-});
+const wordGroups = computed(() => groupIntoWords(visibleText.value));
 
 // Smooth animated caret position, tracked relative to the typing container
 const caretPosition = ref({ top: 0, left: 0, height: 0 });

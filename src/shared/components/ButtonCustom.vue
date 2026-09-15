@@ -1,11 +1,6 @@
 <template>
-  <button
-    :class="buttonClasses"
-    :disabled="disabled"
-    @click="handleClick"
-    :type="type"
-  >
-    <slot name="icon" v-if="$slots.icon" class="mr-2">
+  <button :class="buttonClasses" :disabled="disabled" :type="type" @click="handleClick">
+    <slot v-if="$slots.icon" name="icon" class="mr-2">
       <!-- Icon slot -->
     </slot>
     <span v-if="loading" class="mr-2">
@@ -108,11 +103,7 @@ const buttonClasses = computed(() => {
   };
 
   const variantClasses = {
-    primary: [
-      "bg-primary",
-      "text-white",
-      "border-primary-dark",
-    ],
+    primary: ["bg-primary", "text-white", "border-primary-dark"],
     secondary: [
       "bg-paper-white",
       "text-primary",
@@ -125,11 +116,9 @@ const buttonClasses = computed(() => {
     baseClasses.push("w-full");
   }
 
-  return [
-    ...baseClasses,
-    sizeClasses[props.size],
-    ...variantClasses[props.variant],
-  ].join(" ");
+  return [...baseClasses, sizeClasses[props.size], ...variantClasses[props.variant]].join(
+    " "
+  );
 });
 
 const handleClick = (event) => {
