@@ -23,6 +23,22 @@
       </p>
     </Transition>
 
+    <!-- New-record banner: the "pompous" version of the results screen -->
+    <Transition
+      enter-active-class="transition-all duration-500 ease-out"
+      enter-from-class="opacity-0 -translate-y-2 scale-95"
+      enter-to-class="opacity-100 translate-y-0 scale-100"
+    >
+      <div v-if="isCompleted && justBrokeRecord" class="text-center">
+        <div
+          class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-danger text-white rounded-xl px-5 py-2.5 text-sm font-extrabold shadow-lg shadow-primary/30 animate-key-pop"
+        >
+          <TrophyIcon class="w-5 h-5 animate-badge-glow" />
+          ¡Nuevo récord personal!
+        </div>
+      </div>
+    </Transition>
+
     <div
       v-if="isCompleted"
       class="grid gap-4 sm:gap-6 text-center grid-cols-2 sm:grid-cols-4"
@@ -430,7 +446,25 @@
         tooltip="Terminar"
         @click="finishZen"
       />
+
+      <IconButton
+        v-if="isCompleted"
+        icon="share"
+        variant="primary"
+        size="lg"
+        tooltip="Compartir resultado"
+        @click="handleShare"
+      />
     </div>
+
+    <ShareResultModal
+      :open="shareModalOpen"
+      :image-url="shareImageUrl"
+      :can-native-share="canNativeShare"
+      @close="closeShareModal"
+      @download="confirmDownload"
+      @share="confirmNativeShare"
+    />
   </div>
 </template>
 
@@ -438,6 +472,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import WpmChart from "./WpmChart.vue";
+import ShareResultModal from "./ShareResultModal.vue";
 import {
   ClockIcon,
   DocumentTextIcon,
@@ -455,6 +490,8 @@ import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
 import { getCharacterStreakColorRgb } from "@/shared/utils/flameColor";
 import { computeKeyboardViewportStyle } from "@/features/typing-test/utils/keyboardViewport";
 import { useHistoryStore } from "@/features/history/store";
+import { formatModeLabel } from "@/features/history/utils/historyStats";
+import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 
 // Config store
 const configStore = useConfigStore();
@@ -469,6 +506,13 @@ const currentCodeLanguage = ref("");
 const typingInput = ref(null);
 const typingContainer = ref(null);
 const textContentEl = ref(null);
+
+// Snapshot of "did this session beat the best" taken right when it
+// completes — configStore.isBeatingBest itself goes false immediately
+// after updateBestWpm() runs (bestWpm becomes equal to wpm, no longer
+// strictly greater), so the results screen/share card need this frozen
+// copy instead of reading the live computed.
+const justBrokeRecord = ref(false);
 
 // On mobile, `top-1/2` (and the "vh"-based max-height) is computed against
 // the full layout viewport, which most mobile browsers DON'T shrink when
@@ -601,6 +645,7 @@ watch(isCompleted, (completed) => {
       configStore.timer = null;
     }
     configStore.clearInactivityTimer();
+    justBrokeRecord.value = configStore.isBeatingBest;
     configStore.updateBestWpm();
     // One last sample so the results chart's final point matches the
     // final stats exactly, even if completion landed between ticks
@@ -759,6 +804,7 @@ const getCharacterClass = (index) => {
 };
 
 const restart = () => {
+  justBrokeRecord.value = false;
   refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {
@@ -779,6 +825,78 @@ const play = () => {
 
 const finishZen = () => {
   configStore.finishZen();
+};
+
+// Share modal state: renders the result to a PNG once (on click) and shows
+// it in a preview before the user confirms sharing/downloading it, rather
+// than firing off the OS share sheet or a silent download immediately.
+const shareModalOpen = ref(false);
+const shareImageUrl = ref(null);
+const shareBlob = ref(null);
+const canNativeShare = ref(false);
+
+const shareFileName = "swiftflow-resultado.png";
+
+const shareText = () =>
+  justBrokeRecord.value
+    ? `¡Nuevo récord! ${configStore.wpm} WPM en SwiftFlow 🏆`
+    : `${configStore.wpm} WPM en SwiftFlow ⚡`;
+
+const handleShare = () => {
+  const canvas = document.createElement("canvas");
+  drawShareCard(canvas, {
+    wpm: configStore.wpm,
+    accuracy: configStore.accuracy,
+    errors: configStore.errors,
+    modeLabel: formatModeLabel({ mode: configStore.type, modeValue: currentModeValue() }),
+    streak: historyStore.dailyStreak,
+    isRecord: justBrokeRecord.value,
+  });
+
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+
+    shareBlob.value = blob;
+    shareImageUrl.value = URL.createObjectURL(blob);
+    const file = new File([blob], shareFileName, { type: "image/png" });
+    canNativeShare.value = Boolean(navigator.canShare?.({ files: [file] }));
+    shareModalOpen.value = true;
+  }, "image/png");
+};
+
+const closeShareModal = () => {
+  shareModalOpen.value = false;
+  if (shareImageUrl.value) {
+    URL.revokeObjectURL(shareImageUrl.value);
+  }
+  shareImageUrl.value = null;
+  shareBlob.value = null;
+};
+
+const confirmDownload = () => {
+  if (!shareImageUrl.value) return;
+  const link = document.createElement("a");
+  link.href = shareImageUrl.value;
+  link.download = shareFileName;
+  link.click();
+  closeShareModal();
+};
+
+const confirmNativeShare = async () => {
+  if (!shareBlob.value) return;
+  const file = new File([shareBlob.value], shareFileName, { type: "image/png" });
+
+  try {
+    await navigator.share({
+      files: [file],
+      title: "Mi resultado en SwiftFlow",
+      text: shareText(),
+    });
+    closeShareModal();
+  } catch {
+    // User closed the native share sheet — leave the preview open so they
+    // can still download it instead.
+  }
 };
 
 onMounted(() => {
@@ -805,6 +923,10 @@ onUnmounted(() => {
   if (window.visualViewport) {
     window.visualViewport.removeEventListener("resize", updateViewportStyle);
     window.visualViewport.removeEventListener("scroll", updateViewportStyle);
+  }
+
+  if (shareImageUrl.value) {
+    URL.revokeObjectURL(shareImageUrl.value);
   }
 });
 </script>

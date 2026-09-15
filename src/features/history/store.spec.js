@@ -132,7 +132,7 @@ describe("useHistoryStore", () => {
 
     store.recordResult({
       mode: "time",
-      wpm: 20, // below every wpm threshold
+      wpm: 10, // below every wpm threshold
       accuracy: 80,
       errors: 0,
       timeElapsed: 15,
@@ -158,7 +158,7 @@ describe("useHistoryStore", () => {
       const store = useHistoryStore();
       store.recordResult({
         mode: "time",
-        wpm: 20, // unlocks first_session, nothing wpm-related
+        wpm: 10, // unlocks first_session, nothing wpm-related
         accuracy: 80,
         errors: 0,
         timeElapsed: 15,
@@ -197,7 +197,7 @@ describe("useHistoryStore", () => {
       const store = useHistoryStore();
       store.recordResult({
         mode: "time",
-        wpm: 20, // unlocks first_session
+        wpm: 10, // unlocks first_session
         accuracy: 80,
         errors: 0,
         timeElapsed: 15,

@@ -3,7 +3,7 @@ import { achievementTintStyle, achievementSolidStyle } from "./achievementPresen
 
 describe("achievementTintStyle", () => {
   it("returns a translucent background and solid border/text for the category", () => {
-    const style = achievementTintStyle({ category: "speed" });
+    const style = achievementTintStyle({ category: "speed", unlocked: true });
     expect(style).toEqual({
       backgroundColor: "rgba(37, 99, 235, 0.12)",
       borderColor: "rgb(37 99 235)",
@@ -12,8 +12,13 @@ describe("achievementTintStyle", () => {
   });
 
   it("falls back to a neutral color for an unknown category", () => {
-    const style = achievementTintStyle({ category: "unknown" });
+    const style = achievementTintStyle({ category: "unknown", unlocked: true });
     expect(style.borderColor).toBe("rgb(100 116 139)");
+  });
+
+  it("returns no color override for a locked achievement", () => {
+    const style = achievementTintStyle({ category: "speed", unlocked: false });
+    expect(style).toEqual({});
   });
 });
 

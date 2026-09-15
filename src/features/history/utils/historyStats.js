@@ -48,7 +48,7 @@ export const computePersonalBests = (results) => {
   return [...bestByKey.values()].sort((a, b) => b.wpm - a.wpm);
 };
 
-const toLocalDayKey = (isoDate) => {
+export const toLocalDayKey = (isoDate) => {
   const d = new Date(isoDate);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 };

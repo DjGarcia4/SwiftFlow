@@ -124,44 +124,78 @@
             historyStore.achievements.length
           }})
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <div
-            v-for="achievement in historyStore.achievements"
-            :key="achievement.id"
-            class="group relative rounded-card p-3 border-2 flex items-center gap-2.5"
-            :class="
-              achievement.unlocked ? '' : 'bg-faded-gray/10 border-faded-gray opacity-40'
-            "
-            :style="achievementStyle(achievement)"
-          >
-            <component
-              :is="achievementIcons[achievement.icon]"
-              class="w-5 h-5 flex-shrink-0"
-              :class="achievement.unlocked ? '' : 'text-pencil-gray'"
-            />
-            <div class="min-w-0">
-              <div
-                class="text-xs font-bold truncate"
-                :class="achievement.unlocked ? '' : 'text-pencil-gray'"
-              >
-                {{ achievement.title }}
-              </div>
-              <div class="text-[10px] text-pencil-gray truncate">
-                {{ achievement.description }}
-              </div>
-            </div>
 
-            <!-- Hover tooltip: the full "how to earn it" text, since the
-                 line above truncates on smaller cards. -->
+        <!-- Collapsed: clipped to ~2 rows with a fade at the bottom (same
+             mask-image trick as the typing paragraph box) so a sliver of
+             the next row peeks through as a hint there's more. All cards
+             stay in the DOM either way — this only changes how much is
+             visible, so expanding never re-fetches/re-renders anything. -->
+        <div
+          class="relative overflow-hidden transition-[max-height] duration-300 ease-in-out"
+          :class="
+            showAllAchievements
+              ? 'max-h-[3000px]'
+              : 'max-h-[560px] [mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)]'
+          "
+        >
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div
-              class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded-xl bg-night-ink px-3 py-2 text-center text-xs font-bold text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+              v-for="achievement in historyStore.achievements"
+              :key="achievement.id"
+              class="group relative rounded-card p-3 border-2 flex items-center gap-2.5"
+              :class="
+                achievement.unlocked
+                  ? ''
+                  : 'bg-faded-gray/10 border-faded-gray opacity-40'
+              "
+              :style="achievementStyle(achievement)"
             >
-              {{ achievement.description }}
+              <component
+                :is="achievementIcons[achievement.icon]"
+                class="w-5 h-5 flex-shrink-0"
+                :class="achievement.unlocked ? '' : 'text-pencil-gray'"
+              />
+              <div class="min-w-0">
+                <div
+                  class="text-xs font-bold truncate"
+                  :class="achievement.unlocked ? '' : 'text-pencil-gray'"
+                >
+                  {{ achievement.title }}
+                </div>
+                <div class="text-[10px] text-pencil-gray truncate">
+                  {{ achievement.description }}
+                </div>
+              </div>
+
+              <!-- Hover tooltip: the full "how to earn it" text, since the
+                   line above truncates on smaller cards. -->
               <div
-                class="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-night-ink"
-              ></div>
+                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded-xl bg-night-ink px-3 py-2 text-center text-xs font-bold text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+              >
+                {{ achievement.description }}
+                <div
+                  class="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-night-ink"
+                ></div>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div
+          v-if="historyStore.achievements.length > ACHIEVEMENTS_COLLAPSED_COUNT"
+          class="text-center mt-2"
+        >
+          <button
+            type="button"
+            class="text-xs font-bold text-primary hover:text-primary-dark"
+            @click="showAllAchievements = !showAllAchievements"
+          >
+            {{
+              showAllAchievements
+                ? "Ver menos"
+                : `Ver más (${historyStore.achievements.length - ACHIEVEMENTS_COLLAPSED_COUNT})`
+            }}
+          </button>
         </div>
       </div>
 
@@ -226,6 +260,15 @@ import {
 } from "@/features/history/achievementPresentation";
 
 const historyStore = useHistoryStore();
+
+// Achievements grid starts collapsed to roughly this many cards' worth of
+// height (~7 rows: on desktop's 3-col grid that's 21 cards, on mobile's
+// 2-col grid the same height fits ~14) — only affects the label on the
+// "ver más" button; the actual clipping is done with max-height/mask-image
+// in the template so all cards stay mounted and toggling never re-renders
+// them.
+const ACHIEVEMENTS_COLLAPSED_COUNT = 21;
+const showAllAchievements = ref(false);
 
 // Trend chart reads chronologically (oldest -> newest); results are stored
 // most-recent-first, so reverse the last 30 sessions.

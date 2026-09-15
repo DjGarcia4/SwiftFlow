@@ -12,6 +12,9 @@ import {
   MoonIcon,
   SunIcon,
   StarIcon,
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  GiftIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -30,6 +33,9 @@ export const ACHIEVEMENT_ICONS = {
   moon: MoonIcon,
   sun: SunIcon,
   star: StarIcon,
+  document: DocumentTextIcon,
+  calendar: CalendarDaysIcon,
+  gift: GiftIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {
@@ -47,7 +53,11 @@ const FALLBACK_RGB = [100, 116, 139]; // slate, shouldn't normally hit this
 
 // Subtle tint for the achievements grid: a translucent wash of the
 // category color over the card background, readable in either theme.
+// Locked achievements get no color override at all — the caller's plain
+// gray Tailwind classes should show through instead.
 export const achievementTintStyle = (achievement) => {
+  if (!achievement.unlocked) return {};
+
   const [r, g, b] = ACHIEVEMENT_CATEGORY_RGB[achievement.category] ?? FALLBACK_RGB;
   return {
     backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
