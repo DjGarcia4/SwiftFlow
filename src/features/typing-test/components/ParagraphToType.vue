@@ -484,9 +484,12 @@ const updateViewportStyle = () => {
   const vv = window.visualViewport;
   if (!vv) return;
 
+  const navHeight = document.querySelector("nav")?.getBoundingClientRect().height ?? 0;
+
   viewportStyle.value = computeKeyboardViewportStyle({
     innerHeight: window.innerHeight,
     visualViewport: { offsetTop: vv.offsetTop, height: vv.height },
+    topInset: navHeight,
   });
 };
 

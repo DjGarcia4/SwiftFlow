@@ -12,12 +12,24 @@
 const KEYBOARD_INSET_THRESHOLD = 80; // px; ignores minor browser chrome show/hide
 const MAX_HEIGHT_RATIO = 0.85;
 
-export const computeKeyboardViewportStyle = ({ innerHeight, visualViewport }) => {
+// `topInset` is space that's always occupied at the top of the visible
+// area regardless of the keyboard (the sticky Nav) — it's excluded from
+// the area we center/size against, otherwise centering against the full
+// visible height pushes the card's top (the wpm/streak stats row) up
+// underneath the Nav once the keyboard eats enough of the screen.
+export const computeKeyboardViewportStyle = ({
+  innerHeight,
+  visualViewport,
+  topInset = 0,
+}) => {
   const keyboardInset = innerHeight - visualViewport.height;
   if (keyboardInset < KEYBOARD_INSET_THRESHOLD) return {};
 
+  const visibleTop = visualViewport.offsetTop + topInset;
+  const visibleHeight = Math.max(0, visualViewport.height - topInset);
+
   return {
-    top: `${visualViewport.offsetTop + visualViewport.height / 2}px`,
-    maxHeight: `${visualViewport.height * MAX_HEIGHT_RATIO}px`,
+    top: `${visibleTop + visibleHeight / 2}px`,
+    maxHeight: `${visibleHeight * MAX_HEIGHT_RATIO}px`,
   };
 };

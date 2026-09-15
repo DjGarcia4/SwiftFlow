@@ -36,4 +36,26 @@ describe("computeKeyboardViewportStyle", () => {
     });
     expect(style.top).toBe("290px"); // 40 + 500/2
   });
+
+  it("excludes topInset (the sticky Nav) from both the center point and the max-height", () => {
+    const style = computeKeyboardViewportStyle({
+      innerHeight: 800,
+      visualViewport: { offsetTop: 0, height: 500 },
+      topInset: 70,
+    });
+    // Center within the 430px left below the nav, not the full 500px.
+    expect(style).toEqual({
+      top: "285px", // 70 + 430/2
+      maxHeight: "365.5px", // 430 * 0.85
+    });
+  });
+
+  it("combines topInset with a non-zero visualViewport offsetTop", () => {
+    const style = computeKeyboardViewportStyle({
+      innerHeight: 800,
+      visualViewport: { offsetTop: 40, height: 500 },
+      topInset: 70,
+    });
+    expect(style.top).toBe("325px"); // (40 + 70) + 430/2
+  });
 });
