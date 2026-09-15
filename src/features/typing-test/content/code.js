@@ -147,6 +147,126 @@ export const codeSnippets = [
     language: "Java",
     code: 'class Vehicle {\n  void move() {\n    System.out.println("El vehículo se mueve");\n  }\n}\n\nclass Car extends Vehicle {\n  void honk() {\n    System.out.println("Beep beep");\n  }\n}',
   },
+  {
+    language: "TypeScript",
+    code: "function factorial(n: number): number {\n  if (n <= 1) {\n    return 1;\n  }\n  return n * factorial(n - 1);\n}",
+  },
+  {
+    language: "TypeScript",
+    code: "const numbers: number[] = [1, 2, 3, 4, 5];\nconst doubled = numbers.map((n) => n * 2);\nconsole.log(doubled);",
+  },
+  {
+    language: "TypeScript",
+    code: "interface Speaker {\n  speak(): void;\n}\n\nclass Animal implements Speaker {\n  constructor(private name: string) {}\n\n  speak(): void {\n    console.log(`${this.name} hace un sonido.`);\n  }\n}",
+  },
+  {
+    language: "TypeScript",
+    code: "async function fetchData<T>(url: string): Promise<T> {\n  const response = await fetch(url);\n  const data: T = await response.json();\n  return data;\n}",
+  },
+  {
+    language: "TypeScript",
+    code: 'function isPalindrome(str: string): boolean {\n  const clean = str.toLowerCase().replace(/[^a-z0-9]/g, "");\n  return clean === clean.split("").reverse().join("");\n}',
+  },
+  {
+    language: "TypeScript",
+    code: "function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {\n  let timer: ReturnType<typeof setTimeout>;\n  return (...args: Parameters<T>) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => fn(...args), delay);\n  };\n}",
+  },
+  {
+    language: "TypeScript",
+    code: "function bubbleSort(arr: number[]): number[] {\n  for (let i = 0; i < arr.length; i++) {\n    for (let j = 0; j < arr.length - i - 1; j++) {\n      if (arr[j] > arr[j + 1]) {\n        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];\n      }\n    }\n  }\n  return arr;\n}",
+  },
+  {
+    language: "TypeScript",
+    code: "interface Todo {\n  task: string;\n  done: boolean;\n}\n\nfunction addTodo(list: Todo[], task: string): Todo[] {\n  return [...list, { task, done: false }];\n}",
+  },
+  {
+    language: "TypeScript",
+    code: 'function delay(ms: number): Promise<void> {\n  return new Promise((resolve) => setTimeout(resolve, ms));\n}\n\ndelay(1000).then(() => {\n  console.log("Listo!");\n});',
+  },
+  {
+    language: "TypeScript",
+    code: 'type Person = { name: string; age: number };\n\nfunction greet({ name, age }: Person): void {\n  console.log(`Hola ${name}, tienes ${age} años.`);\n}\n\ngreet({ name: "Ana", age: 28 });',
+  },
+  {
+    language: "Go",
+    code: "func factorial(n int) int {\n\tif n <= 1 {\n\t\treturn 1\n\t}\n\treturn n * factorial(n-1)\n}",
+  },
+  {
+    language: "Go",
+    code: "numbers := []int{1, 2, 3, 4, 5}\ndoubled := make([]int, len(numbers))\nfor i, n := range numbers {\n\tdoubled[i] = n * 2\n}\nfmt.Println(doubled)",
+  },
+  {
+    language: "Go",
+    code: 'type Animal struct {\n\tName string\n}\n\nfunc (a Animal) Speak() {\n\tfmt.Printf("%s hace un sonido.\\n", a.Name)\n}',
+  },
+  {
+    language: "Go",
+    code: 'func worker(id int, ch chan<- string) {\n\tch <- fmt.Sprintf("worker %d terminó", id)\n}\n\nfunc main() {\n\tch := make(chan string)\n\tgo worker(1, ch)\n\tfmt.Println(<-ch)\n}',
+  },
+  {
+    language: "Go",
+    code: "func isPalindrome(s string) bool {\n\trunes := []rune(strings.ToLower(s))\n\tfor i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {\n\t\tif runes[i] != runes[j] {\n\t\t\treturn false\n\t\t}\n\t}\n\treturn true\n}",
+  },
+  {
+    language: "Go",
+    code: "func bubbleSort(arr []int) []int {\n\tfor i := 0; i < len(arr); i++ {\n\t\tfor j := 0; j < len(arr)-i-1; j++ {\n\t\t\tif arr[j] > arr[j+1] {\n\t\t\t\tarr[j], arr[j+1] = arr[j+1], arr[j]\n\t\t\t}\n\t\t}\n\t}\n\treturn arr\n}",
+  },
+  {
+    language: "Go",
+    code: 'ages := map[string]int{"Ana": 28, "Luis": 35}\nfor name, age := range ages {\n\tfmt.Printf("%s tiene %d años\\n", name, age)\n}',
+  },
+  {
+    language: "Go",
+    code: 'func divide(a, b float64) (float64, error) {\n\tif b == 0 {\n\t\treturn 0, errors.New("no se puede dividir por cero")\n\t}\n\treturn a / b, nil\n}',
+  },
+  {
+    language: "Go",
+    code: "func sum(numbers []int) int {\n\ttotal := 0\n\tfor _, n := range numbers {\n\t\ttotal += n\n\t}\n\treturn total\n}",
+  },
+  {
+    language: "Go",
+    code: "type Shape interface {\n\tArea() float64\n}\n\ntype Circle struct {\n\tRadius float64\n}\n\nfunc (c Circle) Area() float64 {\n\treturn math.Pi * c.Radius * c.Radius\n}",
+  },
+  {
+    language: "Rust",
+    code: "fn factorial(n: u64) -> u64 {\n    if n <= 1 {\n        1\n    } else {\n        n * factorial(n - 1)\n    }\n}",
+  },
+  {
+    language: "Rust",
+    code: 'let numbers = vec![1, 2, 3, 4, 5];\nlet doubled: Vec<i32> = numbers.iter().map(|n| n * 2).collect();\nprintln!("{:?}", doubled);',
+  },
+  {
+    language: "Rust",
+    code: 'struct Animal {\n    name: String,\n}\n\nimpl Animal {\n    fn speak(&self) {\n        println!("{} hace un sonido.", self.name);\n    }\n}',
+  },
+  {
+    language: "Rust",
+    code: 'fn divide(a: f64, b: f64) -> Result<f64, String> {\n    if b == 0.0 {\n        Err(String::from("no se puede dividir por cero"))\n    } else {\n        Ok(a / b)\n    }\n}',
+  },
+  {
+    language: "Rust",
+    code: "fn is_palindrome(s: &str) -> bool {\n    let clean: String = s.to_lowercase().chars().filter(|c| c.is_alphanumeric()).collect();\n    clean == clean.chars().rev().collect::<String>()\n}",
+  },
+  {
+    language: "Rust",
+    code: "fn bubble_sort(arr: &mut Vec<i32>) {\n    let n = arr.len();\n    for i in 0..n {\n        for j in 0..n - i - 1 {\n            if arr[j] > arr[j + 1] {\n                arr.swap(j, j + 1);\n            }\n        }\n    }\n}",
+  },
+  {
+    language: "Rust",
+    code: 'use std::collections::HashMap;\n\nlet mut ages = HashMap::new();\nages.insert("Ana", 28);\nages.insert("Luis", 35);\n\nfor (name, age) in &ages {\n    println!("{}: {}", name, age);\n}',
+  },
+  {
+    language: "Rust",
+    code: 'let add = |a: i32, b: i32| -> i32 { a + b };\nlet result = add(3, 4);\nprintln!("Resultado: {}", result);',
+  },
+  {
+    language: "Rust",
+    code: "fn sum(numbers: &[i32]) -> i32 {\n    numbers.iter().fold(0, |total, n| total + n)\n}",
+  },
+  {
+    language: "Rust",
+    code: "trait Shape {\n    fn area(&self) -> f64;\n}\n\nstruct Circle {\n    radius: f64,\n}\n\nimpl Shape for Circle {\n    fn area(&self) -> f64 {\n        std::f64::consts::PI * self.radius * self.radius\n    }\n}",
+  },
 ];
 
 // Unique list of languages available, in the order they first appear above.

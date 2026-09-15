@@ -5,11 +5,12 @@ import {
   toLocalDayKey,
 } from "@/features/history/utils/historyStats";
 
-// How many distinct code languages / typing-test modes / time-mode options /
-// words-mode options exist right now — mirrors the content bank / store
-// config. Hardcoded like this rather than imported, same pragmatic tradeoff
-// as elsewhere in this feature: if the content bank grows, these
-// thresholds should grow with it.
+// MODES_COUNT/TIME_OPTIONS_COUNT/WORD_OPTIONS_COUNT mirror the store config
+// (all typing modes, all time/word-count choices) — hardcoded rather than
+// imported, so if those option lists grow these should grow with them.
+// CODE_LANGUAGES_COUNT is different: it's a fixed "try N languages" bar for
+// the polyglot achievement, deliberately NOT tied to the code content
+// bank's actual language count (which can keep growing independently).
 const CODE_LANGUAGES_COUNT = 3;
 const MODES_COUNT = 5;
 const TIME_OPTIONS_COUNT = 4;
@@ -246,7 +247,7 @@ export const ACHIEVEMENTS = [
     category: "explorer",
     icon: "code",
     title: "Políglota",
-    description: "Probá los tres lenguajes del modo código",
+    description: "Probá 3 lenguajes distintos del modo código",
     check: (ctx) => ctx.codeLanguagesPlayed >= CODE_LANGUAGES_COUNT,
   },
   {
