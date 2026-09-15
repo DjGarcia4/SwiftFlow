@@ -196,6 +196,28 @@
         </div>
 
         <div v-if="configStore.userInput.length > 0" class="flex items-center gap-2">
+          <!-- New record badge: a bit more "solid"/celebratory than the
+               streak badge below, since breaking your best is the bigger
+               deal — same success-green family, just filled instead of
+               tinted, so the whole "beating best" language (this badge,
+               the wpm number, the progress bar) stays visually consistent. -->
+          <Transition
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 scale-75"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-75"
+          >
+            <div
+              v-if="configStore.isBeatingBest"
+              class="inline-flex items-center gap-1 bg-success border-2 border-success-dark rounded-xl px-2.5 py-1.5 shadow-sm shadow-success/40 animate-key-pop"
+            >
+              <TrophyIcon class="w-3.5 h-3.5 text-white animate-badge-glow" />
+              <span class="text-xs font-extrabold text-white">Récord</span>
+            </div>
+          </Transition>
+
           <!-- Streak badge -->
           <Transition
             enter-active-class="transition-all duration-200 ease-out"
@@ -208,12 +230,11 @@
             <div
               v-if="configStore.currentStreak >= 15"
               :key="Math.floor(configStore.currentStreak / 10)"
-              class="inline-flex items-center gap-1 bg-success-tint border-2 border-success rounded-xl px-2.5 py-1.5 animate-key-pop"
+              :style="streakBadgeStyle"
+              class="inline-flex items-center gap-1 rounded-xl border-2 px-2.5 py-1.5 animate-key-pop"
             >
-              <FireIcon class="w-3.5 h-3.5 text-success-dark" />
-              <span class="text-xs font-extrabold text-success-dark">{{
-                configStore.currentStreak
-              }}</span>
+              <FireIcon class="w-3.5 h-3.5 animate-badge-glow" />
+              <span class="text-xs font-extrabold">{{ configStore.currentStreak }}</span>
             </div>
           </Transition>
 
@@ -426,6 +447,7 @@ import {
   HashtagIcon,
   PauseIcon,
   FireIcon,
+  TrophyIcon,
 } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/features/typing-test/content/paragraphs";
 import { generateRandomWords } from "@/features/typing-test/content/words";
@@ -433,6 +455,7 @@ import { getRandomQuote } from "@/features/typing-test/content/quotes";
 import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
 import { useConfigStore } from "@/features/typing-test/store";
 import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
+import { getCharacterStreakColorRgb } from "@/shared/utils/flameColor";
 import { useHistoryStore } from "@/features/history/store";
 
 // Config store
@@ -517,6 +540,20 @@ refreshReferenceText();
 // (HomeView also reads configStore.isCompleted directly to know when to
 // show the toolbar again).
 const isCompleted = computed(() => configStore.isCompleted);
+
+// The streak badge's color escalates like a flame (amber -> orange -> red)
+// as the streak grows, instead of staying a flat color — computed as
+// inline styles since Tailwind's utility classes can't interpolate at
+// runtime. Text/icon pick up the color via `currentColor` (unset).
+const streakBadgeStyle = computed(() => {
+  const [r, g, b] = getCharacterStreakColorRgb(configStore.currentStreak);
+  return {
+    color: `rgb(${r} ${g} ${b})`,
+    borderColor: `rgb(${r} ${g} ${b})`,
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
+    boxShadow: `0 1px 3px 0 rgba(${r}, ${g}, ${b}, 0.35)`,
+  };
+});
 
 // Whether the user is actively typing right now (controls hides while typing,
 // e.g. the nav/pause buttons) — mirrors the same idea used in HomeView.
@@ -780,6 +817,24 @@ onUnmounted(() => {
 
 .animate-key-shake {
   animation: key-shake 160ms ease-out;
+}
+
+/* Gentle continuous pulse for the record/streak badge icons — subtle on
+   purpose, just enough to feel "alive" without distracting from typing. */
+@keyframes badge-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+}
+
+.animate-badge-glow {
+  animation: badge-glow 1.6s ease-in-out infinite;
 }
 
 @keyframes celebrate {

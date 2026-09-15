@@ -80,6 +80,52 @@ describe("useHistoryStore", () => {
     expect(store.averageAccuracy).toBe(90);
   });
 
+  it("derives personalBests from results, best wpm per mode/modeValue", () => {
+    const store = useHistoryStore();
+    store.recordResult({
+      mode: "time",
+      modeValue: 15,
+      wpm: 40,
+      accuracy: 90,
+      errors: 0,
+      timeElapsed: 15,
+    });
+    store.recordResult({
+      mode: "time",
+      modeValue: 15,
+      wpm: 70,
+      accuracy: 95,
+      errors: 0,
+      timeElapsed: 15,
+    });
+    store.recordResult({
+      mode: "words",
+      modeValue: 50,
+      wpm: 60,
+      accuracy: 90,
+      errors: 0,
+      timeElapsed: 40,
+    });
+
+    expect(store.personalBests).toHaveLength(2);
+    expect(store.personalBests[0]).toMatchObject({ mode: "time", wpm: 70 });
+  });
+
+  it("derives dailyStreak from results (a fresh recordResult counts as today)", () => {
+    const store = useHistoryStore();
+    expect(store.dailyStreak).toBe(0);
+
+    store.recordResult({
+      mode: "time",
+      wpm: 40,
+      accuracy: 80,
+      errors: 0,
+      timeElapsed: 15,
+    });
+
+    expect(store.dailyStreak).toBe(1);
+  });
+
   it("clearHistory empties both state and storage", () => {
     const store = useHistoryStore();
     store.recordResult({

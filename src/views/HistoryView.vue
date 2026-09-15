@@ -13,7 +13,22 @@
 
     <template v-else>
       <!-- Summary cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+        <div
+          class="bg-gradient-to-br from-primary-tint to-primary/10 rounded-card p-4 sm:p-6 border-2 border-primary text-center shadow-sm shadow-primary/20"
+        >
+          <div
+            class="flex items-center justify-center gap-1 text-2xl sm:text-3xl font-display font-extrabold text-primary-dark mb-1"
+          >
+            <FireIcon v-if="historyStore.dailyStreak > 0" class="w-5 h-5 sm:w-6 sm:h-6" />
+            {{ historyStore.dailyStreak }}
+          </div>
+          <div
+            class="text-xs sm:text-sm text-primary-dark font-bold uppercase tracking-wide"
+          >
+            Racha
+          </div>
+        </div>
         <div
           class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
         >
@@ -81,6 +96,27 @@
         <TrendSparkline :values="trendValues" />
       </div>
 
+      <!-- Personal bests -->
+      <div v-if="historyStore.personalBests.length" class="mb-6">
+        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
+          Récords personales
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <div
+            v-for="best in historyStore.personalBests"
+            :key="`${best.mode}:${best.modeValue}`"
+            class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3"
+          >
+            <div class="font-display font-extrabold text-success text-lg">
+              {{ best.wpm }}
+            </div>
+            <div class="text-xs text-pencil-gray font-bold">
+              {{ formatModeLabel(best) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Sessions list -->
       <div class="space-y-2 mb-6">
         <div
@@ -131,6 +167,7 @@
 
 <script setup>
 import { ref, computed, onUnmounted } from "vue";
+import { FireIcon } from "@heroicons/vue/24/outline";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import { useHistoryStore } from "@/features/history/store";

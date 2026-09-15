@@ -4,6 +4,8 @@ import {
   computeAverageWpm,
   computeAverageAccuracy,
   formatModeLabel,
+  computePersonalBests,
+  computeDailyStreak,
 } from "./historyStats";
 
 const results = [
@@ -67,5 +69,97 @@ describe("formatModeLabel", () => {
 
   it("formats zen mode", () => {
     expect(formatModeLabel({ mode: "zen", modeValue: null })).toBe("Zen");
+  });
+});
+
+describe("computePersonalBests", () => {
+  it("is empty for an empty list", () => {
+    expect(computePersonalBests([])).toEqual([]);
+  });
+
+  it("keeps only the best result per mode+modeValue combo", () => {
+    const bests = computePersonalBests([
+      { mode: "time", modeValue: 15, wpm: 40 },
+      { mode: "time", modeValue: 15, wpm: 70 },
+      { mode: "time", modeValue: 15, wpm: 55 },
+    ]);
+
+    expect(bests).toHaveLength(1);
+    expect(bests[0].wpm).toBe(70);
+  });
+
+  it("tracks separate records for different mode/modeValue combos", () => {
+    const bests = computePersonalBests([
+      { mode: "time", modeValue: 15, wpm: 40 },
+      { mode: "time", modeValue: 30, wpm: 60 },
+      { mode: "code", modeValue: "JavaScript", wpm: 50 },
+      { mode: "code", modeValue: "Python", wpm: 45 },
+    ]);
+
+    expect(bests).toHaveLength(4);
+  });
+
+  it("sorts records by wpm, highest first", () => {
+    const bests = computePersonalBests([
+      { mode: "time", modeValue: 15, wpm: 40 },
+      { mode: "words", modeValue: 50, wpm: 90 },
+      { mode: "zen", modeValue: null, wpm: 60 },
+    ]);
+
+    expect(bests.map((b) => b.wpm)).toEqual([90, 60, 40]);
+  });
+
+  it("treats a null modeValue as its own group (e.g. quote/zen)", () => {
+    const bests = computePersonalBests([
+      { mode: "quote", modeValue: null, wpm: 40 },
+      { mode: "zen", modeValue: null, wpm: 50 },
+    ]);
+
+    expect(bests).toHaveLength(2);
+  });
+});
+
+describe("computeDailyStreak", () => {
+  // Fixed "now" so day-boundary math isn't flaky around midnight.
+  const now = new Date(2024, 5, 15, 14, 0, 0); // Sat 2024-06-15, 14:00 local
+  const daysAgo = (n) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - n);
+    d.setHours(9, 0, 0, 0); // some time during that day
+    return d.toISOString();
+  };
+
+  it("is 0 for an empty list", () => {
+    expect(computeDailyStreak([], now)).toBe(0);
+  });
+
+  it("is 0 when the last session was more than a day ago", () => {
+    const results = [{ date: daysAgo(2) }];
+    expect(computeDailyStreak(results, now)).toBe(0);
+  });
+
+  it("is 1 with only a session today", () => {
+    const results = [{ date: daysAgo(0) }];
+    expect(computeDailyStreak(results, now)).toBe(1);
+  });
+
+  it("stays alive (not reset) if yesterday has a session but today doesn't yet", () => {
+    const results = [{ date: daysAgo(1) }, { date: daysAgo(2) }];
+    expect(computeDailyStreak(results, now)).toBe(2);
+  });
+
+  it("counts consecutive days ending today", () => {
+    const results = [{ date: daysAgo(0) }, { date: daysAgo(1) }, { date: daysAgo(2) }];
+    expect(computeDailyStreak(results, now)).toBe(3);
+  });
+
+  it("stops counting at the first gap", () => {
+    const results = [{ date: daysAgo(0) }, { date: daysAgo(1) }, { date: daysAgo(3) }];
+    expect(computeDailyStreak(results, now)).toBe(2);
+  });
+
+  it("counts multiple sessions on the same day as a single day", () => {
+    const results = [{ date: daysAgo(0) }, { date: daysAgo(0) }, { date: daysAgo(0) }];
+    expect(computeDailyStreak(results, now)).toBe(1);
   });
 });

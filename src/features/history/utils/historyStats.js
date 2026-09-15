@@ -30,3 +30,51 @@ export const formatModeLabel = ({ mode, modeValue }) => {
   const format = MODE_LABELS[mode];
   return format ? format(modeValue) : mode;
 };
+
+// One entry per distinct mode+modeValue combo (e.g. "time · 15s", "code ·
+// JavaScript"), keeping only the highest-wpm result seen for each. Sorted
+// best-wpm-first so the most impressive record shows up on top.
+export const computePersonalBests = (results) => {
+  const bestByKey = new Map();
+
+  for (const result of results) {
+    const key = `${result.mode}:${result.modeValue ?? ""}`;
+    const current = bestByKey.get(key);
+    if (!current || result.wpm > current.wpm) {
+      bestByKey.set(key, result);
+    }
+  }
+
+  return [...bestByKey.values()].sort((a, b) => b.wpm - a.wpm);
+};
+
+const toLocalDayKey = (isoDate) => {
+  const d = new Date(isoDate);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+};
+
+// Consecutive local calendar days (ending today or yesterday) with at least
+// one completed session. Matches the usual "streak" UX: doing a session
+// today extends it, but the streak isn't broken until a full day is missed
+// — practicing yesterday and skipping today (so far) still counts.
+export const computeDailyStreak = (results, now = new Date()) => {
+  if (!results.length) return 0;
+
+  const activeDays = new Set(results.map((r) => toLocalDayKey(r.date)));
+
+  const cursor = new Date(now);
+  cursor.setHours(0, 0, 0, 0);
+
+  if (!activeDays.has(toLocalDayKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!activeDays.has(toLocalDayKey(cursor))) return 0;
+  }
+
+  let streak = 0;
+  while (activeDays.has(toLocalDayKey(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
+};

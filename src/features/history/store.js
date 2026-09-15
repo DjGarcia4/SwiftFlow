@@ -9,6 +9,8 @@ import {
   computeBestWpm,
   computeAverageWpm,
   computeAverageAccuracy,
+  computePersonalBests,
+  computeDailyStreak,
 } from "@/features/history/utils/historyStats";
 
 export const useHistoryStore = defineStore("history", () => {
@@ -18,6 +20,8 @@ export const useHistoryStore = defineStore("history", () => {
   const bestWpm = computed(() => computeBestWpm(results.value));
   const averageWpm = computed(() => computeAverageWpm(results.value));
   const averageAccuracy = computed(() => computeAverageAccuracy(results.value));
+  const personalBests = computed(() => computePersonalBests(results.value));
+  const dailyStreak = computed(() => computeDailyStreak(results.value));
 
   // entry: { mode, wpm, accuracy, errors, timeElapsed, modeValue }
   const recordResult = (entry) => {
@@ -40,6 +44,8 @@ export const useHistoryStore = defineStore("history", () => {
     bestWpm,
     averageWpm,
     averageAccuracy,
+    personalBests,
+    dailyStreak,
     recordResult,
     clearHistory,
   };

@@ -15,6 +15,19 @@
       </router-link>
 
       <div class="flex items-center gap-2">
+        <!-- Daily streak: a glanceable reminder even outside /historial,
+             colored with the same flame ramp as the in-session badge. -->
+        <router-link
+          v-if="historyStore.dailyStreak > 0"
+          to="/historial"
+          :style="streakStyle"
+          class="flex items-center gap-1 h-9 px-2.5 rounded-xl border-2 text-xs font-extrabold"
+          :aria-label="`Racha de ${historyStore.dailyStreak} días`"
+        >
+          <FireIcon class="w-4 h-4" />
+          {{ historyStore.dailyStreak }}
+        </router-link>
+
         <router-link
           to="/historial"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-colors duration-150"
@@ -38,11 +51,24 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { BoltIcon } from "@heroicons/vue/24/solid";
-import { SunIcon, MoonIcon, ChartBarIcon } from "@heroicons/vue/24/outline";
+import { SunIcon, MoonIcon, ChartBarIcon, FireIcon } from "@heroicons/vue/24/outline";
 import { useThemeStore } from "@/shared/stores/theme";
+import { useHistoryStore } from "@/features/history/store";
+import { getDailyStreakColorRgb } from "@/shared/utils/flameColor";
 
 const themeStore = useThemeStore();
+const historyStore = useHistoryStore();
+
+const streakStyle = computed(() => {
+  const [r, g, b] = getDailyStreakColorRgb(historyStore.dailyStreak);
+  return {
+    color: `rgb(${r} ${g} ${b})`,
+    borderColor: `rgb(${r} ${g} ${b})`,
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
+  };
+});
 </script>
 
 <style scoped></style>
