@@ -101,7 +101,17 @@
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
           Récords personales
         </div>
-        <div class="flex flex-wrap gap-2">
+        <TransitionGroup
+          tag="div"
+          class="flex flex-wrap gap-2"
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="opacity-0 scale-90"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="transition-all duration-200 ease-in"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-90"
+          move-class="transition-transform duration-300 ease-out"
+        >
           <div
             v-for="best in historyStore.personalBests"
             :key="`${best.mode}:${best.modeValue}`"
@@ -114,7 +124,7 @@
               {{ formatModeLabel(best) }}
             </div>
           </div>
-        </div>
+        </TransitionGroup>
       </div>
 
       <!-- Achievements -->
@@ -142,7 +152,7 @@
             <div
               v-for="achievement in historyStore.achievements"
               :key="achievement.id"
-              class="group relative rounded-card p-3 border-2 flex items-center gap-2.5"
+              class="group relative rounded-card p-3 border-2 flex items-center gap-2.5 transition-all duration-300 ease-out"
               :class="
                 achievement.unlocked
                   ? ''
@@ -200,7 +210,17 @@
       </div>
 
       <!-- Sessions list -->
-      <div class="space-y-2 mb-6">
+      <TransitionGroup
+        tag="div"
+        class="space-y-2 mb-6"
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 -translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-x-4"
+        move-class="transition-transform duration-300 ease-out"
+      >
         <div
           v-for="result in historyStore.results"
           :key="result.id"
@@ -233,7 +253,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </TransitionGroup>
 
       <div class="text-center">
         <ButtonCustom
