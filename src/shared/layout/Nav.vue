@@ -15,6 +15,14 @@
       </router-link>
 
       <div class="flex items-center gap-2">
+        <router-link
+          to="/historial"
+          class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-colors duration-150"
+          aria-label="Ver historial"
+        >
+          <ChartBarIcon class="w-5 h-5" />
+        </router-link>
+
         <button
           type="button"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-colors duration-150"
@@ -31,7 +39,7 @@
 
 <script setup>
 import { BoltIcon } from "@heroicons/vue/24/solid";
-import { SunIcon, MoonIcon } from "@heroicons/vue/24/outline";
+import { SunIcon, MoonIcon, ChartBarIcon } from "@heroicons/vue/24/outline";
 import { useThemeStore } from "@/shared/stores/theme";
 
 const themeStore = useThemeStore();

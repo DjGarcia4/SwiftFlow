@@ -433,9 +433,11 @@ import { getRandomQuote } from "@/features/typing-test/content/quotes";
 import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
 import { useConfigStore } from "@/features/typing-test/store";
 import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
+import { useHistoryStore } from "@/features/history/store";
 
 // Config store
 const configStore = useConfigStore();
+const historyStore = useHistoryStore();
 
 // Local component state
 const lastParagraph = ref(null);
@@ -522,6 +524,16 @@ const isTypingActive = computed(() => {
   return configStore.userInput.length > 0 && !isCompleted.value && !configStore.isPaused;
 });
 
+// The extra bit of context shown next to each history entry: the target
+// for modes that have one, or the actual code language typed (not just the
+// filter, since "Todos" resolves to a specific snippet's language).
+const currentModeValue = () => {
+  if (configStore.type === "time") return configStore.selectedTime;
+  if (configStore.type === "words") return configStore.selectedWords;
+  if (configStore.type === "code") return currentCodeLanguage.value;
+  return null;
+};
+
 // Watch for completion
 watch(isCompleted, (completed) => {
   if (completed) {
@@ -535,6 +547,14 @@ watch(isCompleted, (completed) => {
     // One last sample so the results chart's final point matches the
     // final stats exactly, even if completion landed between ticks
     configStore.recordWpmSample();
+    historyStore.recordResult({
+      mode: configStore.type,
+      wpm: configStore.wpm,
+      accuracy: configStore.accuracy,
+      errors: configStore.errors,
+      timeElapsed: configStore.timeElapsed,
+      modeValue: currentModeValue(),
+    });
 
     // Add global keydown listener for space key restart
     document.addEventListener("keydown", handleGlobalKeydown);
