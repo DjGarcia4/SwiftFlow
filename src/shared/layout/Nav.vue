@@ -36,6 +36,8 @@
           <ChartBarIcon class="w-5 h-5" />
         </router-link>
 
+        <SoundSettingsMenu />
+
         <button
           type="button"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-colors duration-150"
@@ -57,6 +59,7 @@ import { SunIcon, MoonIcon, ChartBarIcon, FireIcon } from "@heroicons/vue/24/out
 import { useThemeStore } from "@/shared/stores/theme";
 import { useHistoryStore } from "@/features/history/store";
 import { getDailyStreakColorRgb } from "@/shared/utils/flameColor";
+import SoundSettingsMenu from "@/shared/components/SoundSettingsMenu.vue";
 
 const themeStore = useThemeStore();
 const historyStore = useHistoryStore();

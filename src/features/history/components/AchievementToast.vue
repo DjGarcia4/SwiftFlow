@@ -36,8 +36,11 @@ import {
   ACHIEVEMENT_ICONS,
   achievementSolidStyle,
 } from "@/features/history/achievementPresentation";
+import { useSoundStore } from "@/shared/stores/sound";
+import { playCelebrationSound } from "@/shared/utils/sound";
 
 const historyStore = useHistoryStore();
+const soundStore = useSoundStore();
 const achievement = computed(() => historyStore.newlyUnlocked[0] ?? null);
 
 const DISPLAY_MS = 4000;
@@ -48,6 +51,9 @@ watch(
   (current) => {
     clearTimeout(dismissTimeout);
     if (current) {
+      if (soundStore.soundEnabled && soundStore.celebrationSound) {
+        playCelebrationSound();
+      }
       dismissTimeout = setTimeout(() => {
         historyStore.dismissNewlyUnlocked();
       }, DISPLAY_MS);

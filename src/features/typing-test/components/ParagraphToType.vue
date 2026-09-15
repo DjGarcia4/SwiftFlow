@@ -492,10 +492,17 @@ import { computeKeyboardViewportStyle } from "@/features/typing-test/utils/keybo
 import { useHistoryStore } from "@/features/history/store";
 import { formatModeLabel } from "@/features/history/utils/historyStats";
 import { drawShareCard } from "@/features/typing-test/utils/shareCard";
+import { useSoundStore } from "@/shared/stores/sound";
+import {
+  playKeystrokeSound,
+  playErrorSound,
+  playCelebrationSound,
+} from "@/shared/utils/sound";
 
 // Config store
 const configStore = useConfigStore();
 const historyStore = useHistoryStore();
+const soundStore = useSoundStore();
 
 // Local component state
 const lastParagraph = ref(null);
@@ -646,6 +653,9 @@ watch(isCompleted, (completed) => {
     }
     configStore.clearInactivityTimer();
     justBrokeRecord.value = configStore.isBeatingBest;
+    if (justBrokeRecord.value && soundStore.soundEnabled && soundStore.celebrationSound) {
+      playCelebrationSound();
+    }
     configStore.updateBestWpm();
     // One last sample so the results chart's final point matches the
     // final stats exactly, even if completion landed between ticks
@@ -707,6 +717,26 @@ const updateCaretPosition = () => {
 watch(referenceText, () => {
   nextTick(updateCaretPosition);
 });
+
+// Keystroke feedback sound: only for an actual new character typed (not a
+// backspace, and not the reset back to "" between sessions/reference-text
+// changes — both shrink or match length instead of growing it).
+watch(
+  () => configStore.userInput,
+  (newValue, oldValue) => {
+    if (!soundStore.soundEnabled) return;
+    if (newValue.length <= oldValue.length) return;
+
+    const lastIndex = newValue.length - 1;
+    const isCorrect = newValue[lastIndex] === referenceText.value[lastIndex];
+
+    if (isCorrect) {
+      if (soundStore.keystrokeSound) playKeystrokeSound();
+    } else if (soundStore.errorSound) {
+      playErrorSound();
+    }
+  }
+);
 
 // Watch for config changes: reload the reference text (a fresh random
 // words text if the word count changed, or the same paragraph reloaded
