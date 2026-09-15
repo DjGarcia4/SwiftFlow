@@ -1,6 +1,7 @@
 <template>
   <div
     class="fixed top-1/2 left-1/2 z-0 w-full max-w-4xl lg:max-w-5xl -translate-x-1/2 -translate-y-1/2 space-y-6 px-4 sm:px-6 max-h-[min(85vh,calc(100vh-9rem))] overflow-y-auto"
+    :style="viewportStyle"
   >
     <!-- Author attribution for quote mode -->
     <Transition
@@ -331,11 +332,7 @@
 
       <div
         ref="typingContainer"
-        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container h-[210px] xs:h-[230px] sm:h-[340px] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)]"
-        :class="{
-          'overflow-y-auto': !configStore.isPaused,
-          'overflow-hidden': configStore.isPaused,
-        }"
+        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container overflow-hidden h-[210px] xs:h-[230px] sm:h-[340px] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)]"
         @click="focusInput"
       >
         <div
@@ -456,6 +453,7 @@ import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
 import { useConfigStore } from "@/features/typing-test/store";
 import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
 import { getCharacterStreakColorRgb } from "@/shared/utils/flameColor";
+import { computeKeyboardViewportStyle } from "@/features/typing-test/utils/keyboardViewport";
 import { useHistoryStore } from "@/features/history/store";
 
 // Config store
@@ -471,6 +469,26 @@ const currentCodeLanguage = ref("");
 const typingInput = ref(null);
 const typingContainer = ref(null);
 const textContentEl = ref(null);
+
+// On mobile, `top-1/2` (and the "vh"-based max-height) is computed against
+// the full layout viewport, which most mobile browsers DON'T shrink when
+// the on-screen keyboard opens — so this card stays centered against a
+// height that no longer matches what's actually visible, and the current
+// line ends up hidden behind the keyboard. computeKeyboardViewportStyle
+// uses the Visual Viewport API's real visible area to recenter against
+// that instead while the keyboard is open (falls back to the plain CSS
+// centering otherwise/on browsers without it, e.g. desktop).
+const viewportStyle = ref({});
+
+const updateViewportStyle = () => {
+  const vv = window.visualViewport;
+  if (!vv) return;
+
+  viewportStyle.value = computeKeyboardViewportStyle({
+    innerHeight: window.innerHeight,
+    visualViewport: { offsetTop: vv.offsetTop, height: vv.height },
+  });
+};
 
 // Global keydown listener for space key when completed
 const handleGlobalKeydown = (event) => {
@@ -664,30 +682,23 @@ const focusInput = () => {
   typingInput.value?.focus();
 };
 
+// Keeps the line being typed vertically centered in the box at all times
+// (not just once it's about to scroll out of view) — so with, say, 5 lines
+// visible, the current one always sits in the middle: 2 lines of context
+// above, 2 of what's coming up below. Calling this every keystroke is
+// cheap: scrollIntoView is a no-op once the target is already centered, so
+// it only actually animates right when a new line starts.
 const scrollToCurrentPosition = () => {
   if (!typingContainer.value || configStore.userInput.length === 0) return;
 
   const currentChar = getCurrentCharElement();
   if (!currentChar) return;
 
-  const container = typingContainer.value;
-
-  // Calculate the position of the current character relative to the container
-  const charRect = currentChar.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-
-  // Check if the character is outside the visible area
-  const isAboveView = charRect.top < containerRect.top;
-  const isBelowView = charRect.bottom > containerRect.bottom;
-
-  if (isAboveView || isBelowView) {
-    // Scroll to make the current character visible
-    currentChar.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-      inline: "nearest",
-    });
-  }
+  currentChar.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+    inline: "nearest",
+  });
 };
 
 // How close (in characters) to the end of the text before we tack on
@@ -770,6 +781,11 @@ const finishZen = () => {
 onMounted(() => {
   typingInput.value?.focus();
   nextTick(updateCaretPosition);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", updateViewportStyle);
+    window.visualViewport.addEventListener("scroll", updateViewportStyle);
+  }
 });
 
 onUnmounted(() => {
@@ -782,6 +798,11 @@ onUnmounted(() => {
 
   // Remove global keydown listener
   document.removeEventListener("keydown", handleGlobalKeydown);
+
+  if (window.visualViewport) {
+    window.visualViewport.removeEventListener("resize", updateViewportStyle);
+    window.visualViewport.removeEventListener("scroll", updateViewportStyle);
+  }
 });
 </script>
 
