@@ -9,13 +9,13 @@
   >
     <div
       v-if="open"
-      class="fixed inset-0 z-[60] flex items-center justify-center bg-night-ink/40 p-4"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-night-ink/40 backdrop-blur-sm p-4"
       @click.self="$emit('close')"
     >
       <Transition
         appear
-        enter-active-class="transition-all duration-200 ease-out"
-        enter-from-class="opacity-0 translate-y-4 scale-95"
+        enter-active-class="transition-all duration-500 ease-spring"
+        enter-from-class="opacity-0 translate-y-6 scale-90"
         enter-to-class="opacity-100 translate-y-0 scale-100"
         leave-active-class="transition-all duration-150 ease-in"
         leave-from-class="opacity-100 translate-y-0 scale-100"

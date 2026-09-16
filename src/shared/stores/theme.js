@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
+import { prefersReducedMotion } from "@/shared/utils/motion";
 
 const STORAGE_KEY = "swiftflow_theme";
 
@@ -26,8 +27,50 @@ export const useThemeStore = defineStore("theme", () => {
     localStorage.setItem(STORAGE_KEY, value ? "dark" : "light");
   });
 
-  const toggleTheme = () => {
-    isDark.value = !isDark.value;
+  // Where the reveal circle starts: the pointer for a click, or the center
+  // of the button when it was activated from the keyboard (no coordinates).
+  const revealOrigin = (event) => {
+    if (event?.detail > 0) return { x: event.clientX, y: event.clientY };
+    const rect = event?.currentTarget?.getBoundingClientRect?.();
+    if (rect) return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  };
+
+  const toggleTheme = (event) => {
+    const flip = () => {
+      isDark.value = !isDark.value;
+      // Applied right away (not left to the watcher) so the view transition
+      // captures the new theme in its "after" snapshot.
+      applyTheme(isDark.value);
+    };
+
+    if (!document.startViewTransition || prefersReducedMotion()) {
+      flip();
+      return;
+    }
+
+    const { x, y } = revealOrigin(event);
+    const radius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(flip);
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${radius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 550,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          pseudoElement: "::view-transition-new(root)",
+        }
+      );
+    });
   };
 
   return { isDark, toggleTheme };

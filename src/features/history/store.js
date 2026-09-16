@@ -11,17 +11,25 @@ import {
   computeAverageAccuracy,
   computePersonalBests,
   computeDailyStreak,
+  isCurrentMetrics,
+  METRICS_VERSION,
 } from "@/features/history/utils/historyStats";
 import { computeAchievements } from "@/features/history/achievements";
 
 export const useHistoryStore = defineStore("history", () => {
   const results = ref(getResults());
 
+  // Sessions measured with the current wpm/accuracy formula. Records,
+  // averages and the trend use only these so old (inflated) numbers don't
+  // mix in; counts, streaks and achievements still use the full history so
+  // nothing already earned is lost.
+  const currentResults = computed(() => results.value.filter(isCurrentMetrics));
+
   const sessionsCount = computed(() => results.value.length);
-  const bestWpm = computed(() => computeBestWpm(results.value));
-  const averageWpm = computed(() => computeAverageWpm(results.value));
-  const averageAccuracy = computed(() => computeAverageAccuracy(results.value));
-  const personalBests = computed(() => computePersonalBests(results.value));
+  const bestWpm = computed(() => computeBestWpm(currentResults.value));
+  const averageWpm = computed(() => computeAverageWpm(currentResults.value));
+  const averageAccuracy = computed(() => computeAverageAccuracy(currentResults.value));
+  const personalBests = computed(() => computePersonalBests(currentResults.value));
   const dailyStreak = computed(() => computeDailyStreak(results.value));
   const achievements = computed(() => computeAchievements(results.value));
   const unlockedAchievementsCount = computed(
@@ -43,6 +51,7 @@ export const useHistoryStore = defineStore("history", () => {
     const fullEntry = {
       id: crypto.randomUUID(),
       date: new Date().toISOString(),
+      metricsVersion: METRICS_VERSION,
       ...entry,
     };
     results.value = saveResult(fullEntry);
@@ -66,6 +75,7 @@ export const useHistoryStore = defineStore("history", () => {
 
   return {
     results,
+    currentResults,
     sessionsCount,
     bestWpm,
     averageWpm,

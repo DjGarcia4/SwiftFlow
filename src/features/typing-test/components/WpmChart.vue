@@ -60,11 +60,20 @@
       </g>
 
       <!-- Area fill under the line -->
-      <path :d="areaPath" fill="var(--color-success)" fill-opacity="0.1" />
+      <path
+        :d="areaPath"
+        fill="var(--color-success)"
+        fill-opacity="0.1"
+        class="animate-fade-in [animation-delay:500ms] [animation-duration:900ms]"
+      />
 
-      <!-- WPM line -->
+      <!-- WPM line: draws itself left to right (pathLength normalizes the
+           dash math to 0..1 whatever the real length is) -->
       <path
         :d="linePath"
+        pathLength="1"
+        stroke-dasharray="1"
+        class="animate-draw [animation-delay:250ms]"
         fill="none"
         stroke="var(--color-success)"
         stroke-width="2"
@@ -73,7 +82,16 @@
       />
 
       <!-- Error markers: surface ring + danger dot -->
-      <g v-for="(marker, i) in errorMarkers" :key="i">
+      <g
+        v-for="(marker, i) in errorMarkers"
+        :key="i"
+        class="animate-pop-in"
+        :style="{
+          transformOrigin: `${marker.x}px ${marker.y}px`,
+          transformBox: 'view-box',
+          animationDelay: `${250 + marker.progress * 1100}ms`,
+        }"
+      >
         <circle :cx="marker.x" :cy="marker.y" r="6" fill="var(--color-paper-white)" />
         <circle :cx="marker.x" :cy="marker.y" r="4" fill="var(--color-danger)" />
       </g>
@@ -85,7 +103,7 @@
         :x="xScale(lastPoint.time) - 6"
         :y="Math.max(yScale(lastPoint.wpm) - 8, padding.top + 10)"
         text-anchor="end"
-        class="fill-charcoal"
+        class="fill-charcoal animate-fade-in [animation-delay:1200ms]"
         font-size="12"
         font-weight="800"
       >
@@ -205,6 +223,8 @@ const errorMarkers = computed(() => {
       markers.push({
         x: xScale(points.value[i].time),
         y: yScale(points.value[i].wpm),
+        // How far along the line this is, so it pops as the line reaches it
+        progress: points.value[i].time / maxTime.value,
       });
     }
   }

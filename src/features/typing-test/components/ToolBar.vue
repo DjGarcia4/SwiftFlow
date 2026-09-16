@@ -42,13 +42,17 @@
         v-if="
           configStore.type === 'time' ||
           configStore.type === 'words' ||
+          configStore.type === 'numbers' ||
           configStore.type === 'code'
         "
       >
         <!-- Divisor -->
         <div class="h-px w-full bg-faded-gray"></div>
 
-        <div class="flex flex-wrap items-center justify-center gap-2">
+        <div
+          :key="configStore.type"
+          class="flex flex-wrap items-center justify-center gap-2 animate-rise [animation-duration:400ms]"
+        >
           <template v-if="configStore.type === 'time'">
             <IconButton
               v-for="time in configStore.times"
@@ -60,7 +64,7 @@
               @click="configStore.handleTime(time)"
             />
           </template>
-          <template v-if="configStore.type === 'words'">
+          <template v-if="configStore.type === 'words' || configStore.type === 'numbers'">
             <IconButton
               v-for="word in configStore.words"
               :key="word"
@@ -136,13 +140,17 @@
         v-if="
           configStore.type === 'time' ||
           configStore.type === 'words' ||
+          configStore.type === 'numbers' ||
           configStore.type === 'code'
         "
       >
         <!-- Divisor -->
         <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
 
-        <div class="flex items-center gap-1.5 flex-shrink-0">
+        <div
+          :key="configStore.type"
+          class="flex items-center gap-1.5 flex-shrink-0 animate-rise [animation-duration:400ms]"
+        >
           <template v-if="configStore.type === 'time'">
             <IconButton
               v-for="time in configStore.times"
@@ -154,7 +162,7 @@
               @click="configStore.handleTime(time)"
             />
           </template>
-          <template v-if="configStore.type === 'words'">
+          <template v-if="configStore.type === 'words' || configStore.type === 'numbers'">
             <IconButton
               v-for="word in configStore.words"
               :key="word"
@@ -200,6 +208,7 @@ const configStore = useConfigStore();
 const typeMeta = {
   time: { icon: "clock", label: "Tiempo" },
   words: { icon: "letter", label: "Palabras" },
+  numbers: { icon: "number", label: "Números" },
   quote: { icon: "quote", label: "Cita" },
   code: { icon: "code", label: "Código" },
   zen: { icon: "zen", label: "Zen" },

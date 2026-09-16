@@ -4,9 +4,17 @@
     class="w-full h-auto"
     preserveAspectRatio="none"
   >
-    <path :d="areaPath" fill="var(--color-primary)" fill-opacity="0.1" />
+    <path
+      :d="areaPath"
+      fill="var(--color-primary)"
+      fill-opacity="0.1"
+      class="animate-fade-in [animation-delay:400ms]"
+    />
     <path
       :d="linePath"
+      pathLength="1"
+      stroke-dasharray="1"
+      class="animate-draw [animation-delay:150ms]"
       fill="none"
       stroke="var(--color-primary)"
       stroke-width="2"

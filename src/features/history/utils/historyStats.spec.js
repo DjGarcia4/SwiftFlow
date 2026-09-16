@@ -7,6 +7,13 @@ import {
   computePersonalBests,
   computeDailyStreak,
   computeLongestDailyStreak,
+  computeBestStreak,
+  computeTotalTimeElapsed,
+  computeTotalKeystrokes,
+  computeTotalCorrectedErrors,
+  isCurrentMetrics,
+  computeKeyErrorStats,
+  formatKeyLabel,
 } from "./historyStats";
 
 const results = [
@@ -204,5 +211,68 @@ describe("computeLongestDailyStreak", () => {
       { date: dateOffset(1) },
     ];
     expect(computeLongestDailyStreak(results)).toBe(2);
+  });
+});
+
+describe("keystroke stats", () => {
+  const tracked = [
+    {
+      maxStreak: 42,
+      timeElapsed: 30,
+      keystrokes: 100,
+      errorKeystrokes: 10,
+      keyAttempts: { a: 20, A: 5, " ": 15, q: 2 },
+      missedKeys: { a: 3, A: 2, " ": 1, q: 2 },
+    },
+    {
+      maxStreak: 80,
+      timeElapsed: 60,
+      keystrokes: 100,
+      errorKeystrokes: 0,
+      keyAttempts: { e: 30 },
+      missedKeys: {},
+    },
+    // Saved before keystroke tracking existed
+    { wpm: 50, accuracy: 90, timeElapsed: 15 },
+  ];
+
+  it("computeBestStreak returns the longest combo, ignoring old sessions", () => {
+    expect(computeBestStreak(tracked)).toBe(80);
+    expect(computeBestStreak([])).toBe(0);
+  });
+
+  it("sums total time and keystrokes", () => {
+    expect(computeTotalTimeElapsed(tracked)).toBe(105);
+    expect(computeTotalKeystrokes(tracked)).toBe(200);
+  });
+
+  it("computeTotalCorrectedErrors sums mistakes fixed with backspace", () => {
+    // first session: 10 wrong keystrokes, none left in the text
+    expect(computeTotalCorrectedErrors(tracked)).toBe(10);
+    expect(computeTotalCorrectedErrors([{ errorKeystrokes: 3, errors: 5 }])).toBe(0);
+  });
+
+  it("isCurrentMetrics only accepts results measured with the current formula", () => {
+    expect(isCurrentMetrics({ metricsVersion: 3 })).toBe(true);
+    expect(isCurrentMetrics({ metricsVersion: 2 })).toBe(false);
+    expect(isCurrentMetrics({ wpm: 50 })).toBe(false);
+  });
+
+  it("computeKeyErrorStats merges case and sorts by misses, then rate", () => {
+    const stats = computeKeyErrorStats(tracked);
+
+    expect(stats[0]).toEqual({ key: "a", attempts: 25, misses: 5, rate: 0.2 });
+    expect(stats.map((s) => s.key)).toEqual(["a", "q", " ", "e"]);
+    expect(stats.at(-1)).toEqual({ key: "e", attempts: 30, misses: 0, rate: 0 });
+  });
+
+  it("formatKeyLabel names invisible keys", () => {
+    expect(formatKeyLabel(" ")).toBe("espacio");
+    expect(formatKeyLabel("\n")).toBe("enter");
+    expect(formatKeyLabel("ñ")).toBe("ñ");
+  });
+
+  it("formatModeLabel knows the numbers mode", () => {
+    expect(formatModeLabel({ mode: "numbers", modeValue: 25 })).toBe("25 números");
   });
 });

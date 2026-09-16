@@ -2,10 +2,13 @@ import {
   computeBestWpm,
   computeLongestDailyStreak,
   computeAverageAccuracy,
+  computeBestStreak,
   toLocalDayKey,
 } from "@/features/history/utils/historyStats";
 
-// MODES_COUNT/TIME_OPTIONS_COUNT/WORD_OPTIONS_COUNT mirror the store config
+// MODES_COUNT stays at 5 even though there are now 6 modes (numbers was
+// added later), so nobody loses "Explorador" after having earned it.
+// TIME_OPTIONS_COUNT/WORD_OPTIONS_COUNT mirror the store config
 // (all typing modes, all time/word-count choices) — hardcoded rather than
 // imported, so if those option lists grow these should grow with them.
 // CODE_LANGUAGES_COUNT is different: it's a fixed "try N languages" bar for
@@ -183,6 +186,40 @@ export const ACHIEVEMENTS = [
     check: (ctx) => ctx.averageAccuracy >= 95,
   },
 
+  // Combo — longest run of correct characters in a single session
+  {
+    id: "combo_50",
+    category: "combo",
+    icon: "fire",
+    title: "Combo x50",
+    description: "Escribí 50 caracteres seguidos sin errores",
+    check: (ctx) => ctx.bestStreak >= 50,
+  },
+  {
+    id: "combo_150",
+    category: "combo",
+    icon: "fire",
+    title: "Combo x150",
+    description: "Escribí 150 caracteres seguidos sin errores",
+    check: (ctx) => ctx.bestStreak >= 150,
+  },
+  {
+    id: "combo_300",
+    category: "combo",
+    icon: "fire",
+    title: "Combo x300",
+    description: "Escribí 300 caracteres seguidos sin errores",
+    check: (ctx) => ctx.bestStreak >= 300,
+  },
+  {
+    id: "combo_500",
+    category: "combo",
+    icon: "fire",
+    title: "Intocable",
+    description: "Escribí 500 caracteres seguidos sin errores",
+    check: (ctx) => ctx.bestStreak >= 500,
+  },
+
   // Streak — the longest run ever, not just the current one
   {
     id: "streak_3",
@@ -239,7 +276,7 @@ export const ACHIEVEMENTS = [
     category: "explorer",
     icon: "map",
     title: "Explorador",
-    description: "Completá una sesión en cada modo",
+    description: "Completá una sesión en 5 modos distintos",
     check: (ctx) => ctx.modesPlayed >= MODES_COUNT,
   },
   {
@@ -273,6 +310,14 @@ export const ACHIEVEMENTS = [
     title: "Cronometrista",
     description: "Completá 20 sesiones en modo tiempo",
     check: (ctx) => ctx.timeSessionsCount >= 20,
+  },
+  {
+    id: "numbers_lover",
+    category: "explorer",
+    icon: "hashtag",
+    title: "Contador",
+    description: "Completá 10 sesiones en modo números",
+    check: (ctx) => ctx.numbersSessionsCount >= 10,
   },
   {
     id: "all_time_options",
@@ -475,6 +520,8 @@ export const computeAchievements = (results) => {
     sessionsCount: results.length,
     bestWpm: computeBestWpm(results),
     averageAccuracy: computeAverageAccuracy(results),
+    bestStreak: computeBestStreak(results),
+    numbersSessionsCount: results.filter((r) => r.mode === "numbers").length,
     perfectAccuracyCount: results.filter((r) => r.accuracy === 100).length,
     longestStreak: computeLongestDailyStreak(results),
     modesPlayed: new Set(results.map((r) => r.mode)).size,

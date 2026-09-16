@@ -162,3 +162,32 @@ describe("computeAchievements", () => {
     expect(isUnlocked(achievements, "streak_7")).toBe(false);
   });
 });
+
+describe("combo and numbers achievements", () => {
+  it("unlocks combo achievements from the best single-session streak", () => {
+    const results = [
+      { mode: "time", wpm: 40, accuracy: 90, maxStreak: 60 },
+      { mode: "time", wpm: 40, accuracy: 90, maxStreak: 20 },
+    ];
+    const achievements = computeAchievements(results);
+    expect(isUnlocked(achievements, "combo_50")).toBe(true);
+    expect(isUnlocked(achievements, "combo_150")).toBe(false);
+  });
+
+  it("does not unlock combo achievements for sessions without streak data", () => {
+    const achievements = computeAchievements([{ mode: "time", wpm: 40, accuracy: 90 }]);
+    expect(isUnlocked(achievements, "combo_50")).toBe(false);
+  });
+
+  it("unlocks numbers_lover after 10 numbers sessions", () => {
+    const nine = Array.from({ length: 9 }, () => ({
+      mode: "numbers",
+      wpm: 30,
+      accuracy: 90,
+    }));
+    expect(isUnlocked(computeAchievements(nine), "numbers_lover")).toBe(false);
+
+    const ten = [...nine, { mode: "numbers", wpm: 30, accuracy: 90 }];
+    expect(isUnlocked(computeAchievements(ten), "numbers_lover")).toBe(true);
+  });
+});

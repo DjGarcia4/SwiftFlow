@@ -2,7 +2,7 @@
   <div ref="rootEl" class="relative">
     <button
       type="button"
-      class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-colors duration-150"
+      class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
       :aria-label="
         soundStore.soundEnabled ? 'Configurar sonido' : 'Sonido silenciado — configurar'
       "
@@ -13,8 +13,8 @@
     </button>
 
     <Transition
-      enter-active-class="transition-all duration-150 ease-out"
-      enter-from-class="opacity-0 -translate-y-1 scale-95"
+      enter-active-class="transition-all duration-300 ease-spring"
+      enter-from-class="opacity-0 -translate-y-1 scale-90"
       enter-to-class="opacity-100 translate-y-0 scale-100"
       leave-active-class="transition-all duration-100 ease-in"
       leave-from-class="opacity-100 translate-y-0 scale-100"
@@ -22,7 +22,7 @@
     >
       <div
         v-if="open"
-        class="absolute right-0 top-full mt-2 w-60 bg-paper-white rounded-card border-2 border-faded-gray p-3 shadow-lg z-50"
+        class="absolute right-0 top-full mt-2 w-60 origin-top-right bg-paper-white rounded-card border-2 border-faded-gray p-3 shadow-lg z-50"
       >
         <div
           v-for="toggleItem in toggles"
@@ -41,13 +41,13 @@
           </span>
           <button
             type="button"
-            class="relative w-10 h-6 rounded-full transition-colors duration-150 flex-shrink-0"
+            class="relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0"
             :class="soundStore[toggleItem.key] ? 'bg-primary' : 'bg-faded-gray'"
             :aria-label="`${toggleItem.label}: ${soundStore[toggleItem.key] ? 'activado' : 'desactivado'}`"
             @click="soundStore.toggle(toggleItem.key)"
           >
             <span
-              class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-150"
+              class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ease-spring"
               :class="soundStore[toggleItem.key] ? 'translate-x-4' : 'translate-x-0'"
             ></span>
           </button>

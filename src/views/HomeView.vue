@@ -6,8 +6,12 @@
       Fades out while typing instead of unmounting, so nothing shifts.
     -->
     <div
-      class="hidden sm:block fixed top-20 left-1/2 z-20 max-w-[95vw] -translate-x-1/2 transition-opacity duration-200"
-      :class="hideConfig ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'"
+      class="hidden sm:block fixed top-20 left-1/2 z-20 max-w-[95vw] -translate-x-1/2 transition-[opacity,translate] duration-500 ease-smooth"
+      :class="
+        hideConfig
+          ? 'opacity-0 -translate-y-3 pointer-events-none select-none duration-300'
+          : 'opacity-100 translate-y-0'
+      "
       :aria-hidden="hideConfig"
     >
       <ToolBar />
@@ -16,8 +20,12 @@
     <!-- Mobile: compact settings FAB, bottom-left, opens the config sheet -->
     <button
       type="button"
-      class="sm:hidden fixed bottom-4 left-4 z-20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-faded-gray bg-paper-white text-primary shadow-sm transition-opacity duration-200 active:scale-95"
-      :class="hideConfig ? 'opacity-0 pointer-events-none' : 'opacity-100'"
+      class="sm:hidden fixed bottom-4 left-4 z-20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-faded-gray bg-paper-white text-primary shadow-sm transition-[opacity,scale,rotate] duration-500 ease-spring active:scale-90"
+      :class="
+        hideConfig
+          ? 'opacity-0 scale-75 -rotate-45 pointer-events-none'
+          : 'opacity-100 scale-100 rotate-0'
+      "
       :aria-hidden="hideConfig"
       aria-label="Configurar"
       @click="configOpen = true"
@@ -36,13 +44,13 @@
     >
       <div
         v-if="configOpen"
-        class="sm:hidden fixed inset-0 z-[60] flex items-end justify-center bg-night-ink/40 p-4"
+        class="sm:hidden fixed inset-0 z-[60] flex items-end justify-center bg-night-ink/40 backdrop-blur-[2px] p-4"
         @click.self="configOpen = false"
       >
         <Transition
           appear
-          enter-active-class="transition-all duration-200 ease-out"
-          enter-from-class="opacity-0 translate-y-4"
+          enter-active-class="transition-all duration-500 ease-spring"
+          enter-from-class="opacity-0 translate-y-10"
           enter-to-class="opacity-100 translate-y-0"
           leave-active-class="transition-all duration-150 ease-in"
           leave-from-class="opacity-100 translate-y-0"
@@ -66,6 +74,11 @@
 
     <!-- Always dead-centered on screen, independent of everything above -->
     <ParagraphToType />
+
+    <!-- Combo pushes live out here, not inside ParagraphToType: that box is
+         transformed, which would make it the containing block for anything
+         "fixed" inside it (and clip it). -->
+    <ComboToast />
   </div>
 </template>
 
@@ -74,6 +87,7 @@ import { ref, computed, watch } from "vue";
 import { Cog6ToothIcon } from "@heroicons/vue/24/outline";
 import ParagraphToType from "@/features/typing-test/components/ParagraphToType.vue";
 import ToolBar from "@/features/typing-test/components/ToolBar.vue";
+import ComboToast from "@/features/typing-test/components/ComboToast.vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 

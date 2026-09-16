@@ -15,6 +15,7 @@ import {
   DocumentTextIcon,
   CalendarDaysIcon,
   GiftIcon,
+  HashtagIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -36,6 +37,7 @@ export const ACHIEVEMENT_ICONS = {
   document: DocumentTextIcon,
   calendar: CalendarDaysIcon,
   gift: GiftIcon,
+  hashtag: HashtagIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {
@@ -43,6 +45,7 @@ export const ACHIEVEMENT_CATEGORY_RGB = {
   speed: [37, 99, 235], // blue
   accuracy: [5, 150, 105], // emerald
   streak: [234, 88, 12], // orange
+  combo: [225, 29, 72], // rose
   explorer: [124, 58, 237], // violet
   time: [8, 145, 178], // cyan
   zen: [13, 148, 136], // teal

@@ -1,27 +1,41 @@
 <template>
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-    <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-charcoal mb-6">
-      Historial
-    </h1>
+    <div class="flex items-center justify-between gap-3 mb-6 animate-rise">
+      <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-charcoal">
+        Historial
+      </h1>
+      <div class="hidden sm:flex items-center gap-2 text-xs text-pencil-gray font-bold">
+        <kbd
+          class="px-2 py-0.5 bg-paper-white text-charcoal rounded-md font-mono border-2 border-faded-gray"
+          >ESPACIO</kbd
+        >
+        para volver a escribir
+      </div>
+    </div>
 
     <div
       v-if="historyStore.sessionsCount === 0"
-      class="bg-paper-white rounded-card p-8 border-2 border-faded-gray text-center text-pencil-gray"
+      class="bg-paper-white rounded-card p-8 border-2 border-faded-gray text-center text-pencil-gray animate-rise [animation-delay:100ms]"
     >
       Todavía no completaste ningún test.
     </div>
 
     <template v-else>
       <!-- Summary cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+      <div
+        class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6 [&>*]:animate-rise [&>*:nth-child(2)]:[animation-delay:50ms] [&>*:nth-child(3)]:[animation-delay:100ms] [&>*:nth-child(4)]:[animation-delay:150ms] [&>*:nth-child(5)]:[animation-delay:200ms]"
+      >
         <div
           class="bg-gradient-to-br from-primary-tint to-primary/10 rounded-card p-4 sm:p-6 border-2 border-primary text-center shadow-sm shadow-primary/20"
         >
           <div
             class="flex items-center justify-center gap-1 text-2xl sm:text-3xl font-display font-extrabold text-primary-dark mb-1"
           >
-            <FireIcon v-if="historyStore.dailyStreak > 0" class="w-5 h-5 sm:w-6 sm:h-6" />
-            {{ historyStore.dailyStreak }}
+            <FireIcon
+              v-if="historyStore.dailyStreak > 0"
+              class="w-5 h-5 sm:w-6 sm:h-6 animate-pop-in [animation-delay:500ms]"
+            />
+            <AnimatedNumber :value="historyStore.dailyStreak" />
           </div>
           <div
             class="text-xs sm:text-sm text-primary-dark font-bold uppercase tracking-wide"
@@ -35,7 +49,7 @@
           <div
             class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
           >
-            {{ historyStore.sessionsCount }}
+            <AnimatedNumber :value="historyStore.sessionsCount" />
           </div>
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
@@ -47,7 +61,8 @@
           class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
         >
           <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
-            {{ historyStore.bestWpm }}
+            <AnimatedNumber v-if="hasCurrent" :value="historyStore.bestWpm" />
+            <template v-else>—</template>
           </div>
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
@@ -61,7 +76,8 @@
           <div
             class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
           >
-            {{ historyStore.averageWpm }}
+            <AnimatedNumber v-if="hasCurrent" :value="historyStore.averageWpm" />
+            <template v-else>—</template>
           </div>
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
@@ -75,7 +91,10 @@
           <div
             class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
           >
-            {{ historyStore.averageAccuracy }}%
+            <template v-if="hasCurrent">
+              <AnimatedNumber :value="historyStore.averageAccuracy" />%
+            </template>
+            <template v-else>—</template>
           </div>
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
@@ -85,10 +104,34 @@
         </div>
       </div>
 
+      <!-- Totals / per-keystroke stats -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div
+          v-for="(stat, index) in extraStats"
+          :key="stat.label"
+          class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray text-center animate-rise"
+          :style="staggerStyle(index, { step: 50, base: 250 })"
+        >
+          <div class="text-xl sm:text-2xl font-display font-extrabold text-charcoal mb-1">
+            <AnimatedNumber
+              v-if="typeof stat.value === 'number'"
+              :value="stat.value"
+              :format="formatThousands"
+            />
+            <template v-else>{{ stat.value }}</template>
+          </div>
+          <div
+            class="text-[10px] sm:text-xs text-pencil-gray font-bold uppercase tracking-wide"
+          >
+            {{ stat.label }}
+          </div>
+        </div>
+      </div>
+
       <!-- Trend -->
       <div
         v-if="trendValues.length >= 2"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:400ms]"
       >
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
           Tendencia de WPM
@@ -96,8 +139,23 @@
         <TrendSparkline :values="trendValues" />
       </div>
 
+      <!-- Most-missed keys -->
+      <div
+        v-if="keyErrorStats.length"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:500ms]"
+      >
+        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-3">
+          Teclas más falladas
+        </div>
+        <KeyErrorHeatmap :stats="keyErrorStats" />
+        <ImprovementTips :stats="keyErrorStats" :average-accuracy="recentAccuracy" />
+      </div>
+
       <!-- Personal bests -->
-      <div v-if="historyStore.personalBests.length" class="mb-6">
+      <div
+        v-if="historyStore.personalBests.length"
+        class="mb-6 animate-rise [animation-delay:550ms]"
+      >
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
           Récords personales
         </div>
@@ -115,7 +173,7 @@
           <div
             v-for="best in historyStore.personalBests"
             :key="`${best.mode}:${best.modeValue}`"
-            class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3"
+            class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3 transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-success"
           >
             <div class="font-display font-extrabold text-success text-lg">
               {{ best.wpm }}
@@ -128,7 +186,7 @@
       </div>
 
       <!-- Achievements -->
-      <div class="mb-6">
+      <div class="mb-6 animate-rise [animation-delay:600ms]">
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
           Logros ({{ historyStore.unlockedAchievementsCount }}/{{
             historyStore.achievements.length
@@ -141,7 +199,7 @@
              stay in the DOM either way — this only changes how much is
              visible, so expanding never re-fetches/re-renders anything. -->
         <div
-          class="relative overflow-hidden transition-[max-height] duration-300 ease-in-out"
+          class="relative overflow-hidden transition-[max-height] duration-700 ease-smooth"
           :class="
             showAllAchievements
               ? 'max-h-[3000px]'
@@ -150,15 +208,18 @@
         >
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div
-              v-for="achievement in historyStore.achievements"
+              v-for="(achievement, index) in historyStore.achievements"
               :key="achievement.id"
-              class="group relative rounded-card p-3 border-2 flex items-center gap-2.5 transition-all duration-300 ease-out"
+              class="group relative rounded-card p-3 border-2 flex items-center gap-2.5 transition-[opacity,background-color,border-color,color,scale] duration-300 ease-spring hover:scale-[1.03] animate-pop-in"
+              :style="{
+                ...achievementStyle(achievement),
+                ...staggerStyle(index, { step: 25, base: 650, max: 1200 }),
+              }"
               :class="
                 achievement.unlocked
                   ? ''
                   : 'bg-faded-gray/10 border-faded-gray opacity-40'
               "
-              :style="achievementStyle(achievement)"
             >
               <component
                 :is="achievementIcons[achievement.icon]"
@@ -180,7 +241,7 @@
               <!-- Hover tooltip: the full "how to earn it" text, since the
                    line above truncates on smaller cards. -->
               <div
-                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 rounded-xl bg-night-ink px-3 py-2 text-center text-xs font-bold text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 translate-y-1 rounded-xl bg-night-ink px-3 py-2 text-center text-xs font-bold text-white opacity-0 transition-[opacity,translate] duration-200 ease-smooth group-hover:translate-y-0 group-hover:opacity-100"
               >
                 {{ achievement.description }}
                 <div
@@ -213,22 +274,29 @@
       <TransitionGroup
         tag="div"
         class="space-y-2 mb-6"
-        enter-active-class="transition-all duration-300 ease-out"
+        enter-active-class="transition-all duration-500 ease-smooth"
         enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition-all duration-200 ease-in"
+        leave-active-class="transition-all duration-300 ease-in"
         leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 translate-x-4"
-        move-class="transition-transform duration-300 ease-out"
+        leave-to-class="opacity-0 translate-x-6"
+        move-class="transition-transform duration-500 ease-smooth"
       >
         <div
-          v-for="result in historyStore.results"
+          v-for="(result, index) in historyStore.results"
           :key="result.id"
-          class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray flex items-center justify-between gap-3"
+          class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray flex items-center justify-between gap-3 animate-rise transition-[border-color,translate] duration-300 ease-smooth hover:border-primary/50 hover:-translate-y-0.5"
+          :style="staggerStyle(index, { step: 40, base: 700, max: 1100 })"
         >
           <div class="min-w-0">
-            <div class="font-bold text-charcoal truncate">
-              {{ formatModeLabel(result) }}
+            <div class="flex items-center gap-1.5 font-bold text-charcoal min-w-0">
+              <span class="truncate">{{ formatModeLabel(result) }}</span>
+              <span
+                v-if="!isCurrentMetrics(result)"
+                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                title="Medida con la fórmula anterior de WPM: no cuenta para récords ni promedios"
+                >v1</span
+              >
             </div>
             <div class="text-xs text-pencil-gray">{{ formatDate(result.date) }}</div>
           </div>
@@ -268,18 +336,89 @@
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
 import { FireIcon } from "@heroicons/vue/24/outline";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
+import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
+import { staggerStyle } from "@/shared/utils/motion";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
+import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
+import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
 import { useHistoryStore } from "@/features/history/store";
-import { formatModeLabel as formatModeLabelUtil } from "@/features/history/utils/historyStats";
+import {
+  formatModeLabel as formatModeLabelUtil,
+  computeBestStreak,
+  computeTotalTimeElapsed,
+  computeTotalKeystrokes,
+  computeTotalCorrectedErrors,
+  computeKeyErrorStats,
+  computeAverageAccuracy,
+  isCurrentMetrics,
+} from "@/features/history/utils/historyStats";
 import {
   ACHIEVEMENT_ICONS as achievementIcons,
   achievementTintStyle as achievementStyle,
 } from "@/features/history/achievementPresentation";
 
 const historyStore = useHistoryStore();
+const router = useRouter();
+
+// Space jumps straight back to typing — same key that restarts a finished
+// test, so muscle memory works from here too. Skipped while a text field
+// has focus so it never swallows real typing.
+const handleKeydown = (event) => {
+  if (event.key !== " " || event.repeat) return;
+  const target = event.target;
+  if (target?.closest?.("input, textarea, select, [contenteditable='true']")) return;
+
+  event.preventDefault();
+  router.push("/");
+};
+
+onMounted(() => {
+  document.addEventListener("keydown", handleKeydown);
+});
+
+const formatDuration = (seconds) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours) return `${hours}h ${minutes}m`;
+  if (minutes) return `${minutes}m`;
+  return `${seconds}s`;
+};
+
+const extraStats = computed(() => {
+  const results = historyStore.results;
+  const corrected = computeTotalCorrectedErrors(results);
+  const keystrokes = computeTotalKeystrokes(results);
+  return [
+    { label: "Mejor combo", value: computeBestStreak(results) || "—" },
+    { label: "Tiempo total", value: formatDuration(computeTotalTimeElapsed(results)) },
+    {
+      label: "Teclas pulsadas",
+      value: keystrokes || "—",
+    },
+    {
+      label: "Errores corregidos",
+      value: corrected || "—",
+    },
+  ];
+});
+
+const formatThousands = (value) => value.toLocaleString("es");
+
+const hasCurrent = computed(() => historyStore.currentResults.length > 0);
+
+// Accuracy over the last few comparable sessions — recent habits matter more
+// than old ones for "what to work on now".
+const RECENT_SESSIONS = 10;
+const recentAccuracy = computed(() => {
+  const recent = historyStore.currentResults.slice(0, RECENT_SESSIONS);
+  return recent.length ? computeAverageAccuracy(recent) : null;
+});
+
+const keyErrorStats = computed(() => computeKeyErrorStats(historyStore.results));
 
 // Achievements grid starts collapsed to roughly this many cards' worth of
 // height (~7 rows: on desktop's 3-col grid that's 21 cards, on mobile's
@@ -294,7 +433,7 @@ const showAllAchievements = ref(false);
 // most-recent-first, so reverse the last 30 sessions.
 const TREND_SESSIONS = 30;
 const trendValues = computed(() =>
-  historyStore.results
+  historyStore.currentResults
     .slice(0, TREND_SESSIONS)
     .map((r) => r.wpm)
     .reverse()
@@ -325,6 +464,7 @@ const handleClearClick = () => {
 };
 
 onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeydown);
   clearTimeout(confirmTimeout);
 });
 </script>

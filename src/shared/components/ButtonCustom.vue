@@ -75,9 +75,11 @@ const buttonClasses = computed(() => {
     "rounded-xl",
     "border-2",
     "border-b-[6px]",
-    "transition-[transform,background-color,color,border-color,filter]",
-    "duration-100",
-    "ease-out",
+    // Only colors animate: switching the selected option glides instead of
+    // snapping, while the 3D press itself stays instant and tactile.
+    "transition-[background-color,color,border-color,filter]",
+    "duration-200",
+    "ease-smooth",
     "focus-visible:outline",
     "focus-visible:outline-2",
     "focus-visible:outline-offset-2",

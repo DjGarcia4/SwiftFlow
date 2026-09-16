@@ -1,7 +1,9 @@
 <template>
+  <!-- Keyed by achievement so a queued one leaves before the next pops in -->
   <Transition
-    enter-active-class="transition-all duration-300 ease-out"
-    enter-from-class="opacity-0 -translate-y-3 scale-95"
+    mode="out-in"
+    enter-active-class="transition-all duration-600 ease-spring"
+    enter-from-class="opacity-0 -translate-y-6 scale-75"
     enter-to-class="opacity-100 translate-y-0 scale-100"
     leave-active-class="transition-all duration-200 ease-in"
     leave-from-class="opacity-100 translate-y-0 scale-100"
@@ -9,13 +11,14 @@
   >
     <div
       v-if="achievement"
-      class="fixed top-20 left-1/2 z-[100] flex -translate-x-1/2 items-center gap-3 rounded-card border-2 px-4 py-3 shadow-lg cursor-pointer"
+      :key="achievement.id"
+      class="fixed top-20 left-1/2 z-[100] flex -translate-x-1/2 items-center gap-3 rounded-card border-2 px-4 py-3 shadow-xl cursor-pointer transition-[scale] duration-200 ease-spring hover:scale-105"
       :style="achievementSolidStyle(achievement)"
       @click="historyStore.dismissNewlyUnlocked()"
     >
       <component
         :is="ACHIEVEMENT_ICONS[achievement.icon]"
-        class="w-8 h-8 flex-shrink-0"
+        class="w-8 h-8 flex-shrink-0 animate-pop-in [animation-delay:200ms]"
       />
       <div>
         <div class="text-[10px] font-bold uppercase tracking-wide opacity-80">

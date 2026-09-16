@@ -1,6 +1,15 @@
 // Pure helpers over a list of history results (most-recent-first), kept
 // separate from the store so they're trivial to unit test.
 
+// Bumped whenever how wpm/accuracy are measured changes. v1 (unversioned)
+// counted whole words over whole seconds and accuracy on the final text
+// only; v2 uses correct characters / 5 over milliseconds and accuracy over
+// every keystroke; v3 only counts fully correct words and drops the first
+// keystroke. Records and averages only compare like with like.
+export const METRICS_VERSION = 3;
+
+export const isCurrentMetrics = (result) => result.metricsVersion === METRICS_VERSION;
+
 export const computeBestWpm = (results) => {
   if (!results.length) return 0;
   return Math.max(...results.map((r) => r.wpm));
@@ -21,6 +30,7 @@ export const computeAverageAccuracy = (results) => {
 const MODE_LABELS = {
   time: (value) => `${value}s`,
   words: (value) => `${value} palabras`,
+  numbers: (value) => `${value} números`,
   code: (value) => (value ? `Código · ${value}` : "Código"),
   quote: () => "Cita",
   zen: () => "Zen",
@@ -108,3 +118,59 @@ export const computeLongestDailyStreak = (results) => {
 
   return longest;
 };
+
+// Sessions saved before per-keystroke tracking existed don't have these
+// fields, so every helper below just skips over what's missing.
+
+// Longest run of correct characters in a single session.
+export const computeBestStreak = (results) =>
+  results.reduce((best, r) => Math.max(best, r.maxStreak || 0), 0);
+
+export const computeTotalTimeElapsed = (results) =>
+  results.reduce((sum, r) => sum + (r.timeElapsed || 0), 0);
+
+export const computeTotalKeystrokes = (results) =>
+  results.reduce((sum, r) => sum + (r.keystrokes || 0), 0);
+
+// Mistakes made and then fixed with backspace, across all sessions.
+export const computeTotalCorrectedErrors = (results) =>
+  results.reduce(
+    (sum, r) => sum + Math.max(0, (r.errorKeystrokes || 0) - (r.errors || 0)),
+    0
+  );
+
+// Aggregates per-key attempts/misses across sessions, case-insensitive (a
+// keyboard key is the same for "a" and "A"). Sorted by most misses, then by
+// highest miss rate, so the keys worth practicing come first.
+export const computeKeyErrorStats = (results) => {
+  const attempts = new Map();
+  const misses = new Map();
+
+  const add = (map, counts) => {
+    for (const [char, count] of Object.entries(counts || {})) {
+      const key = char.toLowerCase();
+      map.set(key, (map.get(key) || 0) + count);
+    }
+  };
+
+  for (const result of results) {
+    add(attempts, result.keyAttempts);
+    add(misses, result.missedKeys);
+  }
+
+  return [...attempts.entries()]
+    .map(([key, keyAttempts]) => {
+      const keyMisses = misses.get(key) || 0;
+      return {
+        key,
+        attempts: keyAttempts,
+        misses: keyMisses,
+        rate: keyMisses / keyAttempts,
+      };
+    })
+    .sort((a, b) => b.misses - a.misses || b.rate - a.rate);
+};
+
+const KEY_LABELS = { " ": "espacio", "\n": "enter", "\t": "tab" };
+
+export const formatKeyLabel = (key) => KEY_LABELS[key] ?? key;

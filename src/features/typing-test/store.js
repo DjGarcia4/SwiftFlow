@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { codeLanguages } from "@/features/typing-test/content/code";
 import {
   computeWpm,
+  computeRawWpm,
   computeAccuracy,
   computeErrors,
   computeStreak,
+  diffKeystrokes,
 } from "@/features/typing-test/utils/typingMetrics";
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
 import {
@@ -14,8 +16,14 @@ import {
   sanitizeConfig,
 } from "@/features/typing-test/configRepository";
 
+const BEST_WPM_KEY = "swiftflow_best_wpm_v3";
+
+// Below this much typing time, live wpm is computed as if this much had
+// passed — otherwise the first couple of keystrokes show absurd spikes.
+const MIN_LIVE_WPM_MS = 1000;
+
 export const useConfigStore = defineStore("config", () => {
-  const types = ref(["time", "words", "quote", "code", "zen"]);
+  const types = ref(["time", "words", "numbers", "quote", "code", "zen"]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
   const words = ref([10, 25, 50, 100]);
@@ -49,18 +57,35 @@ export const useConfigStore = defineStore("config", () => {
   // Typing state
   const userInput = ref("");
   const startTime = ref(null);
-  const timeElapsed = ref(0);
+  const timeElapsed = ref(0); // Whole seconds, for the on-screen counter and time limits
+  const elapsedMs = ref(0); // Precise active typing time, used for wpm
+  const lastKeystrokeAt = ref(null);
   const timer = ref(null);
   const isPaused = ref(false);
   const inactivityTimer = ref(null);
   const referenceText = ref("");
   const originalReferenceText = ref(""); // Keep track of original text
   const zenFinished = ref(false); // Manually ended a "zen" (no limit) session
+  const endedEarly = ref(false); // Manually ended any other mode before its limit (Esc twice)
+  const pausedAt = ref(null); // When the current pause started, to exclude it from the clock
   const wpmHistory = ref([]); // { time, wpm, errors } samples for the results chart
   const INACTIVITY_TIMEOUT = 3000; // 3 seconds of inactivity
 
+  // Per-keystroke session stats. Unlike errors/accuracy (computed from the
+  // final input), these also remember mistakes that were later corrected
+  // with backspace, and which expected key each mistake was on.
+  const keystrokes = ref(0);
+  const errorKeystrokes = ref(0);
+  const maxStreak = ref(0);
+  const keyAttempts = ref({}); // expected char -> times it was typed
+  const missedKeys = ref({}); // expected char -> times it was mistyped
+
   // Momentum state (best WPM record + live streak)
-  const bestWpm = ref(Number(localStorage.getItem("swiftflow_best_wpm")) || 0);
+  // Stored under a versioned key: wpm used to be measured differently and
+  // those older records aren't comparable (see METRICS_VERSION).
+  localStorage.removeItem("swiftflow_best_wpm");
+  localStorage.removeItem("swiftflow_best_wpm_v2");
+  const bestWpm = ref(Number(localStorage.getItem(BEST_WPM_KEY)) || 0);
 
   // Configuration handlers
   const handleType = (selectedType) => {
@@ -111,13 +136,22 @@ export const useConfigStore = defineStore("config", () => {
   };
 
   // Typing computed properties
+  const wpmElapsedMs = computed(() =>
+    isCompleted.value ? elapsedMs.value : Math.max(elapsedMs.value, MIN_LIVE_WPM_MS)
+  );
+
   const wpm = computed(() => {
     if (!startTime.value) return 0;
-    return computeWpm(userInput.value, timeElapsed.value);
+    return computeWpm(userInput.value, referenceText.value, wpmElapsedMs.value);
+  });
+
+  const rawWpm = computed(() => {
+    if (!startTime.value) return 0;
+    return computeRawWpm(keystrokes.value, wpmElapsedMs.value);
   });
 
   const accuracy = computed(() => {
-    return computeAccuracy(userInput.value, referenceText.value);
+    return computeAccuracy(keystrokes.value, errorKeystrokes.value);
   });
 
   const totalWords = computed(() => {
@@ -153,7 +187,7 @@ export const useConfigStore = defineStore("config", () => {
   const updateBestWpm = () => {
     if (wpm.value > bestWpm.value) {
       bestWpm.value = wpm.value;
-      localStorage.setItem("swiftflow_best_wpm", String(bestWpm.value));
+      localStorage.setItem(BEST_WPM_KEY, String(bestWpm.value));
     }
   };
 
@@ -163,6 +197,8 @@ export const useConfigStore = defineStore("config", () => {
 
   const isCompleted = computed(() => {
     if (!referenceText.value) return false;
+
+    if (endedEarly.value) return true;
 
     // Time-based completion: the text keeps getting extended as the user
     // approaches the end (see extendReferenceText), so completion here is
@@ -178,17 +214,9 @@ export const useConfigStore = defineStore("config", () => {
       return zenFinished.value;
     }
 
-    // Always complete if the entire text is finished, regardless of word limits
-    if (userInput.value.length >= referenceText.value.length) {
-      return true;
-    }
-
-    // Words-based completion
-    if (type.value === "words") {
-      return typedWords.value >= selectedWords.value;
-    }
-
-    // Default: complete when all text is typed
+    // Every other mode (words/numbers texts are generated with exactly the
+    // selected count) completes once the whole text has been typed — not as
+    // soon as the last word is started.
     return userInput.value.length >= referenceText.value.length;
   });
 
@@ -197,7 +225,7 @@ export const useConfigStore = defineStore("config", () => {
       return Math.min((timeElapsed.value / selectedTime.value) * 100, 100);
     }
 
-    if (type.value === "words") {
+    if (type.value === "words" || type.value === "numbers") {
       return Math.min((typedWords.value / selectedWords.value) * 100, 100);
     }
 
@@ -214,7 +242,67 @@ export const useConfigStore = defineStore("config", () => {
   // Manually ends a "zen" session (no time/word limit to trigger completion).
   const finishZen = () => {
     zenFinished.value = true;
+    freezeClock();
   };
+
+  // Ends the current session right away, whatever the mode. Zen sessions
+  // finish normally; any other mode is flagged as ended early so the caller
+  // can show the results without counting it as a real attempt.
+  const endSession = () => {
+    if (!startTime.value || isCompleted.value) return;
+    if (type.value === "zen") {
+      finishZen();
+    } else {
+      endedEarly.value = true;
+      freezeClock();
+    }
+  };
+
+  // The paused moment while paused, otherwise now.
+  const clockNow = () => pausedAt.value ?? Date.now();
+
+  const setElapsedMs = (ms) => {
+    elapsedMs.value = Math.max(0, ms);
+    timeElapsed.value = Math.floor(elapsedMs.value / 1000);
+  };
+
+  // Pins the final session time once it's over. A timed session lasted
+  // exactly its limit; anything else ends at the last keystroke, so time
+  // spent afterwards (e.g. reaching for the "finish" button) doesn't count.
+  const freezeClock = () => {
+    if (!startTime.value) return;
+    if (type.value === "time" && !endedEarly.value) {
+      setElapsedMs(selectedTime.value * 1000);
+    } else if (lastKeystrokeAt.value) {
+      setElapsedMs(lastKeystrokeAt.value - startTime.value);
+    }
+  };
+
+  watch(
+    userInput,
+    (next, prev) => {
+      for (const { expected, correct } of diffKeystrokes(
+        prev ?? "",
+        next,
+        referenceText.value
+      )) {
+        keystrokes.value++;
+        keyAttempts.value[expected] = (keyAttempts.value[expected] || 0) + 1;
+        if (!correct) {
+          errorKeystrokes.value++;
+          missedKeys.value[expected] = (missedKeys.value[expected] || 0) + 1;
+        }
+      }
+      maxStreak.value = Math.max(maxStreak.value, currentStreak.value);
+
+      if (next.length > 0) {
+        lastKeystrokeAt.value = Date.now();
+        if (startTime.value) setElapsedMs(clockNow() - startTime.value);
+      }
+      if (isCompleted.value && type.value !== "time") freezeClock();
+    },
+    { flush: "sync" }
+  );
 
   // Typing functions
   const startTimer = () => {
@@ -231,7 +319,10 @@ export const useConfigStore = defineStore("config", () => {
 
     timer.value = setInterval(() => {
       if (startTime.value && !isPaused.value && !isCompleted.value) {
-        timeElapsed.value = Math.floor((Date.now() - startTime.value) / 1000);
+        setElapsedMs(Date.now() - startTime.value);
+        if (type.value === "time" && timeElapsed.value >= selectedTime.value) {
+          freezeClock();
+        }
         recordWpmSample();
 
         // Check if time limit is reached and complete the session immediately
@@ -254,10 +345,34 @@ export const useConfigStore = defineStore("config", () => {
   // the chart's last point matches the final stats exactly).
   const recordWpmSample = () => {
     wpmHistory.value.push({
-      time: timeElapsed.value,
+      time: Math.round(elapsedMs.value / 100) / 10,
       wpm: wpm.value,
       errors: errors.value,
     });
+  };
+
+  // Pausing freezes the clock: remember when it started, and on resume push
+  // startTime forward by that long so the paused stretch doesn't count
+  // towards timeElapsed (and so doesn't drag wpm down).
+  const markPaused = (at = Date.now()) => {
+    if (isPaused.value) return;
+    isPaused.value = true;
+    pausedAt.value = at;
+    if (startTime.value) setElapsedMs(at - startTime.value);
+  };
+
+  const resumeClock = () => {
+    if (pausedAt.value && startTime.value) {
+      const pausedFor = Date.now() - pausedAt.value;
+      startTime.value += pausedFor;
+      // Keep the last keystroke at the same point of active typing time
+      // (unless it's the keystroke that's resuming the session right now).
+      if (lastKeystrokeAt.value && lastKeystrokeAt.value <= pausedAt.value) {
+        lastKeystrokeAt.value += pausedFor;
+      }
+    }
+    pausedAt.value = null;
+    isPaused.value = false;
   };
 
   const clearInactivityTimer = () => {
@@ -269,8 +384,10 @@ export const useConfigStore = defineStore("config", () => {
 
   const resetInactivityTimer = () => {
     clearInactivityTimer();
+    // An idle pause freezes the clock back at the last keystroke, so the
+    // idle seconds before it kicked in don't count either.
     inactivityTimer.value = setTimeout(() => {
-      isPaused.value = true;
+      markPaused(lastKeystrokeAt.value ?? Date.now());
     }, INACTIVITY_TIMEOUT);
   };
 
@@ -285,7 +402,7 @@ export const useConfigStore = defineStore("config", () => {
 
     // Auto-resume if paused (from inactivity or manual pause)
     if (isPaused.value) {
-      isPaused.value = false;
+      resumeClock();
       if (startTime.value && userInput.value.length > 0 && !isCompleted.value) {
         startTimer();
       }
@@ -316,12 +433,12 @@ export const useConfigStore = defineStore("config", () => {
   };
 
   const pause = () => {
-    isPaused.value = true;
+    markPaused();
     clearInactivityTimer();
   };
 
   const play = () => {
-    isPaused.value = false;
+    resumeClock();
     if (startTime.value && userInput.value.length > 0) {
       startTimer();
     }
@@ -331,9 +448,18 @@ export const useConfigStore = defineStore("config", () => {
     userInput.value = "";
     startTime.value = null;
     timeElapsed.value = 0;
+    elapsedMs.value = 0;
+    lastKeystrokeAt.value = null;
     isPaused.value = false;
+    pausedAt.value = null;
     zenFinished.value = false;
+    endedEarly.value = false;
     wpmHistory.value = [];
+    keystrokes.value = 0;
+    errorKeystrokes.value = 0;
+    maxStreak.value = 0;
+    keyAttempts.value = {};
+    missedKeys.value = {};
 
     if (timer.value) {
       clearInterval(timer.value);
@@ -394,16 +520,24 @@ export const useConfigStore = defineStore("config", () => {
     userInput,
     startTime,
     timeElapsed,
+    elapsedMs,
     timer,
     isPaused,
     inactivityTimer,
     referenceText,
     originalReferenceText,
     zenFinished,
+    endedEarly,
     wpmHistory,
+    keystrokes,
+    errorKeystrokes,
+    maxStreak,
+    keyAttempts,
+    missedKeys,
 
     // Computed properties
     wpm,
+    rawWpm,
     accuracy,
     totalWords,
     typedWords,
@@ -426,6 +560,7 @@ export const useConfigStore = defineStore("config", () => {
     setReferenceText,
     extendReferenceText,
     finishZen,
+    endSession,
     recordWpmSample,
     clearInactivityTimer,
     resetInactivityTimer,
