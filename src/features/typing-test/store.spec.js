@@ -359,6 +359,120 @@ describe("useConfigStore", () => {
       store.handleTyping();
     };
 
+    describe("keystroke timing", () => {
+      // "abcdef", typed one character at a time at the given moment
+      const setup = () => {
+        const store = useConfigStore();
+        store.handleType("quote");
+        store.setReferenceText("abcdef");
+        return store;
+      };
+
+      it("records nothing for the first keystroke of a session", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+
+        expect(store.keyTiming).toEqual({});
+        expect(store.bigramTiming).toEqual({});
+      });
+
+      it("measures the gap between two consecutive correct keystrokes", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "ab", 200);
+
+        expect(store.keyTiming).toEqual({ b: [200, 1] });
+        expect(store.bigramTiming).toEqual({ ab: [200, 1] });
+      });
+
+      it("adds repeats of the same key together", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "ab", 200);
+        typeAt(store, "abc", 500);
+
+        expect(store.keyTiming).toEqual({ b: [200, 1], c: [300, 1] });
+      });
+
+      it("drops a gap too long to be about the key", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "ab", 2500);
+
+        expect(store.keyTiming).toEqual({});
+      });
+
+      it("drops two characters landing in the same breath", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "ab", 5);
+
+        expect(store.keyTiming).toEqual({});
+      });
+
+      it("ignores a pause entirely instead of blaming the next key for it", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        store.pause();
+        vi.setSystemTime(T0 + 10_000);
+        store.play();
+        typeAt(store, "ab", 10_150);
+
+        // The pause is out of the active clock, so this reads as ~150ms
+        expect(store.keyTiming).toEqual({ b: [150, 1] });
+      });
+
+      it("records no timing when several characters arrive at once", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "abc", 200);
+
+        expect(store.keyTiming).toEqual({});
+        // ...but the run continues from there
+        typeAt(store, "abcd", 400);
+        expect(store.keyTiming).toEqual({ d: [200, 1] });
+      });
+
+      it("skips the interval into a mistake and the one out of it", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "ax", 200); // wrong
+        typeAt(store, "axc", 400); // right, but measured from a mistake
+
+        expect(store.keyTiming).toEqual({});
+      });
+
+      it("skips a character that was backspaced and typed again", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "ab", 200);
+        typeAt(store, "a", 300); // backspace
+        typeAt(store, "ab", 500); // same index again
+
+        expect(store.keyTiming).toEqual({ b: [200, 1] });
+      });
+
+      it("clears with the session", () => {
+        const store = setup();
+
+        typeAt(store, "a", 0);
+        typeAt(store, "ab", 200);
+        store.resetTypingSession();
+
+        expect(store.keyTiming).toEqual({});
+        expect(store.bigramTiming).toEqual({});
+      });
+    });
+
     it("uses the exact time of the last keystroke, not the last whole-second tick", () => {
       const store = useConfigStore();
       store.handleType("quote");

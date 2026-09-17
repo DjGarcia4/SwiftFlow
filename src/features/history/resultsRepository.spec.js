@@ -31,6 +31,60 @@ describe("resultsRepository", () => {
     expect(results[results.length - 1].id).toBe("5");
   });
 
+  describe("timing retention", () => {
+    const withTiming = (id) => ({
+      id,
+      wpm: 70,
+      keyAttempts: { a: 10 },
+      confusions: { rt: 2 },
+      keyTiming: { a: [200, 1] },
+      bigramTiming: { ab: [200, 1] },
+    });
+
+    it("keeps timing on the newest sessions", () => {
+      for (let i = 0; i < 40; i++) saveResult(withTiming(`${i}`));
+
+      expect(getResults().every((r) => r.keyTiming)).toBe(true);
+    });
+
+    it("drops timing past the retention window, keeping everything else", () => {
+      for (let i = 0; i < 41; i++) saveResult(withTiming(`${i}`));
+
+      const oldest = getResults().at(-1);
+      expect(oldest.keyTiming).toBeUndefined();
+      expect(oldest.bigramTiming).toBeUndefined();
+      expect(oldest.wpm).toBe(70);
+      expect(oldest.keyAttempts).toEqual({ a: 10 });
+      expect(oldest.confusions).toEqual({ rt: 2 });
+    });
+
+    it("stays put once trimmed, however many times it is saved again", () => {
+      for (let i = 0; i < 45; i++) saveResult(withTiming(`${i}`));
+      const before = getResults().at(-1);
+      saveResult(withTiming("new"));
+
+      expect(getResults().at(-1)).toEqual(before);
+    });
+
+    it("gives up on the timing rather than throwing when storage is full", () => {
+      saveResult(withTiming("1"));
+      const setItem = Storage.prototype.setItem;
+      let attempt = 0;
+      Storage.prototype.setItem = function (...args) {
+        // Only the first write is too big
+        if (++attempt === 1) throw new DOMException("quota", "QuotaExceededError");
+        return setItem.apply(this, args);
+      };
+
+      try {
+        expect(() => saveResult(withTiming("2"))).not.toThrow();
+        expect(getResults().every((r) => !r.keyTiming)).toBe(true);
+      } finally {
+        Storage.prototype.setItem = setItem;
+      }
+    });
+  });
+
   it("clearResults empties the stored list", () => {
     saveResult({ id: "1" });
     clearResults();

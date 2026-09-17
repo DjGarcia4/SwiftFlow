@@ -704,6 +704,9 @@ const isTypingActive = computed(() => {
 // The extra bit of context shown next to each history entry: the target
 // for modes that have one, or the actual code language typed (not just the
 // filter, since "Todos" resolves to a specific snippet's language).
+const copyTiming = (timing) =>
+  Object.fromEntries(Object.entries(timing).map(([key, tuple]) => [key, [...tuple]]));
+
 const currentModeValue = () => {
   if (configStore.type === "time") return configStore.selectedTime;
   if (configStore.type === "words" || configStore.type === "numbers") {
@@ -755,6 +758,11 @@ watch(isCompleted, (completed) => {
         missedKeys: { ...configStore.missedKeys },
         confusions: { ...configStore.confusions },
         transpositions: { ...configStore.transpositions },
+        // Copied a level deeper than the rest: the values are [totalMs,
+        // count] arrays, and spreading alone would hand the stored session
+        // the very arrays the next one keeps adding to.
+        keyTiming: copyTiming(configStore.keyTiming),
+        bigramTiming: copyTiming(configStore.bigramTiming),
       });
     }
 

@@ -102,6 +102,21 @@ export const diffKeystrokes = (prevInput, nextInput, referenceText) => {
   return keystrokes;
 };
 
+// Below this, two characters landed in the same breath: key repeat, a
+// double event, or something pasted a character at a time. Above it, the
+// gap stopped being about the key. The ceiling has to sit under the 3s
+// inactivity pause (which the active clock already removes) to do any work
+// at all, and above genuine hesitation -- hunting for the Ñ takes about a
+// second, and that's exactly the signal worth catching.
+export const MIN_INTERVAL_MS = 15;
+export const MAX_INTERVAL_MS = 2000;
+
+// Out-of-range gaps are dropped, never clamped: pinning them to the ceiling
+// would drag every slow key's average toward 2000ms and manufacture the very
+// result the advice reports.
+export const isUsableInterval = (ms) =>
+  Number.isFinite(ms) && ms >= MIN_INTERVAL_MS && ms <= MAX_INTERVAL_MS;
+
 // Two consecutive mistakes that are each other's characters: the classic
 // "qeu" for "que". Needs both halves of the swap, which is why it can't live
 // inside diffKeystrokes.

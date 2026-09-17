@@ -242,3 +242,93 @@ describe("computeImprovementTips · confusion patterns", () => {
     expect(tipIds({ tips })).not.toContain("slow-down");
   });
 });
+
+describe("computeImprovementTips · speed patterns", () => {
+  // A clean typist: nothing is missed often enough to be a weak key
+  const stats = [stat("a", 700, 21), stat("e", 660, 20), stat("ñ", 200, 6)];
+  const timing = (fields) => ({
+    key: "ñ",
+    meanMs: 310,
+    samples: 600,
+    ratio: 1.42,
+    ...fields,
+  });
+  const pair = (fields) => ({
+    pair: "ll",
+    meanMs: 340,
+    samples: 120,
+    ratio: 1.62,
+    ...fields,
+  });
+
+  it("names the keys that slow you down even though you don't miss them", () => {
+    const tip = computeImprovementTips(stats, {
+      keyTiming: [timing()],
+    }).tips.find((t) => t.id === "slow-keys");
+
+    expect(tip.title).toBe("Te frena la Ñ");
+    expect(tip.detail).toContain("42% más de tiempo");
+    expect(tip.detail).toContain("310 ms contra tus 218 ms");
+    expect(tip.keys).toEqual(["ñ"]);
+  });
+
+  it("waits for enough measured intervals before talking about speed", () => {
+    expect(
+      tipIds(computeImprovementTips(stats, { keyTiming: [timing({ samples: 120 })] }))
+    ).not.toContain("slow-keys");
+  });
+
+  it("ignores a key that's only a little slower than the rest", () => {
+    expect(
+      tipIds(computeImprovementTips(stats, { keyTiming: [timing({ ratio: 1.15 })] }))
+    ).not.toContain("slow-keys");
+  });
+
+  it("leaves out a slow key that's already being reported as a weak one", () => {
+    // b is missed 24% of the time against a ~3% average: a weak key
+    const withWeak = [...stats, stat("b", 90, 22)];
+    const { tips } = computeImprovementTips(withWeak, {
+      keyTiming: [timing({ key: "b" }), timing({ samples: 300 })],
+    });
+    const slow = tips.find((t) => t.id === "slow-keys");
+
+    expect(tips.find((t) => t.id === "weak-keys").keys).toContain("b");
+    expect(slow.keys).toEqual(["ñ"]);
+  });
+
+  it("names the slowest transitions", () => {
+    const tip = computeImprovementTips(stats, {
+      keyTiming: [timing({ ratio: 1 })],
+      bigramTiming: [pair()],
+    }).tips.find((t) => t.id === "slow-bigrams");
+
+    expect(tip.title).toBe("Tus combinaciones más lentas: ll");
+    expect(tip.detail).toContain("«ll»");
+    expect(tip.detail).toContain("62% más");
+  });
+
+  it("spells out an invisible key in the pair", () => {
+    const tip = computeImprovementTips(stats, {
+      keyTiming: [timing({ ratio: 1 })],
+      bigramTiming: [pair({ pair: "s " })],
+    }).tips.find((t) => t.id === "slow-bigrams");
+
+    expect(tip.title).toContain("s + espacio");
+  });
+
+  it("never spends two slots on speed", () => {
+    const ids = tipIds(
+      computeImprovementTips(stats, { keyTiming: [timing()], bigramTiming: [pair()] })
+    );
+
+    expect(ids.filter((id) => id === "slow-keys" || id === "slow-bigrams")).toHaveLength(
+      1
+    );
+  });
+
+  it("says nothing new when there is no timing data", () => {
+    expect(computeImprovementTips(stats)).toEqual(
+      computeImprovementTips(stats, { keyTiming: [], bigramTiming: [] })
+    );
+  });
+});

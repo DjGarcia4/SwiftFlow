@@ -9,6 +9,7 @@ import {
   computeStreak,
   diffKeystrokes,
   isTransposition,
+  isUsableInterval,
 } from "@/features/typing-test/utils/typingMetrics";
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
 import {
@@ -87,10 +88,18 @@ export const useConfigStore = defineStore("config", () => {
   // Reference bigrams that came out backwards ("ue" typed as "eu"), kept
   // apart from confusions because the fix is rhythm, not finger placement.
   const transpositions = ref({});
+  // How long each key and each transition takes, as [totalMs, count]. This
+  // is speed, not accuracy: the keys that slow you down are rarely the ones
+  // you get wrong, and nothing else here can see them.
+  const keyTiming = ref({});
+  const bigramTiming = ref({});
+  // A zen session has no limit; past this many distinct pairs the tail is
+  // statistically dead anyway. Pairs already being tracked keep adding up.
+  const MAX_TRACKED_BIGRAMS = 300;
   // The previous keystroke, or null at the start of a session. Held so a
   // mistake can be compared against the one before it -- a swap only shows
-  // up as a pair.
-  const lastTyped = ref(null); // { index, expected, typed, correct }
+  // up as a pair -- and so the gap to the next one can be measured.
+  const lastTyped = ref(null); // { index, expected, typed, correct, elapsedMs }
 
   // Momentum state (best WPM record + live streak)
   // Stored under a versioned key: wpm used to be measured differently and
@@ -290,10 +299,30 @@ export const useConfigStore = defineStore("config", () => {
     }
   };
 
+  const addInterval = (map, key, ms) => {
+    const entry = map.value[key];
+    if (entry) {
+      entry[0] += ms;
+      entry[1]++;
+    } else {
+      map.value[key] = [ms, 1];
+    }
+  };
+
   watch(
     userInput,
     (next, prev) => {
-      for (const stroke of diffKeystrokes(prev ?? "", next, referenceText.value)) {
+      const strokes = diffKeystrokes(prev ?? "", next, referenceText.value);
+      // Measured on the active clock rather than the wall clock: elapsedMs
+      // already has every pause subtracted out, so an interval taken from it
+      // simply cannot span one -- no special case for resuming, and no
+      // dependency on whether this watcher runs before or after the resume.
+      const activeElapsed = startTime.value ? clockNow() - startTime.value : 0;
+      // One timestamp can't be shared out across several characters. More
+      // than one at a time means a paste, an IME or a swipe -- not typing.
+      const timeable = strokes.length === 1;
+
+      for (const stroke of strokes) {
         const { expected, correct } = stroke;
         keystrokes.value++;
         keyAttempts.value[expected] = (keyAttempts.value[expected] || 0) + 1;
@@ -311,7 +340,32 @@ export const useConfigStore = defineStore("config", () => {
             transpositions.value[swapped] = (transpositions.value[swapped] || 0) + 1;
           }
         }
-        lastTyped.value = stroke;
+        const previous = lastTyped.value;
+        // Only a gap between two adjacent, correct keystrokes says anything
+        // about a key: one that ends on a wrong key measures a different key
+        // than the one asked for, and one that starts on a wrong key is
+        // mostly the moment spent noticing.
+        if (
+          timeable &&
+          previous &&
+          stroke.correct &&
+          previous.correct &&
+          stroke.index === previous.index + 1
+        ) {
+          const interval = Math.round(activeElapsed - previous.elapsedMs);
+          if (isUsableInterval(interval)) {
+            addInterval(keyTiming, expected, interval);
+            const pair = previous.expected + expected;
+            if (
+              bigramTiming.value[pair] ||
+              Object.keys(bigramTiming.value).length < MAX_TRACKED_BIGRAMS
+            ) {
+              addInterval(bigramTiming, pair, interval);
+            }
+          }
+        }
+
+        lastTyped.value = { ...stroke, elapsedMs: activeElapsed };
       }
       maxStreak.value = Math.max(maxStreak.value, currentStreak.value);
 
@@ -482,6 +536,8 @@ export const useConfigStore = defineStore("config", () => {
     missedKeys.value = {};
     confusions.value = {};
     transpositions.value = {};
+    keyTiming.value = {};
+    bigramTiming.value = {};
     lastTyped.value = null;
 
     if (timer.value) {
@@ -559,6 +615,8 @@ export const useConfigStore = defineStore("config", () => {
     missedKeys,
     confusions,
     transpositions,
+    keyTiming,
+    bigramTiming,
 
     // Computed properties
     wpm,

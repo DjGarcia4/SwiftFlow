@@ -161,7 +161,31 @@
           :average-accuracy="recentAccuracy"
           :confusions="confusionStats"
           :transpositions="transpositionStats"
+          :key-timing="keyTimingStats"
+          :bigram-timing="bigramTimingStats"
         />
+      </div>
+
+      <!-- Where the time goes: slow keys and slow transitions. Separate
+           panel from the missed keys, because being slow on a key and
+           getting it wrong are different problems. -->
+      <div
+        v-if="keyTimingStats.length || bigramTimingStats.length"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:520ms]"
+      >
+        <div class="space-y-6">
+          <TimingBars
+            v-if="keyTimingStats.length"
+            :stats="keyTimingStats"
+            title="Tus teclas más lentas"
+          />
+          <TimingBars
+            v-if="bigramTimingStats.length"
+            :stats="bigramTimingStats"
+            title="Tus combinaciones más lentas"
+            unit-label="combo"
+          />
+        </div>
       </div>
 
       <!-- Personal bests -->
@@ -358,6 +382,7 @@ import { staggerStyle } from "@/shared/utils/motion";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
+import TimingBars from "@/features/history/components/TimingBars.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {
   formatModeLabel as formatModeLabelUtil,
@@ -368,6 +393,8 @@ import {
   computeKeyErrorStats,
   computeConfusionStats,
   computeTranspositionStats,
+  computeKeyTimingStats,
+  computeBigramTimingStats,
   computeAverageAccuracy,
   isCurrentMetrics,
 } from "@/features/history/utils/historyStats";
@@ -444,6 +471,8 @@ const confusionStats = computed(() => computeConfusionStats(keyStatsResults.valu
 const transpositionStats = computed(() =>
   computeTranspositionStats(keyStatsResults.value)
 );
+const keyTimingStats = computed(() => computeKeyTimingStats(keyStatsResults.value));
+const bigramTimingStats = computed(() => computeBigramTimingStats(keyStatsResults.value));
 
 // Achievements grid starts collapsed to roughly this many cards' worth of
 // height (~7 rows: on desktop's 3-col grid that's 21 cards, on mobile's

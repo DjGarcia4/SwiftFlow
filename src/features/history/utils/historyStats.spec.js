@@ -16,6 +16,9 @@ import {
   formatKeyLabel,
   computeConfusionStats,
   computeTranspositionStats,
+  computeKeyTimingStats,
+  computeBigramTimingStats,
+  formatPairLabel,
   INSIGHTS_VERSION,
 } from "./historyStats";
 
@@ -342,5 +345,75 @@ describe("confusion stats", () => {
     expect(computeTranspositionStats(sessions)).toEqual([
       { pair: "ue", typedAs: "eu", count: 3 },
     ]);
+  });
+});
+
+describe("timing stats", () => {
+  const insight = (fields) => ({ insightsVersion: INSIGHTS_VERSION, ...fields });
+
+  it("sums the totals before averaging, not the averages", () => {
+    const sessions = [
+      insight({ keyTiming: { a: [1000, 10] } }), // 100ms each
+      insight({ keyTiming: { a: [1000, 2] } }), // 500ms each
+    ];
+
+    const [stat] = computeKeyTimingStats(sessions, { minSamples: 1 });
+    // 2000ms over 12 presses, not the midpoint of 100 and 500
+    expect(stat.meanMs).toBe(167);
+    expect(stat.samples).toBe(12);
+  });
+
+  it("measures each key against the middle one, not the average one", () => {
+    // Three quick keys and one very slow one: the mean is dragged up to
+    // 400ms by the outlier, while the median stays at 200ms
+    const sessions = [
+      insight({
+        keyTiming: {
+          a: [20_000, 100],
+          b: [20_000, 100],
+          c: [20_000, 100],
+          ñ: [100_000, 100],
+        },
+      }),
+    ];
+
+    const stats = computeKeyTimingStats(sessions);
+    const slowest = stats[0];
+
+    expect(slowest.key).toBe("ñ");
+    expect(slowest.meanMs).toBe(1000);
+    // 1000 / 200 (the median), not 1000 / 400 (the pooled mean)
+    expect(slowest.ratio).toBe(5);
+  });
+
+  it("leaves out keys with too little to go on", () => {
+    const sessions = [insight({ keyTiming: { a: [6000, 60], z: [900, 3] } })];
+
+    expect(computeKeyTimingStats(sessions).map((s) => s.key)).toEqual(["a"]);
+  });
+
+  it("skips corrupt tuples and sessions from before the tracking existed", () => {
+    const stats = computeKeyTimingStats(
+      [
+        insight({ keyTiming: { a: [200, 1], b: [200], c: "nope", d: [200, 0] } }),
+        { keyTiming: { z: [200, 1] } }, // no insightsVersion
+      ],
+      { minSamples: 1 }
+    );
+
+    expect(stats.map((s) => s.key)).toEqual(["a"]);
+  });
+
+  it("reports pairs under their own name and ignores single keys", () => {
+    const sessions = [insight({ bigramTiming: { ll: [7500, 25], a: [200, 30] } })];
+
+    expect(computeBigramTimingStats(sessions)).toEqual([
+      { pair: "ll", meanMs: 300, samples: 25, ratio: 1 },
+    ]);
+  });
+
+  it("spells out an invisible key inside a pair", () => {
+    expect(formatPairLabel("ll")).toBe("ll");
+    expect(formatPairLabel("s ")).toBe("s + espacio");
   });
 });

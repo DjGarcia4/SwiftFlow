@@ -254,6 +254,89 @@ export const computeConfusionStats = (results) => {
   );
 };
 
+// Below these a mean is noise. Keys get the same bar as MIN_KEY_ATTEMPTS in
+// the tips -- same idea, same number -- and pairs a lower one, since any
+// given pair comes up roughly a fifth as often.
+export const MIN_KEY_TIMING_SAMPLES = 60;
+export const MIN_BIGRAM_TIMING_SAMPLES = 25;
+
+const median = (values) => {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+};
+
+// Merges the [totalMs, count] tuples and turns them into averages.
+//
+// Totals are summed before dividing, never averaged twice over: a key seen
+// ten times at 100ms in one session and twice at 500ms in another averages
+// 167ms, not 300ms.
+//
+// `ratio` is against the median of the qualifying keys, not their pooled
+// mean, because the pooled mean is dragged upward by the very keys being
+// looked for -- which would shrink every ratio and quietly cancel out the
+// effect. The median is literally "your middle key", which is also what the
+// advice claims.
+const computeTimingStats = (results, field, minSamples, keyLength) => {
+  const totals = new Map();
+
+  for (const result of results) {
+    if (!hasCurrentInsights(result)) continue;
+    for (const [rawKey, tuple] of Object.entries(result[field] || {})) {
+      if (!Array.isArray(tuple) || tuple.length !== 2) continue;
+      const [totalMs, count] = tuple;
+      if (!Number.isFinite(totalMs) || !Number.isFinite(count) || count <= 0) continue;
+
+      const chars = [...rawKey.toLowerCase()];
+      if (chars.length !== keyLength) continue;
+      const key = chars.join("");
+
+      const entry = totals.get(key) || [0, 0];
+      totals.set(key, [entry[0] + totalMs, entry[1] + count]);
+    }
+  }
+
+  const stats = [...totals.entries()]
+    .filter(([, [, count]]) => count >= minSamples)
+    .map(([key, [totalMs, count]]) => ({
+      key,
+      meanMs: Math.round(totalMs / count),
+      samples: count,
+    }));
+
+  const baseline = median(stats.map((stat) => stat.meanMs));
+
+  return stats
+    .map((stat) => ({ ...stat, ratio: baseline ? stat.meanMs / baseline : 1 }))
+    .sort((a, b) => b.ratio - a.ratio);
+};
+
+// [{ key, meanMs, samples, ratio }], slowest first.
+export const computeKeyTimingStats = (
+  results,
+  { minSamples = MIN_KEY_TIMING_SAMPLES } = {}
+) => computeTimingStats(results, "keyTiming", minSamples, 1);
+
+// Same, for the transition between two keys.
+export const computeBigramTimingStats = (
+  results,
+  { minSamples = MIN_BIGRAM_TIMING_SAMPLES } = {}
+) =>
+  computeTimingStats(results, "bigramTiming", minSamples, 2).map(({ key, ...rest }) => ({
+    pair: key,
+    ...rest,
+  }));
+
 const KEY_LABELS = { " ": "espacio", "\n": "enter", "\t": "tab" };
 
 export const formatKeyLabel = (key) => KEY_LABELS[key] ?? key;
+
+// A pair with an invisible key in it can't just be concatenated -- "s " would
+// read as "sespacio".
+export const formatPairLabel = (pair) => {
+  const chars = [...pair];
+  return chars.some((char) => KEY_LABELS[char])
+    ? chars.map(formatKeyLabel).join(" + ")
+    : pair;
+};

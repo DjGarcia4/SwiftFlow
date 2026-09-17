@@ -1,3 +1,5 @@
+import { formatPairLabel } from "./historyStats";
+
 // Turns the per-key error stats into a short list of concrete, readable
 // "work on this" tips. Pure data in, pure data out (icons are string keys),
 // so it's easy to test and the view decides how to render it.
@@ -30,6 +32,16 @@ const MIN_CONFUSION_SHARE = 0.35;
 // Swapped letters run 10-20% of mistakes for someone who has the habit.
 const MIN_TRANSPOSITIONS = 10;
 const MIN_TRANSPOSITION_SHARE = 0.1;
+// Enough measured intervals overall before saying anything about speed at
+// all -- the counterpart of MIN_TOTAL_ATTEMPTS for accuracy.
+const MIN_TIMING_TOTAL_SAMPLES = 500;
+// 30% over your own middle key. Set above the spread that keyboard geometry
+// alone produces (the bottom row runs ~10-15% slower than the home row for
+// everyone), so the tip names a personal weakness and not the keyboard.
+const SLOW_KEY_FACTOR = 1.3;
+// Pairs are measured on fewer samples, so they have to stand out further.
+const SLOW_BIGRAM_FACTOR = 1.5;
+const MAX_SLOW_KEYS = 2;
 
 const LEFT_HAND = new Set([..."qwertasdfgzxcvb12345"]);
 const RIGHT_HAND = new Set([..."yuiophjklñnm67890"]);
@@ -88,7 +100,13 @@ const groupRate = (stats, keySet) => {
 // historyStats helpers, empty for history recorded before they existed.
 export const computeImprovementTips = (
   keyStats,
-  { averageAccuracy = null, confusions = [], transpositions = [] } = {}
+  {
+    averageAccuracy = null,
+    confusions = [],
+    transpositions = [],
+    keyTiming = [],
+    bigramTiming = [],
+  } = {}
 ) => {
   const totalAttempts = keyStats.reduce((sum, s) => sum + s.attempts, 0);
   if (totalAttempts < MIN_TOTAL_ATTEMPTS) return { enoughData: false, tips: [] };
@@ -250,6 +268,62 @@ export const computeImprovementTips = (
 
   if (groupCandidates.length) {
     tips.push(groupCandidates.sort((a, b) => b.gap - a.gap)[0].tip);
+  }
+
+  // 3b. Speed patterns: the keys and transitions you hesitate on. These are
+  //     invisible to everything above -- hesitating isn't missing -- so they
+  //     share a slot of their own.
+  const timingSamples = keyTiming.reduce((sum, stat) => sum + stat.samples, 0);
+  const speedCandidates = [];
+
+  if (timingSamples >= MIN_TIMING_TOTAL_SAMPLES) {
+    // A key that's both slow and error-prone is already covered above, and
+    // billing it twice would make "no las errás casi nunca" false. Leaving
+    // them out is also what gives this tip its own job: reporting what the
+    // accuracy stats can't see.
+    const missRateByKey = new Map(keyStats.map((stat) => [stat.key, stat.rate]));
+    const slowKeys = keyTiming
+      .filter(
+        (stat) =>
+          stat.ratio >= SLOW_KEY_FACTOR &&
+          /^\p{L}$/u.test(stat.key) &&
+          (missRateByKey.get(stat.key) ?? 0) < overallRate * WEAK_FACTOR
+      )
+      .slice(0, MAX_SLOW_KEYS);
+
+    if (slowKeys.length) {
+      const worst = slowKeys[0];
+      const baseline = Math.round(worst.meanMs / worst.ratio);
+      const single = slowKeys.length === 1;
+      speedCandidates.push({
+        id: "slow-keys",
+        icon: "clock",
+        severity: worst.ratio / SLOW_KEY_FACTOR,
+        title: `Te ${single ? "frena" : "frenan"} la ${joinKeys(slowKeys.map((s) => s.key.toUpperCase()))}`,
+        detail: `No ${single ? "la errás" : "las errás"} casi nunca, pero te ${single ? "lleva" : "llevan"} un ${percent(worst.ratio - 1)} más de tiempo que el resto de tus teclas: ${worst.meanMs} ms contra tus ${baseline} ms habituales. ${single ? "Repetila suelta" : "Repetilas sueltas"}, sin apuro, hasta que ${single ? "salga" : "salgan"} sin pensar.`,
+        keys: slowKeys.map((stat) => stat.key),
+      });
+    }
+
+    const slowPairs = bigramTiming
+      .filter((stat) => stat.ratio >= SLOW_BIGRAM_FACTOR)
+      .slice(0, MAX_SLOW_KEYS);
+
+    if (slowPairs.length) {
+      const worst = slowPairs[0];
+      const baseline = Math.round(worst.meanMs / worst.ratio);
+      speedCandidates.push({
+        id: "slow-bigrams",
+        icon: "link",
+        severity: worst.ratio / SLOW_BIGRAM_FACTOR,
+        title: `Tus combinaciones más lentas: ${joinKeys(slowPairs.map((s) => formatPairLabel(s.pair)))}`,
+        detail: `Pasar de una letra a la otra en «${formatPairLabel(worst.pair)}» te lleva ${worst.meanMs} ms contra tus ${baseline} ms de siempre, un ${percent(worst.ratio - 1)} más. No son teclas difíciles sino transiciones entre dedos: practicá esas combinaciones sueltas antes de acelerar.`,
+      });
+    }
+  }
+
+  if (speedCandidates.length) {
+    tips.push(speedCandidates.sort((a, b) => b.severity - a.severity)[0]);
   }
 
   // 4. Numbers and accents: whole skills with their own practice path

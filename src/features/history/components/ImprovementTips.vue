@@ -61,6 +61,8 @@ import {
   HashtagIcon,
   LanguageIcon,
   ScaleIcon,
+  ClockIcon,
+  LinkIcon,
   BoltIcon,
   ArrowRightIcon,
 } from "@heroicons/vue/24/outline";
@@ -76,6 +78,9 @@ const props = defineProps({
   // Output of computeConfusionStats / computeTranspositionStats
   confusions: { type: Array, default: () => [] },
   transpositions: { type: Array, default: () => [] },
+  // Output of computeKeyTimingStats / computeBigramTimingStats
+  keyTiming: { type: Array, default: () => [] },
+  bigramTiming: { type: Array, default: () => [] },
 });
 
 const TIP_ICONS = {
@@ -88,6 +93,8 @@ const TIP_ICONS = {
   hashtag: HashtagIcon,
   language: LanguageIcon,
   gauge: ScaleIcon,
+  clock: ClockIcon,
+  link: LinkIcon,
   bolt: BoltIcon,
 };
 
@@ -96,6 +103,8 @@ const result = computed(() =>
     averageAccuracy: props.averageAccuracy,
     confusions: props.confusions,
     transpositions: props.transpositions,
+    keyTiming: props.keyTiming,
+    bigramTiming: props.bigramTiming,
   })
 );
 
