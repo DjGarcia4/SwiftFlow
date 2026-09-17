@@ -22,7 +22,7 @@
           <div
             v-for="(week, weekIndex) in weeks"
             :key="weekIndex"
-            class="relative w-2.5 flex-shrink-0"
+            class="relative w-[9px] flex-shrink-0"
           >
             <span
               v-if="monthLabels[weekIndex]"
@@ -40,7 +40,7 @@
             <div
               v-for="(label, dayIndex) in WEEKDAY_LABELS"
               :key="dayIndex"
-              class="h-2.5 text-right text-[0.6rem] font-bold leading-[10px] text-pencil-gray/70"
+              class="h-[9px] text-right text-[0.6rem] font-bold leading-[9px] text-pencil-gray/70"
             >
               {{ label }}
             </div>
@@ -54,11 +54,11 @@
             <template v-for="(day, dayIndex) in week">
               <!-- The days before the window opened: blanks that hold the row
                    alignment, so every row stays one weekday all the way across -->
-              <div v-if="!day" :key="`pad-${dayIndex}`" class="h-2.5 w-2.5"></div>
+              <div v-if="!day" :key="`pad-${dayIndex}`" class="h-[9px] w-[9px]"></div>
               <div
                 v-else
                 :key="day.dayKey"
-                class="group relative h-2.5 w-2.5 rounded-[3px] animate-pop-in"
+                class="group relative h-[9px] w-[9px] rounded-[2px] animate-pop-in"
                 :style="{
                   ...dayStyle(day),
                   ...staggerStyle(weekIndex, { step: 8, max: 600 }),

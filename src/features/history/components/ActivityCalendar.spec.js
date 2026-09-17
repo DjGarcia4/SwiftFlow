@@ -14,7 +14,7 @@ describe("ActivityCalendar", () => {
     });
 
     // The blanks are the only cells with no styling of their own
-    expect(wrapper.findAll('div[class="h-2.5 w-2.5"]')).toHaveLength(2);
+    expect(wrapper.findAll('div[class="h-[9px] w-[9px]"]')).toHaveLength(2);
   });
 
   it("counts the days that were actually practiced", () => {
@@ -72,11 +72,19 @@ describe("ActivityCalendar", () => {
     });
 
     const columns = wrapper.findAll('div[class="flex flex-col gap-[3px]"]');
-    // 53 weeks at 10px plus a 3px gap, after a 28px label column
-    const width = 28 + columns.length * 13;
 
-    expect(columns.length).toBeLessThanOrEqual(53);
-    expect(width).toBeLessThanOrEqual(720);
+    // What the grid actually has to fit inside: the page is max-w-3xl with
+    // its own side padding, and the card adds a border and padding of its
+    // own. Forgetting the page's padding once already shipped a calendar
+    // that scrolled sideways.
+    const CELL = 9;
+    const GAP = 3;
+    const LABEL_COLUMN = 28;
+    const available = 768 - 24 * 2 - 2 * 2 - 24 * 2;
+    const width = LABEL_COLUMN + GAP + columns.length * CELL + (columns.length - 1) * GAP;
+
+    expect(columns.length).toBe(53);
+    expect(width).toBeLessThanOrEqual(available);
   });
 
   it("renders nothing odd for an empty history", () => {
