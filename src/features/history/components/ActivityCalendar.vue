@@ -12,39 +12,48 @@
 
     <!-- Columns are weeks, rows are weekdays, same as every contribution
          grid: the eye reads down a week and across the months.
-         
-         The week columns are grid tracks of minmax(0, 1fr), which is the
-         part that matters: a 1fr track can shrink to nothing, so the row is
-         exactly its container's width no matter how many weeks it holds.
-         Hand-computing a cell size against a container that nests a page
-         width, its padding, a border and the card's padding is how this
-         ended up scrolling sideways and clipping the first months off the
-         left. The only fixed track is the one holding the weekday labels.
-         The minimum width below is for phones, where the grid gives up and
-         scrolls rather than rendering a year as slivers. -->
-    <div class="overflow-x-auto pb-1">
-      <div class="w-full min-w-[560px]">
+
+         The weekday rail is a fixed box and the grid is the flex sibling that
+         takes whatever is left (min-w-0, so it takes what is left rather than
+         what its 53 columns would like). Inside it every week is a
+         minmax(0, 1fr) track, which can shrink to nothing -- the year is
+         always exactly as wide as the card, never a pixel more.
+
+         Nothing here is a scroll container above `sm`. It used to be, and the
+         tooltips -- absolutely positioned, far wider than the 10px cell they
+         hang off -- pushed the scrollable width past the container on their
+         own, so the grid could sit scrolled a hundred pixels to the left with
+         the first months clipped off the edge. Phones still scroll, because a
+         year across 320px is 53 slivers. -->
+    <div class="overflow-x-auto pb-1 sm:overflow-x-visible sm:pb-0">
+      <div class="min-w-[480px] sm:min-w-0">
         <!-- Month names sit above the week where that month begins, free to
              overflow their own column: a column is a few pixels wide and no
              month name fits in that. -->
-        <div class="grid h-3 gap-[3px]" :style="{ gridTemplateColumns: columnTracks }">
-          <div></div>
-          <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="relative">
-            <span
-              v-if="monthLabels[weekIndex]"
-              class="absolute left-0 top-0 whitespace-nowrap text-[0.6rem] font-bold uppercase leading-3 text-pencil-gray/70"
-            >
-              {{ monthLabels[weekIndex] }}
-            </span>
+        <div class="flex gap-2">
+          <div class="w-7 shrink-0"></div>
+          <div
+            class="grid h-3 min-w-0 flex-1 gap-[2px]"
+            :style="{ gridTemplateColumns: columnTracks }"
+          >
+            <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="relative">
+              <span
+                v-if="monthLabels[weekIndex]"
+                class="absolute left-0 top-0 whitespace-nowrap text-[0.6rem] font-bold uppercase leading-3 text-pencil-gray/70"
+              >
+                {{ monthLabels[weekIndex] }}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div class="mt-1 grid gap-[3px]" :style="{ gridTemplateColumns: columnTracks }">
+        <div class="mt-1 flex gap-2">
           <!-- Every other weekday is labelled; naming all seven turns the
-               left edge into a wall of text -->
-          <!-- Stretches to the grid's height and splits it seven ways, so the
-               labels stay on their rows whatever size the cells end up -->
-          <div class="flex flex-col gap-[3px] pr-1">
+               left edge into a wall of text.
+               The rail stretches to the grid's height and splits it seven
+               ways, so the labels stay on their rows whatever size the cells
+               end up. -->
+          <div class="flex w-7 shrink-0 flex-col gap-[2px]">
             <div
               v-for="(label, dayIndex) in WEEKDAY_LABELS"
               :key="dayIndex"
@@ -54,30 +63,36 @@
             </div>
           </div>
 
+          <!-- One flat list of cells poured down each column in turn, seven
+               rows deep -- the same shape as the weeks, without a wrapper per
+               week that the cells would have to size themselves against. -->
           <div
-            v-for="(week, weekIndex) in weeks"
-            :key="weekIndex"
-            class="flex flex-col gap-[3px]"
+            class="grid min-w-0 flex-1 gap-[2px]"
+            :style="{
+              gridTemplateColumns: columnTracks,
+              gridTemplateRows: `repeat(${WEEKDAYS}, minmax(0, 1fr))`,
+              gridAutoFlow: 'column',
+            }"
           >
-            <template v-for="(day, dayIndex) in week">
+            <template v-for="(day, index) in cells">
               <!-- The days before the window opened: blanks that hold the row
                    alignment, so every row stays one weekday all the way across -->
-              <div
-                v-if="!day"
-                :key="`pad-${dayIndex}`"
-                class="aspect-square w-full"
-              ></div>
+              <div v-if="!day" :key="`pad-${index}`" class="aspect-square w-full"></div>
               <div
                 v-else
                 :key="day.dayKey"
                 class="group relative aspect-square w-full rounded-[2px] animate-pop-in"
                 :style="{
                   ...dayStyle(day),
-                  ...staggerStyle(weekIndex, { step: 8, max: 600 }),
+                  ...staggerStyle(Math.floor(index / WEEKDAYS), { step: 8, max: 600 }),
                 }"
               >
+                <!-- A tooltip is twenty times the width of the cell it hangs
+                     off, so the ones near the ends anchor to their edge
+                     instead of their middle and stay inside the card -->
                 <div
-                  class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-max -translate-x-1/2 rounded-xl bg-night-ink px-3 py-1.5 text-xs font-bold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                  class="pointer-events-none absolute bottom-full z-50 mb-2 w-max rounded-xl bg-night-ink px-3 py-1.5 text-xs font-bold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                  :class="tooltipAnchor(Math.floor(index / WEEKDAYS))"
                 >
                   {{ describe(day) }}
                 </div>
@@ -135,13 +150,13 @@ const MIN_FIRST_COLUMN_DAYS = 3;
 // same as a one-session day but a twelve-session day doesn't need its own
 // shade either.
 const MAX_LEVEL = 4;
+// How much of each end of the year anchors its tooltip to the edge
+const TOOLTIP_EDGE_SHARE = 0.15;
 
-// A fixed track for the weekday labels, then one collapsible track per
-// week. minmax(0, 1fr) rather than 1fr: a plain 1fr floors at the content's
-// own size, which would push the row wider than its container again.
-const columnTracks = computed(
-  () => `1.75rem repeat(${weeks.value.length}, minmax(0, 1fr))`
-);
+// One collapsible track per week. minmax(0, 1fr) rather than 1fr: a plain 1fr
+// floors at the content's own size, which would push the row wider than its
+// container again.
+const columnTracks = computed(() => `repeat(${weeks.value.length}, minmax(0, 1fr))`);
 
 const activeDays = computed(() => props.activity.filter((d) => d.sessions > 0).length);
 const totalSessions = computed(() =>
@@ -166,6 +181,9 @@ const weeks = computed(() => {
   return columns;
 });
 
+// The weeks poured out end to end, for a grid that flows down its columns
+const cells = computed(() => weeks.value.flat());
+
 // One entry per week column, empty except where a new month begins.
 const monthLabels = computed(() => {
   const labels = [];
@@ -186,6 +204,13 @@ const monthLabels = computed(() => {
 
   return labels;
 });
+
+const tooltipAnchor = (weekIndex) => {
+  const edge = weeks.value.length * TOOLTIP_EDGE_SHARE;
+  if (weekIndex < edge) return "left-0";
+  if (weekIndex >= weeks.value.length - edge) return "right-0";
+  return "left-1/2 -translate-x-1/2";
+};
 
 const levelFor = (sessions) => Math.min(sessions, MAX_LEVEL);
 
