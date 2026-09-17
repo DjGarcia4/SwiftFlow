@@ -66,36 +66,30 @@ describe("ActivityCalendar", () => {
     expect(wrapper.text()).toContain("3 sesiones en 1 día");
   });
 
-  it("fills the width it's given instead of measuring its own", () => {
+  it("lays a year out in tracks that can't overflow their container", () => {
     const wrapper = mount(ActivityCalendar, {
       props: { activity: activity(365, new Date(2026, 2, 12)) },
     });
 
-    const columns = wrapper.findAll(
-      'div[class="flex min-w-[7px] flex-1 flex-col gap-[3px]"]'
-    );
-
-    // A year is 53 columns, and each one shares out the container rather
-    // than claiming a fixed number of pixels -- which is what put this grid
-    // into a sideways scroll twice over.
-    expect(columns).toHaveLength(53);
-    for (const column of columns) {
-      expect(column.classes()).toContain("flex-1");
+    const rows = wrapper.findAll('div[style*="grid-template-columns"]');
+    // The month row and the grid row, on identical tracks so the names stay
+    // over their weeks
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row.attributes("style")).toContain("repeat(53, minmax(0, 1fr))");
     }
   });
 
-  it("keeps the month row on the same columns as the grid", () => {
-    const wrapper = mount(ActivityCalendar, {
-      props: { activity: activity(365, new Date(2026, 2, 12)) },
-    });
+  it("keeps a year to 53 columns whatever weekday it ends on", () => {
+    for (let day = 10; day < 17; day++) {
+      const wrapper = mount(ActivityCalendar, {
+        props: { activity: activity(365, new Date(2026, 2, day)) },
+      });
 
-    // Both rows: one fixed label column, then one flexible column per week
-    const monthColumns = wrapper.findAll('div[class="relative min-w-[7px] flex-1"]');
-    const weekColumns = wrapper.findAll(
-      'div[class="flex min-w-[7px] flex-1 flex-col gap-[3px]"]'
-    );
-
-    expect(monthColumns).toHaveLength(weekColumns.length);
+      expect(
+        wrapper.find('div[style*="grid-template-columns"]').attributes("style")
+      ).toContain("repeat(53,");
+    }
   });
 
   it("renders nothing odd for an empty history", () => {

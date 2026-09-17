@@ -13,24 +13,23 @@
     <!-- Columns are weeks, rows are weekdays, same as every contribution
          grid: the eye reads down a week and across the months.
          
-         The columns share out whatever width the card gives them instead of
-         measuring a fixed number of pixels. A year is always 53 of them, and
-         hand-computing a cell size against a container that nests a page
+         The week columns are grid tracks of minmax(0, 1fr), which is the
+         part that matters: a 1fr track can shrink to nothing, so the row is
+         exactly its container's width no matter how many weeks it holds.
+         Hand-computing a cell size against a container that nests a page
          width, its padding, a border and the card's padding is how this
-         ended up scrolling sideways twice. Below the minimum -- a phone --
-         it gives up and scrolls, which is the only honest option there. -->
+         ended up scrolling sideways and clipping the first months off the
+         left. The only fixed track is the one holding the weekday labels.
+         The minimum width below is for phones, where the grid gives up and
+         scrolls rather than rendering a year as slivers. -->
     <div class="overflow-x-auto pb-1">
-      <div class="flex min-w-full flex-col gap-1">
+      <div class="w-full min-w-[560px]">
         <!-- Month names sit above the week where that month begins, free to
              overflow their own column: a column is a few pixels wide and no
              month name fits in that. -->
-        <div class="flex h-3 gap-[3px]">
-          <div class="w-7 flex-shrink-0"></div>
-          <div
-            v-for="(week, weekIndex) in weeks"
-            :key="weekIndex"
-            class="relative min-w-[7px] flex-1"
-          >
+        <div class="grid h-3 gap-[3px]" :style="{ gridTemplateColumns: columnTracks }">
+          <div></div>
+          <div v-for="(week, weekIndex) in weeks" :key="weekIndex" class="relative">
             <span
               v-if="monthLabels[weekIndex]"
               class="absolute left-0 top-0 whitespace-nowrap text-[0.6rem] font-bold uppercase leading-3 text-pencil-gray/70"
@@ -40,12 +39,12 @@
           </div>
         </div>
 
-        <div class="flex gap-[3px]">
+        <div class="mt-1 grid gap-[3px]" :style="{ gridTemplateColumns: columnTracks }">
           <!-- Every other weekday is labelled; naming all seven turns the
                left edge into a wall of text -->
           <!-- Stretches to the grid's height and splits it seven ways, so the
                labels stay on their rows whatever size the cells end up -->
-          <div class="flex w-7 flex-shrink-0 flex-col gap-[3px] pr-1">
+          <div class="flex flex-col gap-[3px] pr-1">
             <div
               v-for="(label, dayIndex) in WEEKDAY_LABELS"
               :key="dayIndex"
@@ -58,7 +57,7 @@
           <div
             v-for="(week, weekIndex) in weeks"
             :key="weekIndex"
-            class="flex min-w-[7px] flex-1 flex-col gap-[3px]"
+            class="flex flex-col gap-[3px]"
           >
             <template v-for="(day, dayIndex) in week">
               <!-- The days before the window opened: blanks that hold the row
@@ -136,6 +135,13 @@ const MIN_FIRST_COLUMN_DAYS = 3;
 // same as a one-session day but a twelve-session day doesn't need its own
 // shade either.
 const MAX_LEVEL = 4;
+
+// A fixed track for the weekday labels, then one collapsible track per
+// week. minmax(0, 1fr) rather than 1fr: a plain 1fr floors at the content's
+// own size, which would push the row wider than its container again.
+const columnTracks = computed(
+  () => `1.75rem repeat(${weeks.value.length}, minmax(0, 1fr))`
+);
 
 const activeDays = computed(() => props.activity.filter((d) => d.sessions > 0).length);
 const totalSessions = computed(() =>
