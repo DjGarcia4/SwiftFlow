@@ -267,6 +267,198 @@ export const codeSnippets = [
     language: "Rust",
     code: "trait Shape {\n    fn area(&self) -> f64;\n}\n\nstruct Circle {\n    radius: f64,\n}\n\nimpl Shape for Circle {\n    fn area(&self) -> f64 {\n        std::f64::consts::PI * self.radius * self.radius\n    }\n}",
   },
+  {
+    language: "JavaScript",
+    code: "const groupBy = (items, key) =>\n  items.reduce((acc, item) => {\n    (acc[item[key]] ??= []).push(item);\n    return acc;\n  }, {});",
+  },
+  {
+    language: "JavaScript",
+    code: "function* fibonacci() {\n  let [a, b] = [0, 1];\n  while (true) {\n    yield a;\n    [a, b] = [b, a + b];\n  }\n}",
+  },
+  {
+    language: "JavaScript",
+    code: 'const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));\n\nawait sleep(1000);\nconsole.log("Listo");',
+  },
+  {
+    language: "JavaScript",
+    code: "const unique = (items) => [...new Set(items)];\nconst sum = (items) => items.reduce((a, b) => a + b, 0);\nconst avg = (items) => sum(items) / items.length;",
+  },
+  {
+    language: "JavaScript",
+    code: 'function parseResults(raw) {\n  try {\n    return JSON.parse(raw).results ?? [];\n  } catch (error) {\n    console.error("JSON inválido:", error.message);\n    return [];\n  }\n}',
+  },
+  {
+    language: "JavaScript",
+    code: 'document.querySelectorAll(".item").forEach((node) => {\n  node.addEventListener("click", () => {\n    node.classList.toggle("active");\n  });\n});',
+  },
+  {
+    language: "TypeScript",
+    code: "type Result<T> =\n  | { ok: true; value: T }\n  | { ok: false; error: string };",
+  },
+  {
+    language: "TypeScript",
+    code: "function first<T>(items: T[]): T | undefined {\n  return items.length > 0 ? items[0] : undefined;\n}",
+  },
+  {
+    language: "TypeScript",
+    code: "interface User {\n  id: number;\n  name: string;\n  email?: string;\n}\n\nconst users: User[] = [];",
+  },
+  {
+    language: "TypeScript",
+    code: 'enum Status {\n  Pending = "pending",\n  Active = "active",\n  Closed = "closed",\n}',
+  },
+  {
+    language: "TypeScript",
+    code: "const byId = new Map<number, User>();\n\nfor (const user of users) {\n  byId.set(user.id, user);\n}",
+  },
+  {
+    language: "TypeScript",
+    code: "export const clamp = (value: number, min: number, max: number): number =>\n  Math.min(Math.max(value, min), max);",
+  },
+  {
+    language: "Python",
+    code: "def chunked(items, size):\n    for i in range(0, len(items), size):\n        yield items[i : i + size]",
+  },
+  {
+    language: "Python",
+    code: "from collections import Counter\n\nwords = text.lower().split()\nmost_common = Counter(words).most_common(5)",
+  },
+  {
+    language: "Python",
+    code: 'with open("datos.txt", encoding="utf-8") as archivo:\n    lineas = [linea.strip() for linea in archivo]\n\nprint(len(lineas))',
+  },
+  {
+    language: "Python",
+    code: 'class Punto:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n\n    def __repr__(self):\n        return f"Punto({self.x}, {self.y})"',
+  },
+  {
+    language: "Python",
+    code: "def memoize(func):\n    cache = {}\n\n    def wrapper(n):\n        if n not in cache:\n            cache[n] = func(n)\n        return cache[n]\n\n    return wrapper",
+  },
+  {
+    language: "Python",
+    code: "numeros = [1, 2, 3, 4, 5, 6]\npares = [n for n in numeros if n % 2 == 0]\ncuadrados = {n: n**2 for n in pares}",
+  },
+  {
+    language: "Java",
+    code: "public static int max(int[] numeros) {\n    int mayor = numeros[0];\n    for (int n : numeros) {\n        if (n > mayor) {\n            mayor = n;\n        }\n    }\n    return mayor;\n}",
+  },
+  {
+    language: "Java",
+    code: 'List<String> nombres = new ArrayList<>();\nnombres.add("Ana");\nnombres.add("Luis");\nnombres.forEach(System.out::println);',
+  },
+  {
+    language: "Java",
+    code: "public record Punto(int x, int y) {\n    public double distancia() {\n        return Math.sqrt(x * x + y * y);\n    }\n}",
+  },
+  {
+    language: "Java",
+    code: "try (BufferedReader reader = new BufferedReader(new FileReader(ruta))) {\n    return reader.lines().toList();\n} catch (IOException e) {\n    return List.of();\n}",
+  },
+  {
+    language: "Java",
+    code: "Map<String, Integer> conteo = new HashMap<>();\nfor (String palabra : palabras) {\n    conteo.merge(palabra, 1, Integer::sum);\n}",
+  },
+  {
+    language: "Java",
+    code: "public interface Repositorio<T> {\n    Optional<T> buscarPorId(long id);\n\n    List<T> listarTodos();\n}",
+  },
+  {
+    language: "Go",
+    code: "func Sum(numeros []int) int {\n\ttotal := 0\n\tfor _, n := range numeros {\n\t\ttotal += n\n\t}\n\treturn total\n}",
+  },
+  {
+    language: "Go",
+    code: "type Punto struct {\n\tX int\n\tY int\n}\n\nfunc (p Punto) Distancia() float64 {\n\treturn math.Sqrt(float64(p.X*p.X + p.Y*p.Y))\n}",
+  },
+  {
+    language: "Go",
+    code: 'archivo, err := os.Open(ruta)\nif err != nil {\n\treturn nil, fmt.Errorf("no se pudo abrir: %w", err)\n}\ndefer archivo.Close()',
+  },
+  {
+    language: "Go",
+    code: "ch := make(chan int)\n\ngo func() {\n\tdefer close(ch)\n\tfor i := 0; i < 5; i++ {\n\t\tch <- i\n\t}\n}()",
+  },
+  {
+    language: "Go",
+    code: "conteo := make(map[string]int)\nfor _, palabra := range palabras {\n\tconteo[palabra]++\n}",
+  },
+  {
+    language: "Go",
+    code: "func Filtrar(items []string, pred func(string) bool) []string {\n\tvar salida []string\n\tfor _, item := range items {\n\t\tif pred(item) {\n\t\t\tsalida = append(salida, item)\n\t\t}\n\t}\n\treturn salida\n}",
+  },
+  {
+    language: "Rust",
+    code: "fn sum(numeros: &[i32]) -> i32 {\n    numeros.iter().sum()\n}",
+  },
+  {
+    language: "Rust",
+    code: "#[derive(Debug, Clone)]\nstruct Punto {\n    x: f64,\n    y: f64,\n}",
+  },
+  {
+    language: "Rust",
+    code: "let pares: Vec<i32> = numeros\n    .iter()\n    .filter(|n| *n % 2 == 0)\n    .cloned()\n    .collect();",
+  },
+  {
+    language: "Rust",
+    code: 'match resultado {\n    Ok(valor) => println!("Valor: {valor}"),\n    Err(error) => eprintln!("Error: {error}"),\n}',
+  },
+  {
+    language: "Rust",
+    code: 'impl fmt::Display for Punto {\n    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {\n        write!(f, "({}, {})", self.x, self.y)\n    }\n}',
+  },
+  {
+    language: "Rust",
+    code: "let mut conteo: HashMap<&str, usize> = HashMap::new();\n\nfor palabra in palabras {\n    *conteo.entry(palabra).or_insert(0) += 1;\n}",
+  },
+  {
+    language: "SQL",
+    code: "SELECT nombre, COUNT(*) AS total\nFROM pedidos\nGROUP BY nombre\nHAVING COUNT(*) > 3\nORDER BY total DESC;",
+  },
+  {
+    language: "SQL",
+    code: "CREATE TABLE usuarios (\n  id SERIAL PRIMARY KEY,\n  nombre TEXT NOT NULL,\n  email TEXT UNIQUE,\n  creado_en TIMESTAMP DEFAULT NOW()\n);",
+  },
+  {
+    language: "SQL",
+    code: "SELECT u.nombre, p.total\nFROM usuarios u\nINNER JOIN pedidos p ON p.usuario_id = u.id\nWHERE p.total > 1000;",
+  },
+  {
+    language: "SQL",
+    code: "UPDATE productos\nSET precio = precio * 1.10\nWHERE categoria = 'bebidas';",
+  },
+  {
+    language: "SQL",
+    code: "WITH ventas_mes AS (\n  SELECT producto_id, SUM(total) AS total\n  FROM ventas\n  GROUP BY producto_id\n)\nSELECT * FROM ventas_mes WHERE total > 500;",
+  },
+  {
+    language: "SQL",
+    code: "DELETE FROM sesiones\nWHERE expira_en < NOW()\nRETURNING id;",
+  },
+  {
+    language: "C#",
+    code: "public static int Factorial(int n)\n{\n    if (n <= 1)\n    {\n        return 1;\n    }\n    return n * Factorial(n - 1);\n}",
+  },
+  {
+    language: "C#",
+    code: "var pares = numeros\n    .Where(n => n % 2 == 0)\n    .Select(n => n * n)\n    .ToList();",
+  },
+  {
+    language: "C#",
+    code: "public record Punto(int X, int Y)\n{\n    public double Distancia() => Math.Sqrt(X * X + Y * Y);\n}",
+  },
+  {
+    language: "C#",
+    code: "public async Task<string> LeerAsync(string ruta)\n{\n    using var reader = new StreamReader(ruta);\n    return await reader.ReadToEndAsync();\n}",
+  },
+  {
+    language: "C#",
+    code: "var conteo = new Dictionary<string, int>();\nforeach (var palabra in palabras)\n{\n    conteo[palabra] = conteo.GetValueOrDefault(palabra) + 1;\n}",
+  },
+  {
+    language: "C#",
+    code: "public interface IRepositorio<T>\n{\n    T? BuscarPorId(long id);\n\n    IEnumerable<T> ListarTodos();\n}",
+  },
 ];
 
 // Unique list of languages available, in the order they first appear above.

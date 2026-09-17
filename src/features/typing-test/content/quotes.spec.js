@@ -21,4 +21,8 @@ describe("getRandomQuote", () => {
     expect(quote).toHaveProperty("text");
     expect(quote).toHaveProperty("author");
   });
+  it("has no repeated quotes", () => {
+    const texts = quotes.map((quote) => quote.text);
+    expect(new Set(texts).size).toBe(texts.length);
+  });
 });

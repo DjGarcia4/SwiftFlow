@@ -164,10 +164,6 @@ export const quotes = [
     author: "Jim Rohn",
   },
   {
-    text: "No cuentes los días, haz que los días cuenten.",
-    author: "Muhammad Ali",
-  },
-  {
     text: "El único límite para nuestra realización de mañana serán nuestras dudas de hoy.",
     author: "Franklin D. Roosevelt",
   },
@@ -277,6 +273,182 @@ export const quotes = [
   },
   {
     text: "El primer paso no te lleva a donde quieres ir, pero te saca de donde estás.",
+    author: "Anónimo",
+  },
+  {
+    text: "Siempre imaginé que el Paraíso sería algún tipo de biblioteca.",
+    author: "Jorge Luis Borges",
+  },
+  {
+    text: "Uno no es lo que es por lo que escribe, sino por lo que ha leído.",
+    author: "Jorge Luis Borges",
+  },
+  {
+    text: "Caminante, no hay camino, se hace camino al andar.",
+    author: "Antonio Machado",
+  },
+  {
+    text: "La poesía no quiere adeptos, quiere amantes.",
+    author: "Federico García Lorca",
+  },
+  {
+    text: "Podrán cortar todas las flores, pero no podrán detener la primavera.",
+    author: "Pablo Neruda",
+  },
+  {
+    text: "La vida no es la que uno vivió, sino la que uno recuerda y cómo la recuerda para contarla.",
+    author: "Gabriel García Márquez",
+  },
+  {
+    text: "Nada está perdido si se tiene el valor de proclamar que todo está perdido y hay que empezar de nuevo.",
+    author: "Julio Cortázar",
+  },
+  {
+    text: "Hacer es la mejor manera de decir.",
+    author: "José Martí",
+  },
+  {
+    text: "El arte de vencer se aprende en las derrotas.",
+    author: "Simón Bolívar",
+  },
+  {
+    text: "Procuremos más ser padres de nuestro porvenir que hijos de nuestro pasado.",
+    author: "Miguel de Unamuno",
+  },
+  {
+    text: "Yo soy yo y mi circunstancia, y si no la salvo a ella no me salvo yo.",
+    author: "José Ortega y Gasset",
+  },
+  {
+    text: "Todo hombre puede ser, si se lo propone, escultor de su propio cerebro.",
+    author: "Santiago Ramón y Cajal",
+  },
+  {
+    text: "Pies, para qué los quiero si tengo alas para volar.",
+    author: "Frida Kahlo",
+  },
+  {
+    text: "Donde haya un árbol que plantar, plántalo tú.",
+    author: "Gabriela Mistral",
+  },
+  {
+    text: "La libertad es uno de los más preciosos dones que a los hombres dieron los cielos.",
+    author: "Miguel de Cervantes",
+  },
+  {
+    text: "No hay viento favorable para el que no sabe adónde va.",
+    author: "Séneca",
+  },
+  {
+    text: "La felicidad de tu vida depende de la calidad de tus pensamientos.",
+    author: "Marco Aurelio",
+  },
+  {
+    text: "No son las cosas las que nos perturban, sino la opinión que tenemos de ellas.",
+    author: "Epicteto",
+  },
+  {
+    text: "La gota horada la piedra no por su fuerza, sino por su constancia.",
+    author: "Ovidio",
+  },
+  {
+    text: "En medio del caos, también hay oportunidad.",
+    author: "Sun Tzu",
+  },
+  {
+    text: "Lo mejor es enemigo de lo bueno.",
+    author: "Voltaire",
+  },
+  {
+    text: "Lo que no empiezas hoy, nunca lo terminarás mañana.",
+    author: "Johann Wolfgang von Goethe",
+  },
+  {
+    text: "Nada hay más poderoso que una idea a la que le ha llegado su tiempo.",
+    author: "Victor Hugo",
+  },
+  {
+    text: "Todos quieren cambiar el mundo, pero nadie piensa en cambiarse a sí mismo.",
+    author: "León Tolstói",
+  },
+  {
+    text: "Un libro debe ser el hacha que rompa el mar helado dentro de nosotros.",
+    author: "Franz Kafka",
+  },
+  {
+    text: "En medio del invierno aprendí por fin que había en mí un verano invencible.",
+    author: "Albert Camus",
+  },
+  {
+    text: "No se nace mujer, se llega a serlo.",
+    author: "Simone de Beauvoir",
+  },
+  {
+    text: "Una mujer necesita dinero y una habitación propia para poder escribir.",
+    author: "Virginia Woolf",
+  },
+  {
+    text: "El corazón tiene razones que la razón no entiende.",
+    author: "Blaise Pascal",
+  },
+  {
+    text: "Lo que no puedo crear, no lo entiendo.",
+    author: "Richard Feynman",
+  },
+  {
+    text: "En algún lugar, algo increíble espera ser descubierto.",
+    author: "Carl Sagan",
+  },
+  {
+    text: "La optimización prematura es la raíz de todos los males.",
+    author: "Donald Knuth",
+  },
+  {
+    text: "Depurar es el doble de difícil que escribir el código.",
+    author: "Brian Kernighan",
+  },
+  {
+    text: "Cualquiera puede escribir código que una máquina entienda; los buenos programadores escriben código que los humanos entienden.",
+    author: "Martin Fowler",
+  },
+  {
+    text: "Es más fácil pedir perdón que pedir permiso.",
+    author: "Grace Hopper",
+  },
+  {
+    text: "Hablar es barato. Mostrame el código.",
+    author: "Linus Torvalds",
+  },
+  {
+    text: "La informática no trata sobre las computadoras, igual que la astronomía no trata sobre los telescopios.",
+    author: "Edsger Dijkstra",
+  },
+  {
+    text: "La simplicidad es un prerrequisito de la confiabilidad.",
+    author: "Edsger Dijkstra",
+  },
+  {
+    text: "Si querés ir rápido, andá solo; si querés llegar lejos, andá acompañado.",
+    author: "Proverbio africano",
+  },
+  {
+    text: "No por mucho madrugar amanece más temprano.",
+    author: "Refrán español",
+  },
+  {
+    text: "Quien mucho abarca, poco aprieta.",
+    author: "Refrán español",
+  },
+  {
+    text: "El mejor momento para plantar un árbol fue hace veinte años; el segundo mejor momento es ahora.",
+    author: "Proverbio chino",
+  },
+  {
+    text: "Cae siete veces, levantate ocho.",
+    author: "Proverbio japonés",
+  },
+  {
+    text: "La práctica no hace la perfección: la práctica hace lo permanente.",
     author: "Anónimo",
   },
 ];
