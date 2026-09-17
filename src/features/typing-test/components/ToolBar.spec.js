@@ -22,16 +22,45 @@ describe("ToolBar", () => {
     }
   });
 
-  it("shows the key picker in the drill mode only", () => {
+  it("only asks about target keys in the drill mode", async () => {
     const store = useConfigStore();
     store.handleType("words");
-    expect(mount(ToolBar).text()).not.toContain("Tus teclas flojas");
+    expect(mount(ToolBar).text()).not.toContain("Cambiar");
 
     store.handleType("drill");
-    const wrapper = mount(ToolBar);
-    expect(wrapper.text()).toContain("Tus teclas flojas");
+    expect(mount(ToolBar).text()).toContain("Cambiar");
+  });
 
-    store.handleDrillKeys(["r"]);
-    expect(mount(ToolBar).text()).toContain("Teclas:");
+  it("says so when there is no history to pick target keys from", () => {
+    useConfigStore().handleType("drill");
+
+    expect(mount(ToolBar).text()).toContain("Todavía no sé qué te cuesta");
+  });
+
+  it("keeps the whole alphabet behind the edit button", async () => {
+    const store = useConfigStore();
+    store.handleType("drill");
+    const wrapper = mount(ToolBar);
+
+    // Every letter at once would swamp a toolbar that has to stay one line,
+    // so nothing shows until the picker is opened
+    const collapsed = wrapper.findAll("button").length;
+
+    await wrapper
+      .findAll("button")
+      .find((b) => b.text() === "Cambiar")
+      .trigger("click");
+
+    expect(wrapper.findAll("button").length - collapsed).toBe(27);
+  });
+
+  it("shows the keys it is aiming at once some are picked", () => {
+    const store = useConfigStore();
+    store.handleType("drill");
+    store.handleDrillKeys(["r", "t"]);
+
+    const wrapper = mount(ToolBar);
+    expect(wrapper.text()).toContain("Entrenando:");
+    expect(wrapper.findAll("kbd").map((k) => k.text())).toEqual(["r", "t"]);
   });
 });

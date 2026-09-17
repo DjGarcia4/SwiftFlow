@@ -102,26 +102,6 @@
             />
           </template>
         </div>
-
-        <!-- Which keys the drill aims at. Nothing picked means the ones
-             the history panel says are worth practicing. -->
-        <template v-if="configStore.type === 'drill'">
-          <div class="h-px w-full bg-faded-gray sm:h-4 sm:w-px"></div>
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            <span class="mr-1 text-xs font-bold text-pencil-gray">
-              {{ configStore.drillKeys.length ? "Teclas:" : "Tus teclas flojas" }}
-            </span>
-            <IconButton
-              v-for="key in DRILL_KEYS"
-              :key="key"
-              :value="key"
-              :variant="configStore.drillKeys.includes(key) ? 'primary' : 'secondary'"
-              size="xs"
-              :text="key.toUpperCase()"
-              @click="toggleDrillKey(key)"
-            />
-          </div>
-        </template>
       </template>
     </div>
 
@@ -227,36 +207,73 @@
             />
           </template>
         </div>
-
-        <!-- Which keys the drill aims at. Nothing picked means the ones
-             the history panel says are worth practicing. -->
-        <template v-if="configStore.type === 'drill'">
-          <div class="h-px w-full bg-faded-gray sm:h-4 sm:w-px"></div>
-          <div class="flex flex-wrap items-center justify-center gap-1">
-            <span class="mr-1 text-xs font-bold text-pencil-gray">
-              {{ configStore.drillKeys.length ? "Teclas:" : "Tus teclas flojas" }}
-            </span>
-            <IconButton
-              v-for="key in DRILL_KEYS"
-              :key="key"
-              :value="key"
-              :variant="configStore.drillKeys.includes(key) ? 'primary' : 'secondary'"
-              size="xs"
-              :text="key.toUpperCase()"
-              @click="toggleDrillKey(key)"
-            />
-          </div>
-        </template>
       </template>
+    </div>
+
+    <!-- The drill's target keys get a row of their own under the mode bar:
+         a whole alphabet has no business inside a single-line toolbar, and
+         most of the time there's nothing to choose anyway. -->
+    <div
+      v-if="configStore.type === 'drill'"
+      class="mt-3 pt-3 border-t-2 border-faded-gray flex flex-col items-center gap-2"
+    >
+      <div class="flex flex-wrap items-center justify-center gap-1.5">
+        <span class="text-xs font-bold text-pencil-gray">
+          {{ targetKeys.length ? "Entrenando:" : "Todavía no sé qué te cuesta:" }}
+        </span>
+
+        <kbd
+          v-for="key in targetKeys"
+          :key="key"
+          class="rounded-md border-2 border-primary/30 bg-primary-tint px-2 py-0.5 font-mono text-sm font-extrabold uppercase text-primary"
+          >{{ key }}</kbd
+        >
+        <span v-if="!targetKeys.length" class="text-xs text-pencil-gray">
+          elegí teclas o hacé unos tests primero
+        </span>
+
+        <IconButton
+          :variant="editingKeys ? 'primary' : 'secondary'"
+          size="xs"
+          :text="editingKeys ? 'Listo' : 'Cambiar'"
+          @click="editingKeys = !editingKeys"
+        />
+      </div>
+
+      <div v-if="editingKeys" class="flex flex-col items-center gap-1 animate-rise">
+        <div v-for="(row, rowIndex) in DRILL_ROWS" :key="rowIndex" class="flex gap-1">
+          <IconButton
+            v-for="key in row"
+            :key="key"
+            :value="key"
+            :variant="configStore.drillKeys.includes(key) ? 'primary' : 'secondary'"
+            size="xs"
+            :text="key.toUpperCase()"
+            @click="toggleDrillKey(key)"
+          />
+        </div>
+        <button
+          v-if="configStore.drillKeys.length"
+          type="button"
+          class="mt-1 text-xs font-bold text-pencil-gray underline underline-offset-2 transition-colors duration-200 hover:text-primary"
+          @click="configStore.handleDrillKeys([])"
+        >
+          Volver a mis teclas más flojas
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed } from "vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
+import { useHistoryStore } from "@/features/history/store";
+import { resolveDrillKeys } from "@/features/typing-test/utils/drillTargets";
 
 const configStore = useConfigStore();
+const historyStore = useHistoryStore();
 
 // Icon + label for each typing mode
 const typeMeta = {
@@ -269,8 +286,19 @@ const typeMeta = {
   drill: { icon: "target", label: "Entrenar" },
 };
 
-// Letters the drill can aim at, in the order the keyboard has them
-const DRILL_KEYS = [..."qwertyuiopasdfghjklñzxcvbnm"];
+// Laid out the way the keyboard is, so picking a key is a glance and not a
+// hunt through a 27-letter run-on
+const DRILL_ROWS = ["qwertyuiop", "asdfghjklñ", "zxcvbnm"].map((row) => [...row]);
+
+// The picker stays shut until asked for: the default targets are usually
+// the right ones.
+const editingKeys = ref(false);
+
+// What the drill is actually aiming at right now -- hand-picked if there is
+// a pick, otherwise whatever the history says is worth practicing.
+const targetKeys = computed(() =>
+  resolveDrillKeys(configStore.drillKeys, historyStore.results)
+);
 
 // An empty list means "work them out from my history" -- the same keys the
 // history panel suggests practicing.

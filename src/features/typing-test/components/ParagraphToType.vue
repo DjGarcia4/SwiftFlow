@@ -504,10 +504,9 @@ import {
   formatModeLabel,
   formatKeyLabel,
   computeKeyErrorStats,
-  RECENT_INSIGHT_SESSIONS,
 } from "@/features/history/utils/historyStats";
-import { selectWeakKeys } from "@/features/history/utils/improvementTips";
 import { generateDrillText } from "@/features/typing-test/content/drill";
+import { resolveDrillKeys } from "@/features/typing-test/utils/drillTargets";
 import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 import { useSoundStore } from "@/shared/stores/sound";
 import {
@@ -611,14 +610,6 @@ const pickRandomParagraph = () => {
 // appends more), keying the text block so it fades in fresh.
 const textVersion = ref(0);
 
-// Whatever was picked by hand, or -- by default -- the same keys the history
-// panel suggests practicing, so the advice and the drill can't disagree.
-const drillTargets = () => {
-  if (configStore.drillKeys.length) return configStore.drillKeys;
-  const recent = historyStore.results.slice(0, RECENT_INSIGHT_SESSIONS);
-  return selectWeakKeys(computeKeyErrorStats(recent)).map((stat) => stat.key);
-};
-
 const refreshReferenceText = () => {
   textVersion.value++;
   if (configStore.type === "words") {
@@ -628,7 +619,10 @@ const refreshReferenceText = () => {
 
   if (configStore.type === "drill") {
     configStore.setReferenceText(
-      generateDrillText(drillTargets(), configStore.selectedWords)
+      generateDrillText(
+        resolveDrillKeys(configStore.drillKeys, historyStore.results),
+        configStore.selectedWords
+      )
     );
     return;
   }
