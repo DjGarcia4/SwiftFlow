@@ -302,6 +302,16 @@ describe("useConfigStore", () => {
       expect(useConfigStore().drillKeys).toEqual(["ñ", "q"]);
     });
 
+    it("keeps its accents even with punctuation turned off", () => {
+      const store = useConfigStore();
+      store.handleContentTypes(null);
+      store.handleType("drill");
+
+      store.setReferenceText("el niño soñó un año");
+
+      expect(store.referenceText).toBe("el niño soñó un año");
+    });
+
     it("is a mode you can actually pick", () => {
       const store = useConfigStore();
 

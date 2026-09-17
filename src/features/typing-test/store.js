@@ -568,7 +568,15 @@ export const useConfigStore = defineStore("config", () => {
 
     // Code is case- and symbol-sensitive — stripping punctuation or
     // lowercasing it would break the syntax, so it always stays as-is.
-    if (type.value === "code" || selectedContentTypes.value === "punctuation") {
+    //
+    // The drill is exempt for a different reason: its text is already plain
+    // lowercase words, so formatting would do nothing except strip the
+    // accents — and drilling the Á with every á removed practices nothing.
+    if (
+      type.value === "code" ||
+      type.value === "drill" ||
+      selectedContentTypes.value === "punctuation"
+    ) {
       referenceText.value = text; // Show original when selected
     } else {
       referenceText.value = formatReferenceText(text); // Format when deselected
