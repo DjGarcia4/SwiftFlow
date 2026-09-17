@@ -11,18 +11,25 @@
     </div>
 
     <!-- Columns are weeks, rows are weekdays, same as every contribution
-         grid: the eye reads down a week and across the months -->
+         grid: the eye reads down a week and across the months.
+         
+         The columns share out whatever width the card gives them instead of
+         measuring a fixed number of pixels. A year is always 53 of them, and
+         hand-computing a cell size against a container that nests a page
+         width, its padding, a border and the card's padding is how this
+         ended up scrolling sideways twice. Below the minimum -- a phone --
+         it gives up and scrolls, which is the only honest option there. -->
     <div class="overflow-x-auto pb-1">
-      <div class="inline-flex flex-col gap-1">
-        <!-- Month names sit above the week where that month begins, and are
-             free to overflow their own column: a column is twelve pixels
-             wide and no month name fits in that. -->
+      <div class="flex min-w-full flex-col gap-1">
+        <!-- Month names sit above the week where that month begins, free to
+             overflow their own column: a column is a few pixels wide and no
+             month name fits in that. -->
         <div class="flex h-3 gap-[3px]">
           <div class="w-7 flex-shrink-0"></div>
           <div
             v-for="(week, weekIndex) in weeks"
             :key="weekIndex"
-            class="relative w-[9px] flex-shrink-0"
+            class="relative min-w-[7px] flex-1"
           >
             <span
               v-if="monthLabels[weekIndex]"
@@ -36,11 +43,13 @@
         <div class="flex gap-[3px]">
           <!-- Every other weekday is labelled; naming all seven turns the
                left edge into a wall of text -->
+          <!-- Stretches to the grid's height and splits it seven ways, so the
+               labels stay on their rows whatever size the cells end up -->
           <div class="flex w-7 flex-shrink-0 flex-col gap-[3px] pr-1">
             <div
               v-for="(label, dayIndex) in WEEKDAY_LABELS"
               :key="dayIndex"
-              class="h-[9px] text-right text-[0.6rem] font-bold leading-[9px] text-pencil-gray/70"
+              class="flex flex-1 items-center justify-end text-[0.55rem] font-bold leading-none text-pencil-gray/70"
             >
               {{ label }}
             </div>
@@ -49,16 +58,20 @@
           <div
             v-for="(week, weekIndex) in weeks"
             :key="weekIndex"
-            class="flex flex-col gap-[3px]"
+            class="flex min-w-[7px] flex-1 flex-col gap-[3px]"
           >
             <template v-for="(day, dayIndex) in week">
               <!-- The days before the window opened: blanks that hold the row
                    alignment, so every row stays one weekday all the way across -->
-              <div v-if="!day" :key="`pad-${dayIndex}`" class="h-[9px] w-[9px]"></div>
+              <div
+                v-if="!day"
+                :key="`pad-${dayIndex}`"
+                class="aspect-square w-full"
+              ></div>
               <div
                 v-else
                 :key="day.dayKey"
-                class="group relative h-[9px] w-[9px] rounded-[2px] animate-pop-in"
+                class="group relative aspect-square w-full rounded-[2px] animate-pop-in"
                 :style="{
                   ...dayStyle(day),
                   ...staggerStyle(weekIndex, { step: 8, max: 600 }),
