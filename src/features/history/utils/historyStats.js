@@ -47,7 +47,8 @@ const MODE_LABELS = {
   code: (value) => (value ? `Código · ${value}` : "Código"),
   quote: () => "Cita",
   zen: () => "Zen",
-  drill: (value) => `Entrenar · ${value} palabras`,
+  // Sessions saved before the drill reported its word count have no value
+  drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
 };
 
 export const formatModeLabel = ({ mode, modeValue }) => {

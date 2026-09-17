@@ -68,6 +68,16 @@ describe("formatModeLabel", () => {
     expect(formatModeLabel({ mode: "words", modeValue: 50 })).toBe("50 palabras");
   });
 
+  it("formats the drill with its word count", () => {
+    expect(formatModeLabel({ mode: "drill", modeValue: 25 })).toBe(
+      "Entrenar · 25 palabras"
+    );
+  });
+
+  it("doesn't say 'null palabras' for drills saved before the count was stored", () => {
+    expect(formatModeLabel({ mode: "drill", modeValue: null })).toBe("Entrenar");
+  });
+
   it("formats code mode with a language", () => {
     expect(formatModeLabel({ mode: "code", modeValue: "JavaScript" })).toBe(
       "Código · JavaScript"

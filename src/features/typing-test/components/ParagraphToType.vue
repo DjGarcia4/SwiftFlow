@@ -720,7 +720,11 @@ const copyTiming = (timing) =>
 
 const currentModeValue = () => {
   if (configStore.type === "time") return configStore.selectedTime;
-  if (configStore.type === "words" || configStore.type === "numbers") {
+  if (
+    configStore.type === "words" ||
+    configStore.type === "numbers" ||
+    configStore.type === "drill"
+  ) {
     return configStore.selectedWords;
   }
   if (configStore.type === "code") return currentCodeLanguage.value;

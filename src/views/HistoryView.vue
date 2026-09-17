@@ -337,10 +337,13 @@
         </div>
       </div>
 
-      <!-- Sessions list -->
+      <!-- Sessions list. Capped and scrolled on its own so a long history
+           doesn't bury the buttons underneath it; the extra right padding
+           keeps the cards clear of the scrollbar, and the negative margin
+           puts the block back where it would have sat. -->
       <TransitionGroup
         tag="div"
-        class="space-y-2 mb-6"
+        class="space-y-2 mb-6 max-h-[32rem] overflow-y-auto overscroll-contain pr-2 -mr-2"
         enter-active-class="transition-all duration-500 ease-smooth"
         enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0"
