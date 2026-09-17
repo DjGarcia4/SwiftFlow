@@ -13,6 +13,7 @@ import {
   computeDailyStreak,
   isCurrentMetrics,
   METRICS_VERSION,
+  INSIGHTS_VERSION,
 } from "@/features/history/utils/historyStats";
 import { computeAchievements } from "@/features/history/achievements";
 
@@ -52,6 +53,7 @@ export const useHistoryStore = defineStore("history", () => {
       id: crypto.randomUUID(),
       date: new Date().toISOString(),
       metricsVersion: METRICS_VERSION,
+      insightsVersion: INSIGHTS_VERSION,
       ...entry,
     };
     results.value = saveResult(fullEntry);

@@ -81,6 +81,10 @@ export const computeStreak = (userInput, referenceText) => {
 // The characters newly typed between two snapshots of the input, each paired
 // with the character it was supposed to be. Only growth counts: backspaces
 // (or a reset back to "") produce no keystrokes.
+//
+// `typed` and `index` are what turn a mistake into a diagnosis: which key was
+// actually pressed, and where it landed. Without them all a mistake says is
+// "not this one".
 export const diffKeystrokes = (prevInput, nextInput, referenceText) => {
   if (!referenceText || nextInput.length <= prevInput.length) return [];
 
@@ -88,7 +92,28 @@ export const diffKeystrokes = (prevInput, nextInput, referenceText) => {
   for (let i = prevInput.length; i < nextInput.length; i++) {
     const expected = referenceText[i];
     if (expected === undefined) break;
-    keystrokes.push({ expected, correct: nextInput[i] === expected });
+    keystrokes.push({
+      index: i,
+      expected,
+      typed: nextInput[i],
+      correct: nextInput[i] === expected,
+    });
   }
   return keystrokes;
 };
+
+// Two consecutive mistakes that are each other's characters: the classic
+// "qeu" for "que". Needs both halves of the swap, which is why it can't live
+// inside diffKeystrokes.
+//
+// The looser test -- "the key you pressed is the one that comes next" -- fires
+// on any slip that lands on the following letter, and in Spanish that letter
+// is a vowel most of the time. Demanding the confirmed swap keeps the tip's
+// claim ("escribis 'qeu' por 'que'") honest.
+export const isTransposition = (previous, current) =>
+  Boolean(previous) &&
+  current.index === previous.index + 1 &&
+  !previous.correct &&
+  !current.correct &&
+  previous.typed === current.expected &&
+  current.typed === previous.expected;

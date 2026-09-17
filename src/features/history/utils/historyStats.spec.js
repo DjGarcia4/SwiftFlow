@@ -14,6 +14,9 @@ import {
   isCurrentMetrics,
   computeKeyErrorStats,
   formatKeyLabel,
+  computeConfusionStats,
+  computeTranspositionStats,
+  INSIGHTS_VERSION,
 } from "./historyStats";
 
 const results = [
@@ -274,5 +277,70 @@ describe("keystroke stats", () => {
 
   it("formatModeLabel knows the numbers mode", () => {
     expect(formatModeLabel({ mode: "numbers", modeValue: 25 })).toBe("25 números");
+  });
+});
+
+describe("confusion stats", () => {
+  // Two sessions of the same habit: reaching for the T when the R was due,
+  // plus the "ue"/"eu" swap, which shows up in both tallies.
+  const insight = (fields) => ({ insightsVersion: INSIGHTS_VERSION, ...fields });
+  const sessions = [
+    insight({
+      missedKeys: { r: 8, u: 3 },
+      confusions: { rt: 5, ue: 3, eu: 3, rf: 1 },
+      transpositions: { ue: 3 },
+    }),
+    insight({
+      missedKeys: { R: 4 },
+      confusions: { Rt: 3, rd: 1 },
+      transpositions: {},
+    }),
+  ];
+
+  it("merges across sessions and folds case together", () => {
+    const [top] = computeConfusionStats(sessions);
+
+    expect(top.pair).toBe("rt");
+    expect(top.total).toBe(8);
+    expect(top.expected).toBe("r");
+    expect(top.typed).toBe("t");
+  });
+
+  it("measures a confusion against that key's own mistakes", () => {
+    const [top] = computeConfusionStats(sessions);
+
+    // 8 of the 12 times the r was missed, the t got pressed
+    expect(top.shareOfKeyMisses).toBeCloseTo(8 / 12);
+  });
+
+  it("takes swapped letters out of the slip count, in both directions", () => {
+    const stats = computeConfusionStats(sessions);
+
+    // "ue" and "eu" were each seen 3 times, and all 3 were the same swap
+    expect(stats.find((s) => s.pair === "ue")).toBeUndefined();
+    expect(stats.find((s) => s.pair === "eu")).toBeUndefined();
+  });
+
+  it("ignores shift slips but keeps missing tildes", () => {
+    const stats = computeConfusionStats([
+      insight({ missedKeys: { a: 10, á: 10 }, confusions: { Aa: 6, áa: 6 } }),
+    ]);
+
+    expect(stats.map((s) => s.pair)).toEqual(["áa"]);
+  });
+
+  it("skips malformed pairs and sessions from before the tracking existed", () => {
+    const stats = computeConfusionStats([
+      insight({ missedKeys: { r: 10 }, confusions: { rt: 6, "r>t": 4, r: 2 } }),
+      { missedKeys: { r: 10 }, confusions: { rz: 9 } }, // no insightsVersion
+    ]);
+
+    expect(stats.map((s) => s.pair)).toEqual(["rt"]);
+  });
+
+  it("reports swapped pairs with what they came out as", () => {
+    expect(computeTranspositionStats(sessions)).toEqual([
+      { pair: "ue", typedAs: "eu", count: 3 },
+    ]);
   });
 });

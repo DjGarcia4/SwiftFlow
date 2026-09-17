@@ -156,7 +156,12 @@
           </div>
         </div>
         <KeyErrorHeatmap :stats="keyErrorStats" />
-        <ImprovementTips :stats="keyErrorStats" :average-accuracy="recentAccuracy" />
+        <ImprovementTips
+          :stats="keyErrorStats"
+          :average-accuracy="recentAccuracy"
+          :confusions="confusionStats"
+          :transpositions="transpositionStats"
+        />
       </div>
 
       <!-- Personal bests -->
@@ -361,6 +366,8 @@ import {
   computeTotalKeystrokes,
   computeTotalCorrectedErrors,
   computeKeyErrorStats,
+  computeConfusionStats,
+  computeTranspositionStats,
   computeAverageAccuracy,
   isCurrentMetrics,
 } from "@/features/history/utils/historyStats";
@@ -433,6 +440,10 @@ const recentAccuracy = computed(() => {
 const KEY_STATS_SESSIONS = 30;
 const keyStatsResults = computed(() => historyStore.results.slice(0, KEY_STATS_SESSIONS));
 const keyErrorStats = computed(() => computeKeyErrorStats(keyStatsResults.value));
+const confusionStats = computed(() => computeConfusionStats(keyStatsResults.value));
+const transpositionStats = computed(() =>
+  computeTranspositionStats(keyStatsResults.value)
+);
 
 // Achievements grid starts collapsed to roughly this many cards' worth of
 // height (~7 rows: on desktop's 3-col grid that's 21 cards, on mobile's

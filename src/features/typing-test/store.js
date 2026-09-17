@@ -8,6 +8,7 @@ import {
   computeErrors,
   computeStreak,
   diffKeystrokes,
+  isTransposition,
 } from "@/features/typing-test/utils/typingMetrics";
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
 import {
@@ -79,6 +80,17 @@ export const useConfigStore = defineStore("config", () => {
   const maxStreak = ref(0);
   const keyAttempts = ref({}); // expected char -> times it was typed
   const missedKeys = ref({}); // expected char -> times it was mistyped
+  // What was pressed instead, keyed by the two characters back to back
+  // ("rt" = meant to type r, pressed t). Knowing the wrong key turns "you
+  // miss the r" into "you hit the t instead", which is a different fix.
+  const confusions = ref({});
+  // Reference bigrams that came out backwards ("ue" typed as "eu"), kept
+  // apart from confusions because the fix is rhythm, not finger placement.
+  const transpositions = ref({});
+  // The previous keystroke, or null at the start of a session. Held so a
+  // mistake can be compared against the one before it -- a swap only shows
+  // up as a pair.
+  const lastTyped = ref(null); // { index, expected, typed, correct }
 
   // Momentum state (best WPM record + live streak)
   // Stored under a versioned key: wpm used to be measured differently and
@@ -281,17 +293,25 @@ export const useConfigStore = defineStore("config", () => {
   watch(
     userInput,
     (next, prev) => {
-      for (const { expected, correct } of diffKeystrokes(
-        prev ?? "",
-        next,
-        referenceText.value
-      )) {
+      for (const stroke of diffKeystrokes(prev ?? "", next, referenceText.value)) {
+        const { expected, correct } = stroke;
         keystrokes.value++;
         keyAttempts.value[expected] = (keyAttempts.value[expected] || 0) + 1;
         if (!correct) {
           errorKeystrokes.value++;
           missedKeys.value[expected] = (missedKeys.value[expected] || 0) + 1;
+
+          const pair = expected + stroke.typed;
+          confusions.value[pair] = (confusions.value[pair] || 0) + 1;
+
+          if (isTransposition(lastTyped.value, stroke)) {
+            // Keyed by what the text asked for, so the tip can show the
+            // swap as a plain string reversal.
+            const swapped = lastTyped.value.expected + expected;
+            transpositions.value[swapped] = (transpositions.value[swapped] || 0) + 1;
+          }
         }
+        lastTyped.value = stroke;
       }
       maxStreak.value = Math.max(maxStreak.value, currentStreak.value);
 
@@ -460,6 +480,9 @@ export const useConfigStore = defineStore("config", () => {
     maxStreak.value = 0;
     keyAttempts.value = {};
     missedKeys.value = {};
+    confusions.value = {};
+    transpositions.value = {};
+    lastTyped.value = null;
 
     if (timer.value) {
       clearInterval(timer.value);
@@ -534,6 +557,8 @@ export const useConfigStore = defineStore("config", () => {
     maxStreak,
     keyAttempts,
     missedKeys,
+    confusions,
+    transpositions,
 
     // Computed properties
     wpm,

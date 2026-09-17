@@ -54,6 +54,8 @@ import {
   LightBulbIcon,
   ViewfinderCircleIcon,
   ArrowsRightLeftIcon,
+  ArrowsPointingInIcon,
+  ArrowPathRoundedSquareIcon,
   HandRaisedIcon,
   QueueListIcon,
   HashtagIcon,
@@ -71,11 +73,16 @@ const props = defineProps({
   stats: { type: Array, required: true },
   // Recent average accuracy, or null if there are no comparable sessions
   averageAccuracy: { type: Number, default: null },
+  // Output of computeConfusionStats / computeTranspositionStats
+  confusions: { type: Array, default: () => [] },
+  transpositions: { type: Array, default: () => [] },
 });
 
 const TIP_ICONS = {
   target: ViewfinderCircleIcon,
   space: ArrowsRightLeftIcon,
+  confusion: ArrowsPointingInIcon,
+  swap: ArrowPathRoundedSquareIcon,
   hand: HandRaisedIcon,
   rows: QueueListIcon,
   hashtag: HashtagIcon,
@@ -85,7 +92,11 @@ const TIP_ICONS = {
 };
 
 const result = computed(() =>
-  computeImprovementTips(props.stats, { averageAccuracy: props.averageAccuracy })
+  computeImprovementTips(props.stats, {
+    averageAccuracy: props.averageAccuracy,
+    confusions: props.confusions,
+    transpositions: props.transpositions,
+  })
 );
 
 const router = useRouter();

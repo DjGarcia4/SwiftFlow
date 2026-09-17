@@ -122,3 +122,123 @@ describe("computeImprovementTips", () => {
     expect(tips.length).toBe(4);
   });
 });
+
+describe("computeImprovementTips · confusion patterns", () => {
+  // b is a weak key (24% against a ~6% average), m is not (4%)
+  const stats = [
+    stat("a", 700, 35),
+    stat("e", 660, 33),
+    stat("m", 300, 12),
+    stat("b", 90, 22),
+  ];
+  const confusion = (fields) => ({
+    pair: "mn",
+    expected: "m",
+    typed: "n",
+    slips: 9,
+    shareOfKeyMisses: 0.6,
+    ...fields,
+  });
+
+  it("leaves the existing tips untouched when there's nothing new to say", () => {
+    expect(computeImprovementTips(stats)).toEqual(
+      computeImprovementTips(stats, { confusions: [], transpositions: [] })
+    );
+  });
+
+  it("names the key you reach for instead", () => {
+    const tip = computeImprovementTips(stats, {
+      confusions: [confusion()],
+    }).tips.find((t) => t.id === "key-confusion");
+
+    expect(tip.title).toBe("Confundís la M con la N");
+    expect(tip.detail).toContain("6 de cada 10");
+    expect(tip.detail).toContain("Son teclas vecinas");
+    expect(tip.keys).toEqual(["m", "n"]);
+  });
+
+  it("says so plainly when the two keys aren't next to each other", () => {
+    const tip = computeImprovementTips(stats, {
+      confusions: [confusion({ pair: "mq", typed: "q" })],
+    }).tips.find((t) => t.id === "key-confusion");
+
+    expect(tip.detail).toContain("error de posición");
+  });
+
+  it("ignores a confusion that's neither frequent nor habitual enough", () => {
+    const weak = computeImprovementTips(stats, {
+      confusions: [confusion({ slips: 4 }), confusion({ shareOfKeyMisses: 0.2 })],
+    });
+
+    expect(tipIds(weak)).not.toContain("key-confusion");
+  });
+
+  it("folds the confusion into the weak-key tip instead of spending a slot", () => {
+    const { tips } = computeImprovementTips(stats, {
+      confusions: [confusion({ pair: "bv", expected: "b", typed: "v" })],
+    });
+
+    expect(tips.map((t) => t.id)).not.toContain("key-confusion");
+    expect(tips.find((t) => t.id === "weak-keys").detail).toContain(
+      "6 de cada 10 veces apretás la V"
+    );
+  });
+
+  it("calls out swapped letters once they're a habit", () => {
+    const tip = computeImprovementTips(stats, {
+      transpositions: [
+        { pair: "ue", typedAs: "eu", count: 8 },
+        { pair: "sa", typedAs: "as", count: 4 },
+      ],
+    }).tips.find((t) => t.id === "transposition");
+
+    expect(tip.detail).toContain("12 veces");
+    expect(tip.detail).toContain("«ue»");
+    expect(tip.detail).toContain("«eu»");
+  });
+
+  it("ignores a handful of swaps", () => {
+    expect(
+      tipIds(
+        computeImprovementTips(stats, {
+          transpositions: [{ pair: "ue", typedAs: "eu", count: 6 }],
+        })
+      )
+    ).not.toContain("transposition");
+  });
+
+  it("never spends two slots on the same kind of pattern", () => {
+    const ids = tipIds(
+      computeImprovementTips(stats, {
+        confusions: [confusion()],
+        transpositions: [{ pair: "ue", typedAs: "eu", count: 12 }],
+      })
+    );
+
+    expect(
+      ids.filter((id) => id === "key-confusion" || id === "transposition")
+    ).toHaveLength(1);
+  });
+
+  it("keeps the four most severe tips when everything fires at once", () => {
+    const crowded = [
+      stat(" ", 300, 60),
+      stat("q", 100, 30),
+      stat("w", 100, 30),
+      stat("m", 300, 12),
+      stat("j", 100, 2),
+      stat("k", 100, 2),
+      stat("1", 40, 12),
+      stat("á", 20, 8),
+    ];
+    const { tips } = computeImprovementTips(crowded, {
+      averageAccuracy: 80,
+      confusions: [confusion()],
+      transpositions: [{ pair: "ue", typedAs: "eu", count: 40 }],
+    });
+
+    expect(tips).toHaveLength(4);
+    // The generic "slow down" advice loses to anything pointing at a key
+    expect(tipIds({ tips })).not.toContain("slow-down");
+  });
+});

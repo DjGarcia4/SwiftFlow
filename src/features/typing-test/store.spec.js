@@ -213,6 +213,52 @@ describe("useConfigStore", () => {
       expect(store.errors).toBe(0);
     });
 
+    it("records which key was pressed instead of the right one", () => {
+      const store = useConfigStore();
+      store.setReferenceText("hola");
+
+      store.userInput = "h";
+      store.userInput = "hp"; // wrong: expected "o", pressed "p"
+
+      expect(store.confusions).toEqual({ op: 1 });
+      expect(store.transpositions).toEqual({});
+    });
+
+    it("records nothing extra when everything is typed right", () => {
+      const store = useConfigStore();
+      store.setReferenceText("hola");
+
+      store.userInput = "h";
+      store.userInput = "ho";
+
+      expect(store.confusions).toEqual({});
+    });
+
+    it("counts a confirmed swap in both tallies, keyed by the reference pair", () => {
+      const store = useConfigStore();
+      store.setReferenceText("que");
+
+      store.userInput = "q";
+      store.userInput = "qe"; // expected "u", pressed "e"
+      store.userInput = "qeu"; // expected "e", pressed "u" -- the swap lands
+
+      expect(store.transpositions).toEqual({ ue: 1 });
+      expect(store.confusions).toEqual({ ue: 1, eu: 1 });
+    });
+
+    it("doesn't invent a swap out of a backspace and retype", () => {
+      const store = useConfigStore();
+      store.setReferenceText("que");
+
+      store.userInput = "q";
+      store.userInput = "qe"; // wrong
+      store.userInput = "q"; // backspace
+      store.userInput = "qu"; // fixed
+
+      expect(store.transpositions).toEqual({});
+      expect(store.confusions).toEqual({ ue: 1 });
+    });
+
     it("remembers the longest combo reached during the session", () => {
       const store = useConfigStore();
       store.setReferenceText("abcdef");
@@ -235,6 +281,8 @@ describe("useConfigStore", () => {
       expect(store.errorKeystrokes).toBe(0);
       expect(store.maxStreak).toBe(0);
       expect(store.missedKeys).toEqual({});
+      expect(store.confusions).toEqual({});
+      expect(store.transpositions).toEqual({});
     });
   });
 

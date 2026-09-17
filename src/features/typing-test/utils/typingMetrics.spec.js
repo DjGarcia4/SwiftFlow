@@ -5,6 +5,8 @@ import {
   computeAccuracy,
   computeErrors,
   computeStreak,
+  diffKeystrokes,
+  isTransposition,
 } from "./typingMetrics";
 
 describe("computeWpm", () => {
@@ -102,5 +104,77 @@ describe("computeStreak", () => {
 
   it("is 0 when the very last character is wrong", () => {
     expect(computeStreak("holx", "hola")).toBe(0);
+  });
+});
+
+describe("diffKeystrokes", () => {
+  it("returns nothing when the input shrank or stayed the same", () => {
+    expect(diffKeystrokes("hola", "hol", "hola")).toEqual([]);
+    expect(diffKeystrokes("hola", "hola", "hola")).toEqual([]);
+    expect(diffKeystrokes("", "", "hola")).toEqual([]);
+  });
+
+  it("returns nothing without a reference text", () => {
+    expect(diffKeystrokes("", "h", "")).toEqual([]);
+  });
+
+  it("pairs each new character with the one it should have been", () => {
+    expect(diffKeystrokes("ho", "hol", "hola")).toEqual([
+      { index: 2, expected: "l", typed: "l", correct: true },
+    ]);
+    expect(diffKeystrokes("ho", "hox", "hola")).toEqual([
+      { index: 2, expected: "l", typed: "x", correct: false },
+    ]);
+  });
+
+  it("reports every character when several arrive at once", () => {
+    expect(diffKeystrokes("h", "hoxa", "hola")).toEqual([
+      { index: 1, expected: "o", typed: "o", correct: true },
+      { index: 2, expected: "l", typed: "x", correct: false },
+      { index: 3, expected: "a", typed: "a", correct: true },
+    ]);
+  });
+
+  it("stops at the end of the reference text", () => {
+    expect(diffKeystrokes("hola", "hola!!", "hola")).toEqual([]);
+    expect(diffKeystrokes("hol", "hola!", "hola")).toEqual([
+      { index: 3, expected: "a", typed: "a", correct: true },
+    ]);
+  });
+});
+
+describe("isTransposition", () => {
+  // Reference "que" typed as "qeu": the e and the u swapped places.
+  const swappedE = { index: 1, expected: "u", typed: "e", correct: false };
+  const swappedU = { index: 2, expected: "e", typed: "u", correct: false };
+
+  it("recognizes a confirmed swap", () => {
+    expect(isTransposition(swappedE, swappedU)).toBe(true);
+  });
+
+  it("needs both halves, not just the first one", () => {
+    // The u came early, but then something else entirely was typed
+    const somethingElse = { index: 2, expected: "e", typed: "a", correct: false };
+    expect(isTransposition(swappedE, somethingElse)).toBe(false);
+  });
+
+  it("needs the two mistakes to be next to each other", () => {
+    expect(isTransposition(swappedE, { ...swappedU, index: 5 })).toBe(false);
+  });
+
+  it("ignores pairs where either keystroke was right", () => {
+    expect(isTransposition({ ...swappedE, correct: true }, swappedU)).toBe(false);
+    expect(isTransposition(swappedE, { ...swappedU, correct: true })).toBe(false);
+  });
+
+  it("is false without a previous keystroke", () => {
+    expect(isTransposition(null, swappedU)).toBe(false);
+  });
+
+  it("does not fire on a doubled letter mistyped twice the same way", () => {
+    // "ll" typed "kk": both wrong, adjacent, but nothing was swapped
+    const first = { index: 4, expected: "l", typed: "k", correct: false };
+    const second = { index: 5, expected: "l", typed: "k", correct: false };
+    expect(isTransposition(first, second)).toBe(false);
   });
 });

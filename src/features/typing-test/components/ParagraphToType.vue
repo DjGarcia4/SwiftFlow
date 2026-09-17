@@ -753,6 +753,8 @@ watch(isCompleted, (completed) => {
         errorKeystrokes: configStore.errorKeystrokes,
         keyAttempts: { ...configStore.keyAttempts },
         missedKeys: { ...configStore.missedKeys },
+        confusions: { ...configStore.confusions },
+        transpositions: { ...configStore.transpositions },
       });
     }
 

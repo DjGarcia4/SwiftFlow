@@ -21,14 +21,25 @@ const WEAK_FACTOR = 1.25;
 const GROUP_GAP = 1.3;
 const MIN_GROUP_ATTEMPTS = 50;
 const MAX_TIPS = 4;
+// A confusion is a habit, not a spread: the same wrong key has to come up
+// again and again, and account for a good slice of that key's mistakes.
+// Together these mean the key was missed ~17 times with 6 landing on the
+// same neighbour.
+const MIN_CONFUSION_SLIPS = 6;
+const MIN_CONFUSION_SHARE = 0.35;
+// Swapped letters run 10-20% of mistakes for someone who has the habit.
+const MIN_TRANSPOSITIONS = 10;
+const MIN_TRANSPOSITION_SHARE = 0.1;
 
 const LEFT_HAND = new Set([..."qwertasdfgzxcvb12345"]);
 const RIGHT_HAND = new Set([..."yuiophjklñnm67890"]);
-const ROWS = [
-  { name: "de arriba", keys: new Set([..."qwertyuiop"]) },
-  { name: "del medio", keys: new Set([..."asdfghjklñ"]) },
-  { name: "de abajo", keys: new Set([..."zxcvbnm"]) },
-];
+// `letters` keeps the physical left-to-right order, so two keys can be
+// checked for being side by side; `keys` is the same thing for lookups.
+const ROWS = ["qwertyuiop", "asdfghjklñ", "zxcvbnm"].map((letters, index) => ({
+  name: ["de arriba", "del medio", "de abajo"][index],
+  letters,
+  keys: new Set([...letters]),
+}));
 const DIGITS = new Set([..."0123456789"]);
 const ACCENTED = new Set([..."áéíóúü"]);
 
@@ -36,6 +47,19 @@ const percent = (rate) => `${Math.round(rate * 100)}%`;
 
 // "1 de cada 5" reads better than "20%" for a single key
 const oneIn = (rate) => `1 de cada ${Math.max(2, Math.round(1 / rate))}`;
+
+// ...but it reads backwards once the share passes a third, where the clamp
+// in oneIn turns 70% into "1 de cada 2".
+const outOfTen = (share) => `${Math.round(share * 10)} de cada 10`;
+
+// Whether two keys sit side by side on the same row -- the difference
+// between "your finger slid" and "your hand was in the wrong place".
+const areNeighbours = (first, second) =>
+  ROWS.some((row) => {
+    const a = row.letters.indexOf(first);
+    const b = row.letters.indexOf(second);
+    return a !== -1 && b !== -1 && Math.abs(a - b) === 1;
+  });
 
 const joinKeys = (keys) =>
   keys.length === 1
@@ -60,8 +84,12 @@ const groupRate = (stats, keySet) => {
 };
 
 // keyStats: output of computeKeyErrorStats. averageAccuracy: recent average
-// (null when unknown).
-export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}) => {
+// (null when unknown). confusions/transpositions: output of the matching
+// historyStats helpers, empty for history recorded before they existed.
+export const computeImprovementTips = (
+  keyStats,
+  { averageAccuracy = null, confusions = [], transpositions = [] } = {}
+) => {
   const totalAttempts = keyStats.reduce((sum, s) => sum + s.attempts, 0);
   if (totalAttempts < MIN_TOTAL_ATTEMPTS) return { enoughData: false, tips: [] };
 
@@ -90,6 +118,11 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
     .sort((a, b) => excessMisses(b, overallRate) - excessMisses(a, overallRate))
     .slice(0, 3);
 
+  // The strongest confusion, whether or not it ends up with its own tip.
+  const topConfusion = confusions.find(
+    (c) => c.slips >= MIN_CONFUSION_SLIPS && c.shareOfKeyMisses >= MIN_CONFUSION_SHARE
+  );
+
   if (weakKeys.length) {
     const worst = weakKeys[0];
     // Name the most-missed key when it isn't one of these, so "practicá la X"
@@ -100,13 +133,63 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
         ? ` La ${label(topByMisses)} suma más errores, pero solo porque la tecleás mucho más seguido.`
         : "";
 
+    // A key you confuse is usually a key you miss, so the two tips would
+    // sit on top of each other. Folding the confusion into this one costs
+    // no slot and reads as one thought instead of two.
+    const merged =
+      topConfusion && weakKeys.some((s) => s.key === topConfusion.expected)
+        ? ` Cuando la errás, ${outOfTen(topConfusion.shareOfKeyMisses)} veces apretás la ${topConfusion.typed.toUpperCase()}.`
+        : "";
+
     tips.push({
       id: "weak-keys",
       icon: "target",
+      severity: worst.rate / (overallRate * WEAK_FACTOR),
       title: `Practicá la ${joinKeys(weakKeys.map(label))}`,
-      detail: `${weakKeys.length === 1 ? "Es la tecla" : "Son las teclas"} que más se te escapan en proporción: la ${label(worst)} te sale mal ${oneIn(worst.rate)} veces (${worst.misses} errores) contra tu promedio de ${percent(overallRate)}.${contrast}`,
+      detail: `${weakKeys.length === 1 ? "Es la tecla" : "Son las teclas"} que más se te escapan en proporción: la ${label(worst)} te sale mal ${oneIn(worst.rate)} veces (${worst.misses} errores) contra tu promedio de ${percent(overallRate)}.${contrast}${merged}`,
       keys: weakKeys.map((s) => s.key),
     });
+  }
+
+  // 1b. Accuracy patterns that aren't about a single key: which wrong key
+  //     you reach for, and letters coming out in the wrong order. They tell
+  //     the same kind of story, so they share one slot.
+  const patternCandidates = [];
+
+  if (topConfusion && !weakKeys.some((s) => s.key === topConfusion.expected)) {
+    const [from, to] = [
+      topConfusion.expected.toUpperCase(),
+      topConfusion.typed.toUpperCase(),
+    ];
+    patternCandidates.push({
+      id: "key-confusion",
+      icon: "confusion",
+      severity: topConfusion.shareOfKeyMisses / MIN_CONFUSION_SHARE,
+      title: `Confundís la ${from} con la ${to}`,
+      detail: `${outOfTen(topConfusion.shareOfKeyMisses)} veces que errás la ${from} terminás apretando la ${to}. ${
+        areNeighbours(topConfusion.expected, topConfusion.typed)
+          ? "Son teclas vecinas: el dedo se te corre a la de al lado. Bajá un cambio en esa zona hasta que la posición se acomode sola."
+          : "Fijate en esa mano: es un error de posición, no de velocidad."
+      }`,
+      keys: [topConfusion.expected, topConfusion.typed],
+    });
+  }
+
+  const swappedTotal = transpositions.reduce((sum, t) => sum + t.count, 0);
+  const swappedShare = totalMisses ? swappedTotal / totalMisses : 0;
+  if (swappedTotal >= MIN_TRANSPOSITIONS && swappedShare >= MIN_TRANSPOSITION_SHARE) {
+    const worstPair = transpositions[0];
+    patternCandidates.push({
+      id: "transposition",
+      icon: "swap",
+      severity: swappedShare / MIN_TRANSPOSITION_SHARE,
+      title: "Se te adelantan los dedos",
+      detail: `Cambiás el orden de dos letras seguido: ${swappedTotal} veces, y la que más se te da vuelta es «${worstPair.pair}» (te sale «${worstPair.typedAs}»). No es puntería sino ritmo entre las manos: practicá esa combinación despacio y pareja.`,
+    });
+  }
+
+  if (patternCandidates.length) {
+    tips.push(patternCandidates.sort((a, b) => b.severity - a.severity)[0]);
   }
 
   // 2. Space as the #1 source of mistakes
@@ -115,6 +198,7 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
     tips.push({
       id: "space",
       icon: "space",
+      severity: overallRate ? space.rate / overallRate : 1,
       title: "Cuidá los espacios",
       detail: `Es donde más errores acumulás (${space.misses}). Suele pasar por adelantarte a la siguiente palabra: terminá cada palabra antes de pegar el espacio.`,
       keys: [" "],
@@ -136,6 +220,7 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
         tip: {
           id: "hand",
           icon: "hand",
+          severity: worse.rate / better.rate / GROUP_GAP,
           title: `Tu mano ${name} falla más`,
           detail: `Errás el ${percent(worse.rate)} de sus teclas contra el ${percent(better.rate)} de la otra. Vale la pena ejercitarla aparte.`,
         },
@@ -155,6 +240,7 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
         tip: {
           id: "row",
           icon: "rows",
+          severity: worst.rate / best.rate / GROUP_GAP,
           title: `La fila ${worst.name} te cuesta más`,
           detail: `Fallás el ${percent(worst.rate)} ahí contra el ${percent(best.rate)} en la fila ${best.name}. Practicá llegar a esas teclas sin mirar.`,
         },
@@ -172,6 +258,7 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
     tips.push({
       id: "digits",
       icon: "hashtag",
+      severity: digits.rate / (overallRate * WEAK_FACTOR),
       title: "Los números te cuestan",
       detail: `Fallás el ${percent(digits.rate)} de los dígitos. El modo Números es ideal para eso.`,
       action: { label: "Practicar números", mode: "numbers" },
@@ -183,6 +270,7 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
     tips.push({
       id: "accents",
       icon: "language",
+      severity: accents.rate / (overallRate * WEAK_FACTOR),
       title: "Ojo con las tildes",
       detail: `Fallás el ${percent(accents.rate)} de las letras con tilde. Practicá la combinación de la tecla de acento con la vocal.`,
     });
@@ -193,6 +281,7 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
     tips.push({
       id: "slow-down",
       icon: "gauge",
+      severity: 92 / averageAccuracy,
       title: "Bajá un poco la velocidad",
       detail: `Tu precisión reciente es ${averageAccuracy}%. Con más de 95% cada error cuesta menos y la velocidad sube sola.`,
     });
@@ -200,10 +289,23 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
     tips.push({
       id: "speed-up",
       icon: "bolt",
+      severity: averageAccuracy / 97,
       title: "Podés apretar el ritmo",
       detail: `Tu precisión reciente es ${averageAccuracy}%: está excelente. Es buen momento para empujar la velocidad.`,
     });
   }
 
-  return { enoughData: true, tips: tips.slice(0, MAX_TIPS) };
+  // More candidates than slots, so keep the ones that hurt most. Every tip
+  // scores itself as "how many times over its own threshold am I", which
+  // puts things on one scale: a tip that barely qualified never pushes out
+  // one that blew past its bar. Ties keep the order they were pushed in,
+  // which runs from the most specific advice to the most general.
+  const ranked = tips
+    .map((tip, index) => ({ tip, index }))
+    .sort((a, b) => b.tip.severity - a.tip.severity || a.index - b.index)
+    .slice(0, MAX_TIPS)
+    .sort((a, b) => a.index - b.index)
+    .map(({ tip }) => tip);
+
+  return { enoughData: true, tips: ranked };
 };

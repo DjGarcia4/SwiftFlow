@@ -10,6 +10,14 @@ export const METRICS_VERSION = 3;
 
 export const isCurrentMetrics = (result) => result.metricsVersion === METRICS_VERSION;
 
+// Bumped when the *rules* behind the per-keystroke insights change (which
+// mistakes count as a swap, which intervals count as typing) -- not when a
+// formula changes. Kept apart from METRICS_VERSION on purpose: throwing out
+// stale insights should never throw out someone's records along with them.
+export const INSIGHTS_VERSION = 1;
+
+export const hasCurrentInsights = (result) => result.insightsVersion === INSIGHTS_VERSION;
+
 export const computeBestWpm = (results) => {
   if (!results.length) return 0;
   return Math.max(...results.map((r) => r.wpm));
@@ -169,6 +177,81 @@ export const computeKeyErrorStats = (results) => {
       };
     })
     .sort((a, b) => b.misses - a.misses || b.rate - a.rate);
+};
+
+// Merges one count map per session into a single tally. Every per-keystroke
+// aggregate on this page has the same shape -- { someKey: count } -- so they
+// all go through here.
+const mergeCountMaps = (results, field, normalize = (key) => key.toLowerCase()) => {
+  const totals = new Map();
+  for (const result of results) {
+    for (const [rawKey, count] of Object.entries(result[field] || {})) {
+      if (!Number.isFinite(count) || count <= 0) continue;
+      const key = normalize(rawKey);
+      if (key === null) continue;
+      totals.set(key, (totals.get(key) || 0) + count);
+    }
+  }
+  return totals;
+};
+
+// Pair keys are two code points back to back ("rt"), so anything else is a
+// corrupted entry from a hand-edited or partially written backup.
+const normalizePair = (key) => {
+  const chars = [...key.toLowerCase()];
+  return chars.length === 2 ? chars.join("") : null;
+};
+
+const reversePair = (pair) => {
+  const [first, second] = [...pair];
+  return second + first;
+};
+
+// Bigrams that came out backwards, most frequent first. `typedAs` is what
+// actually landed on screen, which is just the pair reversed.
+export const computeTranspositionStats = (results) => {
+  const sessions = results.filter(hasCurrentInsights);
+  return [...mergeCountMaps(sessions, "transpositions", normalizePair).entries()]
+    .map(([pair, count]) => ({ pair, typedAs: reversePair(pair), count }))
+    .sort((a, b) => b.count - a.count);
+};
+
+// Which key got pressed instead, most habitual first.
+//
+// A swap writes two entries here ("ue" and "eu") but only one into the
+// transposition tally, so both directions come off the total -- what's left
+// (`slips`) is the plain wrong-finger mistakes, which is what the advice is
+// about.
+export const computeConfusionStats = (results) => {
+  const sessions = results.filter(hasCurrentInsights);
+  const swaps = mergeCountMaps(sessions, "transpositions", normalizePair);
+  // Straight off missedKeys rather than computeKeyErrorStats: the share is
+  // per mistake, and a key's attempt count has nothing to do with it.
+  const missesByKey = mergeCountMaps(sessions, "missedKeys");
+
+  return (
+    [...mergeCountMaps(sessions, "confusions", normalizePair).entries()]
+      .map(([pair, total]) => {
+        const [expected, typed] = [...pair];
+        const transposed = (swaps.get(pair) || 0) + (swaps.get(reversePair(pair)) || 0);
+        const slips = Math.max(0, total - transposed);
+        const keyMisses = missesByKey.get(expected) || 0;
+        return {
+          pair,
+          expected,
+          typed,
+          total,
+          transposed,
+          slips,
+          shareOfKeyMisses: keyMisses ? slips / keyMisses : 0,
+        };
+      })
+      // Same letter either side of the pair means a shift slip ("A" for "a"),
+      // not a confusion between two keys -- "confundis la A con la A" is
+      // nonsense. Accented pairs stay: "a for a" is the dropped-tilde habit.
+      .filter((stat) => stat.expected !== stat.typed && stat.slips > 0)
+      .sort((a, b) => b.slips - a.slips || b.shareOfKeyMisses - a.shareOfKeyMisses)
+  );
 };
 
 const KEY_LABELS = { " ": "espacio", "\n": "enter", "\t": "tab" };
