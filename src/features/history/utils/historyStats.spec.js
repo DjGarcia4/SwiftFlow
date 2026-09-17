@@ -16,6 +16,7 @@ import {
   formatKeyLabel,
   computeConfusionStats,
   computeTranspositionStats,
+  computeDailyActivity,
   computeKeyTimingStats,
   computeBigramTimingStats,
   formatPairLabel,
@@ -415,5 +416,48 @@ describe("timing stats", () => {
   it("spells out an invisible key inside a pair", () => {
     expect(formatPairLabel("ll")).toBe("ll");
     expect(formatPairLabel("s ")).toBe("s + espacio");
+  });
+});
+
+describe("computeDailyActivity", () => {
+  const at = (iso) => ({ date: iso });
+
+  it("counts the sessions on each day and keeps the empty ones", () => {
+    const activity = computeDailyActivity(
+      [at("2026-03-10T10:00:00"), at("2026-03-10T20:00:00"), at("2026-03-12T09:00:00")],
+      { days: 4, now: new Date("2026-03-12T21:00:00") }
+    );
+
+    expect(activity.map((d) => d.sessions)).toEqual([0, 2, 0, 1]);
+  });
+
+  it("runs oldest to newest, ending today", () => {
+    const activity = computeDailyActivity([], {
+      days: 3,
+      now: new Date("2026-03-12T21:00:00"),
+    });
+
+    expect(activity.map((d) => d.date.getDate())).toEqual([10, 11, 12]);
+  });
+
+  it("walks back over a month boundary", () => {
+    const activity = computeDailyActivity([at("2026-02-28T10:00:00")], {
+      days: 3,
+      now: new Date("2026-03-02T10:00:00"),
+    });
+
+    expect(activity.map((d) => d.sessions)).toEqual([1, 0, 0]);
+    expect(activity[0].date.getMonth()).toBe(1);
+  });
+
+  it("buckets by local day, not by UTC day", () => {
+    // Late evening local time can already be the next day in UTC
+    const local = new Date(2026, 2, 10, 23, 30);
+    const activity = computeDailyActivity([at(local.toISOString())], {
+      days: 2,
+      now: new Date(2026, 2, 11, 12, 0),
+    });
+
+    expect(activity.map((d) => d.sessions)).toEqual([1, 0]);
   });
 });

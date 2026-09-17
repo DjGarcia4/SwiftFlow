@@ -77,6 +77,32 @@ export const toLocalDayKey = (isoDate) => {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 };
 
+// One entry per day over the recent past, oldest first, including the days
+// with nothing on them -- a calendar with holes in it isn't a calendar.
+export const computeDailyActivity = (results, { days = 91, now = new Date() } = {}) => {
+  const sessionsByDay = new Map();
+  for (const result of results) {
+    const key = toLocalDayKey(result.date);
+    sessionsByDay.set(key, (sessionsByDay.get(key) || 0) + 1);
+  }
+
+  const cursor = new Date(now);
+  cursor.setHours(0, 0, 0, 0);
+  cursor.setDate(cursor.getDate() - (days - 1));
+
+  const activity = [];
+  for (let i = 0; i < days; i++) {
+    const dayKey = toLocalDayKey(cursor);
+    activity.push({
+      dayKey,
+      date: new Date(cursor),
+      sessions: sessionsByDay.get(dayKey) || 0,
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return activity;
+};
+
 // Consecutive local calendar days (ending today or yesterday) with at least
 // one completed session. Matches the usual "streak" UX: doing a session
 // today extends it, but the streak isn't broken until a full day is missed

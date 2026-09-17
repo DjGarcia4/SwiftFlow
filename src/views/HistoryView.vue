@@ -128,10 +128,18 @@
         </div>
       </div>
 
+      <!-- Consistency, on the whole history: what you practised is what you
+           practised, whatever mode it was in -->
+      <div
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:400ms]"
+      >
+        <ActivityCalendar :activity="dailyActivity" />
+      </div>
+
       <!-- Trend -->
       <div
         v-if="trendValues.length >= 2"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:400ms]"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:450ms]"
       >
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
           Tendencia de WPM
@@ -383,6 +391,7 @@ import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
+import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {
   formatModeLabel as formatModeLabelUtil,
@@ -396,6 +405,7 @@ import {
   computeKeyTimingStats,
   computeBigramTimingStats,
   RECENT_INSIGHT_SESSIONS,
+  computeDailyActivity,
   computeAverageAccuracy,
   isCurrentMetrics,
 } from "@/features/history/utils/historyStats";
@@ -467,6 +477,12 @@ const recentAccuracy = computed(() => {
 const keyStatsResults = computed(() =>
   historyStore.results.slice(0, RECENT_INSIGHT_SESSIONS)
 );
+// Roughly three months, which is what fits a 13-week grid without scrolling
+const ACTIVITY_DAYS = 91;
+const dailyActivity = computed(() =>
+  computeDailyActivity(historyStore.results, { days: ACTIVITY_DAYS })
+);
+
 const keyErrorStats = computed(() => computeKeyErrorStats(keyStatsResults.value));
 const confusionStats = computed(() => computeConfusionStats(keyStatsResults.value));
 const transpositionStats = computed(() =>
