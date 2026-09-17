@@ -40,6 +40,15 @@
 
     <!-- Ranking: works for every key, including symbols off the keyboard above -->
     <div v-if="topMissed.length" class="space-y-1.5">
+      <!-- The two numbers tell different stories (the most-missed key is
+           usually just the most-typed one), so they're labelled -->
+      <div
+        class="flex items-center gap-3 mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+      >
+        <span class="min-w-[4.5rem] text-center">tecla</span>
+        <span class="flex-1">errores en total</span>
+        <span class="w-28 text-right">errores · % fallado</span>
+      </div>
       <div
         v-for="(stat, index) in topMissed"
         :key="stat.key"
@@ -116,5 +125,5 @@ const keyStagger = (rowIndex, keyIndex) =>
   staggerStyle(rowIndex + keyIndex, { step: 22, base: 550, max: 1000 });
 
 const describe = (stat) =>
-  `${stat.misses} de ${stat.attempts} fallados (${Math.round(stat.rate * 100)}%)`;
+  `${stat.misses} errores en ${stat.attempts} intentos — fallás ${Math.round(stat.rate * 100)}% de las veces`;
 </script>

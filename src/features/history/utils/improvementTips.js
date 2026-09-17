@@ -4,8 +4,17 @@
 
 // Below this many keystrokes overall, patterns are mostly noise.
 export const MIN_TOTAL_ATTEMPTS = 200;
-// A key needs this many attempts before its miss rate means anything.
-const MIN_KEY_ATTEMPTS = 20;
+// A key needs this many attempts before its miss rate means anything. In
+// Spanish the rare letters (x, q, k, w) only show up a handful of times per
+// session, so a low bar here lets "3 de 12" noise hijack every tip.
+const MIN_KEY_ATTEMPTS = 60;
+// ...and it has to have actually cost something: both in absolute misses and
+// as a slice of every mistake made, so a technically-weak key that accounts
+// for 1% of the errors doesn't become the headline advice.
+const MIN_KEY_MISSES = 8;
+const MIN_MISS_SHARE = 0.03;
+// Digits are judged as a group, so they clear the bar with fewer attempts.
+const MIN_DIGIT_ATTEMPTS = 30;
 // "Clearly worse than your average" — not just a hair above it.
 const WEAK_FACTOR = 1.25;
 // A group (hand/row) only stands out when it's this much worse than the best.
@@ -33,6 +42,11 @@ const joinKeys = (keys) =>
     ? keys[0]
     : `${keys.slice(0, -1).join(", ")} y ${keys[keys.length - 1]}`;
 
+// Misses this key costs above the typist's own average rate. Mixes rate and
+// volume: a 25%-rate key typed 60 times (+9 misses) outranks a 30%-rate key
+// typed 20 times (+5), which is what "worth practicing" actually means.
+const excessMisses = (stat, overallRate) => stat.misses - stat.attempts * overallRate;
+
 const groupRate = (stats, keySet) => {
   let attempts = 0;
   let misses = 0;
@@ -55,33 +69,48 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
   const overallRate = totalMisses / totalAttempts;
   const tips = [];
 
-  // 1. The specific letters that fail most often (by rate, not raw count —
-  //    the most-typed keys naturally rack up the most misses). Digits,
-  //    space and symbols get their own tips below.
+  // The ranking shown above these tips is sorted by raw misses, which in
+  // Spanish mostly means "the letter you type most" (the R). Kept here so the
+  // tips can explain that difference instead of seeming to contradict it.
+  const topByMisses = [...keyStats].sort((a, b) => b.misses - a.misses)[0];
+  const label = (stat) => stat.key.toUpperCase();
+
+  // 1. The specific letters worth practicing: clearly worse than the typist's
+  //    own average, on enough attempts to mean something, ranked by the misses
+  //    they actually cost. Digits, space and symbols get their own tips below.
   const weakKeys = keyStats
     .filter(
       (s) =>
         /^\p{L}$/u.test(s.key) &&
         s.attempts >= MIN_KEY_ATTEMPTS &&
-        s.misses > 0 &&
+        s.misses >= MIN_KEY_MISSES &&
+        s.misses / totalMisses >= MIN_MISS_SHARE &&
         s.rate >= overallRate * WEAK_FACTOR
     )
-    .sort((a, b) => b.rate - a.rate)
+    .sort((a, b) => excessMisses(b, overallRate) - excessMisses(a, overallRate))
     .slice(0, 3);
 
   if (weakKeys.length) {
+    const worst = weakKeys[0];
+    // Name the most-missed key when it isn't one of these, so "practicá la X"
+    // sitting under a ranking led by the R reads as an explanation rather than
+    // a contradiction.
+    const contrast =
+      topByMisses && !weakKeys.includes(topByMisses) && /^\p{L}$/u.test(topByMisses.key)
+        ? ` La ${label(topByMisses)} suma más errores, pero solo porque la tecleás mucho más seguido.`
+        : "";
+
     tips.push({
       id: "weak-keys",
       icon: "target",
-      title: `Practicá la ${joinKeys(weakKeys.map((s) => s.key.toUpperCase()))}`,
-      detail: `${weakKeys.length === 1 ? "Es la tecla" : "Son las teclas"} que más fallás: la ${weakKeys[0].key.toUpperCase()} te sale mal ${oneIn(weakKeys[0].rate)} veces (tu promedio es ${percent(overallRate)}).`,
+      title: `Practicá la ${joinKeys(weakKeys.map(label))}`,
+      detail: `${weakKeys.length === 1 ? "Es la tecla" : "Son las teclas"} que más se te escapan en proporción: la ${label(worst)} te sale mal ${oneIn(worst.rate)} veces (${worst.misses} errores) contra tu promedio de ${percent(overallRate)}.${contrast}`,
       keys: weakKeys.map((s) => s.key),
     });
   }
 
   // 2. Space as the #1 source of mistakes
   const space = keyStats.find((s) => s.key === " ");
-  const topByMisses = [...keyStats].sort((a, b) => b.misses - a.misses)[0];
   if (space && topByMisses === space && space.misses >= 5) {
     tips.push({
       id: "space",
@@ -139,7 +168,7 @@ export const computeImprovementTips = (keyStats, { averageAccuracy = null } = {}
 
   // 4. Numbers and accents: whole skills with their own practice path
   const digits = groupRate(keyStats, DIGITS);
-  if (digits.attempts >= MIN_KEY_ATTEMPTS && digits.rate >= overallRate * WEAK_FACTOR) {
+  if (digits.attempts >= MIN_DIGIT_ATTEMPTS && digits.rate >= overallRate * WEAK_FACTOR) {
     tips.push({
       id: "digits",
       icon: "hashtag",

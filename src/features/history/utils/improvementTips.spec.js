@@ -16,25 +16,44 @@ describe("computeImprovementTips", () => {
     expect(result).toEqual({ enoughData: false, tips: [] });
   });
 
-  it("ranks weak keys by miss rate, not raw misses", () => {
-    // Based on a real history: space misses most but is typed the most
+  it("ranks weak keys by the misses they cost, not by raw count or rate alone", () => {
+    // Based on a real history: the R leads on raw misses only because it's
+    // typed constantly, while the B fails far more often per attempt.
     const stats = [
-      stat(" ", 133, 16),
-      stat("e", 87, 13),
-      stat("n", 53, 9),
-      stat("s", 50, 8),
-      stat("o", 67, 8),
-      stat("r", 37, 7),
-      stat("i", 50, 7),
-      stat("c", 30, 6),
-      stat("a", 120, 4),
+      stat("a", 700, 35),
+      stat("e", 660, 33),
+      stat("s", 460, 37),
+      stat("r", 440, 44),
+      stat("b", 90, 22),
     ];
-    const { tips } = computeImprovementTips(stats);
-    const weak = tips.find((t) => t.id === "weak-keys");
+    const weak = computeImprovementTips(stats).tips.find((t) => t.id === "weak-keys");
 
-    expect(weak.keys).toEqual(["c", "r", "n"]);
-    expect(weak.title).toBe("Practicá la C, R y N");
-    expect(weak.detail).toContain("1 de cada 5");
+    expect(weak.keys).toEqual(["b", "r"]);
+    expect(weak.title).toBe("Practicá la B y R");
+    expect(weak.detail).toContain("1 de cada 4");
+    expect(weak.detail).toContain("22 errores");
+  });
+
+  it("ignores rare letters whose rate comes from a handful of attempts", () => {
+    // The X at 25% off 40 tries is noise; the B at 24% off 90 isn't.
+    const stats = [
+      stat("a", 700, 35),
+      stat("e", 660, 33),
+      stat("b", 90, 22),
+      stat("x", 40, 10),
+      stat("q", 70, 4),
+    ];
+    const weak = computeImprovementTips(stats).tips.find((t) => t.id === "weak-keys");
+
+    expect(weak.keys).toEqual(["b"]);
+  });
+
+  it("explains why the most-missed key isn't the one to practice", () => {
+    const stats = [stat("a", 700, 21), stat("r", 500, 38), stat("b", 90, 22)];
+    const weak = computeImprovementTips(stats).tips.find((t) => t.id === "weak-keys");
+
+    expect(weak.keys).toEqual(["b"]);
+    expect(weak.detail).toContain("La R suma más errores");
   });
 
   it("only lists letters as weak keys (digits and symbols have their own tips)", () => {
@@ -42,7 +61,7 @@ describe("computeImprovementTips", () => {
       stat("a", 300, 6),
       stat("1", 30, 12),
       stat(",", 30, 12),
-      stat("c", 30, 9),
+      stat("c", 80, 20),
     ];
     expect(
       computeImprovementTips(stats).tips.find((t) => t.id === "weak-keys").keys

@@ -144,8 +144,16 @@
         v-if="keyErrorStats.length"
         class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:500ms]"
       >
-        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-3">
-          Teclas más falladas
+        <div class="flex items-baseline justify-between gap-3 mb-3">
+          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+            Teclas más falladas
+          </div>
+          <div
+            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+          >
+            últimas {{ keyStatsResults.length }}
+            {{ keyStatsResults.length === 1 ? "sesión" : "sesiones" }}
+          </div>
         </div>
         <KeyErrorHeatmap :stats="keyErrorStats" />
         <ImprovementTips :stats="keyErrorStats" :average-accuracy="recentAccuracy" />
@@ -418,7 +426,13 @@ const recentAccuracy = computed(() => {
   return recent.length ? computeAverageAccuracy(recent) : null;
 });
 
-const keyErrorStats = computed(() => computeKeyErrorStats(historyStore.results));
+// Per-key stats read a window of recent sessions rather than the whole stored
+// history: what you fumbled fifty sessions ago isn't what to practice now.
+// Wider than RECENT_SESSIONS because miss rates per key need keystroke volume
+// before they mean anything (see MIN_TOTAL_ATTEMPTS in improvementTips).
+const KEY_STATS_SESSIONS = 30;
+const keyStatsResults = computed(() => historyStore.results.slice(0, KEY_STATS_SESSIONS));
+const keyErrorStats = computed(() => computeKeyErrorStats(keyStatsResults.value));
 
 // Achievements grid starts collapsed to roughly this many cards' worth of
 // height (~7 rows: on desktop's 3-col grid that's 21 cards, on mobile's
