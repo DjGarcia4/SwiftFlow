@@ -4,7 +4,9 @@ import {
   getResults,
   saveResult,
   clearResults,
+  replaceResults,
 } from "@/features/history/resultsRepository";
+import { mergeResults } from "@/features/history/utils/historyBackup";
 import {
   computeBestWpm,
   computeAverageWpm,
@@ -70,6 +72,14 @@ export const useHistoryStore = defineStore("history", () => {
     newlyUnlocked.value = newlyUnlocked.value.slice(1);
   };
 
+  // Merges an imported backup in and reports what actually landed, so the
+  // view can say "12 sesiones nuevas" rather than a bare "listo".
+  const importResults = (incoming) => {
+    const before = results.value.length;
+    results.value = replaceResults(mergeResults(results.value, incoming));
+    return { added: results.value.length - before };
+  };
+
   const clearHistory = () => {
     clearResults();
     results.value = [];
@@ -88,6 +98,7 @@ export const useHistoryStore = defineStore("history", () => {
     unlockedAchievementsCount,
     newlyUnlocked,
     recordResult,
+    importResults,
     dismissNewlyUnlocked,
     clearHistory,
   };

@@ -390,14 +390,41 @@
         </div>
       </TransitionGroup>
 
-      <div class="text-center">
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <ButtonCustom
+          text="Exportar"
+          variant="secondary"
+          size="sm"
+          @click="handleExport"
+        />
+        <ButtonCustom
+          text="Importar"
+          variant="secondary"
+          size="sm"
+          @click="fileInput?.click()"
+        />
         <ButtonCustom
           :text="confirmingClear ? '¿Confirmar borrado?' : 'Borrar historial'"
           variant="secondary"
           size="sm"
           @click="handleClearClick"
         />
+        <input
+          ref="fileInput"
+          type="file"
+          accept="application/json,.json"
+          class="hidden"
+          @change="handleImport"
+        />
       </div>
+
+      <p
+        v-if="backupMessage"
+        class="mt-3 text-center text-sm font-bold"
+        :class="backupFailed ? 'text-danger' : 'text-success'"
+      >
+        {{ backupMessage }}
+      </p>
     </template>
   </div>
 </template>
@@ -416,6 +443,11 @@ import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
 import { useHistoryStore } from "@/features/history/store";
+import {
+  buildBackup,
+  parseBackup,
+  backupFilename,
+} from "@/features/history/utils/historyBackup";
 import {
   formatModeLabel as formatModeLabelUtil,
   computeBestStreak,
@@ -584,6 +616,58 @@ const formatDate = (isoDate) =>
 const confirmingClear = ref(false);
 let confirmTimeout = null;
 
+// Backup: a plain JSON file out, the same file back in. No confirm dialogs
+// -- they freeze the page and there's nothing here worth interrupting for.
+const fileInput = ref(null);
+const backupMessage = ref("");
+const backupFailed = ref(false);
+let backupMessageTimeout = null;
+
+const showBackupMessage = (message, { failed = false } = {}) => {
+  backupMessage.value = message;
+  backupFailed.value = failed;
+  clearTimeout(backupMessageTimeout);
+  backupMessageTimeout = setTimeout(() => {
+    backupMessage.value = "";
+  }, 6000);
+};
+
+const handleExport = () => {
+  const blob = new Blob([JSON.stringify(buildBackup(historyStore.results), null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = backupFilename();
+  link.click();
+  URL.revokeObjectURL(url);
+
+  const count = historyStore.results.length;
+  showBackupMessage(`Exportaste ${count} ${count === 1 ? "sesión" : "sesiones"}.`);
+};
+
+const handleImport = async (event) => {
+  const [file] = event.target.files ?? [];
+  // Cleared right away so picking the same file twice in a row still fires
+  event.target.value = "";
+  if (!file) return;
+
+  const parsed = parseBackup(await file.text());
+  if (!parsed.ok) {
+    showBackupMessage(parsed.error, { failed: true });
+    return;
+  }
+
+  const { added } = historyStore.importResults(parsed.results);
+  const skipped = parsed.skipped ? ` Se saltearon ${parsed.skipped} sin leer.` : "";
+  showBackupMessage(
+    added
+      ? `Importaste ${added} ${added === 1 ? "sesión nueva" : "sesiones nuevas"}.${skipped}`
+      : `Ya tenías todas esas sesiones.${skipped}`
+  );
+};
+
 const handleClearClick = () => {
   if (!confirmingClear.value) {
     confirmingClear.value = true;
@@ -601,5 +685,6 @@ const handleClearClick = () => {
 onUnmounted(() => {
   document.removeEventListener("keydown", handleKeydown);
   clearTimeout(confirmTimeout);
+  clearTimeout(backupMessageTimeout);
 });
 </script>

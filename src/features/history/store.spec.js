@@ -222,6 +222,41 @@ describe("useHistoryStore", () => {
     });
   });
 
+  describe("importResults", () => {
+    const imported = (id, date) => ({ id, date, wpm: 55, accuracy: 90 });
+
+    it("adds the sessions that weren't already here", () => {
+      const store = useHistoryStore();
+      store.recordResult({ mode: "time", wpm: 40, accuracy: 80, errors: 0 });
+      const mine = store.results[0];
+
+      const { added } = store.importResults([
+        imported("from-elsewhere", "2020-01-01T10:00:00.000Z"),
+      ]);
+
+      expect(added).toBe(1);
+      expect(store.results.map((r) => r.id)).toContain(mine.id);
+    });
+
+    it("keeps what's here when the same session arrives again", () => {
+      const store = useHistoryStore();
+      store.recordResult({ mode: "time", wpm: 40, accuracy: 80, errors: 0 });
+      const mine = store.results[0];
+
+      const { added } = store.importResults([{ ...mine, wpm: 999 }]);
+
+      expect(added).toBe(0);
+      expect(store.results[0].wpm).toBe(40);
+    });
+
+    it("persists, so the import survives a reload", () => {
+      useHistoryStore().importResults([imported("a", "2026-03-10T10:00:00.000Z")]);
+
+      setActivePinia(createPinia());
+      expect(useHistoryStore().results.map((r) => r.id)).toEqual(["a"]);
+    });
+  });
+
   it("clearHistory empties both state and storage", () => {
     const store = useHistoryStore();
     store.recordResult({

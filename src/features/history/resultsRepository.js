@@ -57,6 +57,27 @@ export const saveResult = (entry) => {
   return results;
 };
 
+// Writes a whole list at once, for an import. Same cap and same timing
+// trimming as a normal save, so a restored history can't smuggle in more
+// than the app would ever store itself.
+export const replaceResults = (entries) => {
+  const results = entries
+    .slice(0, MAX_RESULTS)
+    .map((result, index) => (index < TIMING_RETENTION ? result : withoutTiming(result)));
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(results));
+  } catch {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(results.map(withoutTiming)));
+    } catch {
+      // Nothing more to trim; the import stays in memory for this session.
+    }
+  }
+
+  return results;
+};
+
 export const clearResults = () => {
   localStorage.removeItem(STORAGE_KEY);
 };
