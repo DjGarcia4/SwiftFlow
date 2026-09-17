@@ -41,6 +41,25 @@ describe("generateDrillText", () => {
     expect(density(text, "ñ")).toBeGreaterThan(0.1);
   });
 
+  it("gives every target its share, even next to a very common letter", () => {
+    // The a is in almost every Spanish word: a single shared pool would be
+    // all a-words and the f and the ñ would barely appear
+    const text = generateDrillText(["a", "f", "m", "h", "ñ"], 30);
+
+    for (const key of ["a", "f", "m", "h", "ñ"]) {
+      expect(density(text, key)).toBeGreaterThan(0.02);
+    }
+  });
+
+  it("covers every target within one pass, not on average", () => {
+    // Five targets and five words: each one has to be in there
+    const groups = groupsOf(generateDrillText(["q", "f", "j", "ñ", "z"], 5));
+
+    for (const key of ["q", "f", "j", "ñ", "z"]) {
+      expect(groups.some((group) => group.includes(key))).toBe(true);
+    }
+  });
+
   it("mixes real words in with the made-up syllables", () => {
     const groups = groupsOf(generateDrillText(["r"], 120));
     const real = groups.filter((group) => spanishWords.includes(group));

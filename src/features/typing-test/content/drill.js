@@ -15,19 +15,33 @@ const CLUSTER_SHARE = 0.3;
 
 const pick = (items) => items[Math.floor(Math.random() * items.length)];
 
-const countTargets = (word, targets) =>
-  [...word].reduce((sum, char) => sum + (targets.has(char) ? 1 : 0), 0);
+const countOf = (word, key) =>
+  [...word].reduce((sum, char) => sum + (char === key ? 1 : 0), 0);
 
-// Weighted so a word with three target letters is three times as likely as
-// one with a single letter: more repetitions of the thing being practiced
-// per word typed.
-const buildWeightedPool = (targets) => {
+// One pool per target, weighted so a word with three of that letter is
+// three times as likely as one with a single one.
+//
+// Deliberately not one shared pool across every target: the "a" is in
+// almost every Spanish word, so a shared pool would be nothing but a-words
+// and the rare targets -- the ones actually worth drilling -- would barely
+// show up at all.
+const buildPool = (key) => {
   const pool = [];
   for (const word of spanishWords) {
-    const hits = countTargets(word, targets);
-    for (let i = 0; i < hits; i++) pool.push(word);
+    for (let i = countOf(word, key); i > 0; i--) pool.push(word);
   }
   return pool;
+};
+
+// A fresh order for each pass through the targets: every one gets its turn
+// within each cycle, without the text falling into an audible a-f-m-a-f-m.
+const shuffled = (items) => {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
 };
 
 // A syllable built around the target. Consonants get vowels either side, and
@@ -55,18 +69,22 @@ export const generateDrillText = (keys, count) => {
   // a better use of the session than a drill on nothing.
   if (!targets.length) return generateRandomWords(count);
 
-  const targetSet = new Set(targets);
-  const pool = buildWeightedPool(targetSet);
+  const pools = new Map(targets.map((key) => [key, buildPool(key)]));
   const result = [];
   let last = null;
+  let cycle = [];
 
   for (let i = 0; i < count; i++) {
+    // Take targets a cycle at a time, so ten words across five keys means
+    // two each rather than however the dice fell.
+    if (!cycle.length) cycle = shuffled(targets);
+    const key = cycle.pop();
+    const pool = pools.get(key);
+
     let group;
     do {
       group =
-        pool.length && Math.random() >= CLUSTER_SHARE
-          ? pick(pool)
-          : buildCluster(pick(targets));
+        pool.length && Math.random() >= CLUSTER_SHARE ? pick(pool) : buildCluster(key);
     } while (group === last);
     result.push(group);
     last = group;

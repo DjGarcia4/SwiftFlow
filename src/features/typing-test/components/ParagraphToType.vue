@@ -856,6 +856,7 @@ watch(
     configStore.selectedTime,
     configStore.selectedWords,
     configStore.selectedCodeLanguage,
+    configStore.drillKeys,
   ],
   () => {
     refreshReferenceText();
@@ -875,6 +876,7 @@ watch(
     configStore.selectedWords,
     configStore.selectedCodeLanguage,
     configStore.selectedContentTypes,
+    configStore.drillKeys,
   ],
   () => {
     if (window.matchMedia?.("(pointer: fine)").matches) {
