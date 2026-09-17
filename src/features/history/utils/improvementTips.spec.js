@@ -278,6 +278,14 @@ describe("computeImprovementTips · speed patterns", () => {
     expect(tip.keys).toEqual(["ñ"]);
   });
 
+  it("repeats the article when it names two keys", () => {
+    const tip = computeImprovementTips(stats, {
+      keyTiming: [timing(), timing({ key: "q", ratio: 1.38, meanMs: 300 })],
+    }).tips.find((t) => t.id === "slow-keys");
+
+    expect(tip.title).toBe("Te frenan la Ñ y la Q");
+  });
+
   it("waits for enough measured intervals before talking about speed", () => {
     expect(
       tipIds(computeImprovementTips(stats, { keyTiming: [timing({ samples: 120 })] }))

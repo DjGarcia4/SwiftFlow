@@ -73,6 +73,10 @@ const areNeighbours = (first, second) =>
     return a !== -1 && b !== -1 && Math.abs(a - b) === 1;
   });
 
+// "la Ñ y la Q" -- the article has to repeat, or the second key reads as an
+// afterthought ("la Ñ y Q").
+const joinKeysWithArticle = (keys) => joinKeys(keys.map((key) => `la ${key}`));
+
 const joinKeys = (keys) =>
   keys.length === 1
     ? keys[0]
@@ -321,7 +325,7 @@ export const computeImprovementTips = (
         id: "slow-keys",
         icon: "clock",
         severity: worst.ratio / SLOW_KEY_FACTOR,
-        title: `Te ${single ? "frena" : "frenan"} la ${joinKeys(slowKeys.map((s) => s.key.toUpperCase()))}`,
+        title: `Te ${single ? "frena" : "frenan"} ${joinKeysWithArticle(slowKeys.map((s) => s.key.toUpperCase()))}`,
         detail: `No ${single ? "la errás" : "las errás"} casi nunca, pero te ${single ? "lleva" : "llevan"} un ${percent(worst.ratio - 1)} más de tiempo que el resto de tus teclas: ${worst.meanMs} ms contra tus ${baseline} ms habituales. ${single ? "Repetila suelta" : "Repetilas sueltas"}, sin apuro, hasta que ${single ? "salga" : "salgan"} sin pensar.`,
         keys: slowKeys.map((stat) => stat.key),
       });
