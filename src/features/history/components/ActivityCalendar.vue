@@ -17,11 +17,12 @@
         <!-- Month names sit above the week where that month begins, and are
              free to overflow their own column: a column is twelve pixels
              wide and no month name fits in that. -->
-        <div class="flex h-3 gap-1 pl-9">
+        <div class="flex h-3 gap-[3px]">
+          <div class="w-7 flex-shrink-0"></div>
           <div
             v-for="(week, weekIndex) in weeks"
             :key="weekIndex"
-            class="relative w-3 flex-shrink-0"
+            class="relative w-2.5 flex-shrink-0"
           >
             <span
               v-if="monthLabels[weekIndex]"
@@ -32,14 +33,14 @@
           </div>
         </div>
 
-        <div class="flex gap-1">
+        <div class="flex gap-[3px]">
           <!-- Every other weekday is labelled; naming all seven turns the
                left edge into a wall of text -->
-          <div class="flex w-8 flex-shrink-0 flex-col gap-1 pr-1">
+          <div class="flex w-7 flex-shrink-0 flex-col gap-[3px] pr-1">
             <div
               v-for="(label, dayIndex) in WEEKDAY_LABELS"
               :key="dayIndex"
-              class="h-3 text-right text-[0.6rem] font-bold leading-3 text-pencil-gray/70"
+              class="h-2.5 text-right text-[0.6rem] font-bold leading-[10px] text-pencil-gray/70"
             >
               {{ label }}
             </div>
@@ -48,19 +49,19 @@
           <div
             v-for="(week, weekIndex) in weeks"
             :key="weekIndex"
-            class="flex flex-col gap-1"
+            class="flex flex-col gap-[3px]"
           >
             <template v-for="(day, dayIndex) in week">
               <!-- The days before the window opened: blanks that hold the row
                    alignment, so every row stays one weekday all the way across -->
-              <div v-if="!day" :key="`pad-${dayIndex}`" class="h-3 w-3"></div>
+              <div v-if="!day" :key="`pad-${dayIndex}`" class="h-2.5 w-2.5"></div>
               <div
                 v-else
                 :key="day.dayKey"
-                class="group relative h-3 w-3 rounded-[0.25rem] animate-pop-in"
+                class="group relative h-2.5 w-2.5 rounded-[3px] animate-pop-in"
                 :style="{
                   ...dayStyle(day),
-                  ...staggerStyle(weekIndex, { step: 12, max: 600 }),
+                  ...staggerStyle(weekIndex, { step: 8, max: 600 }),
                 }"
               >
                 <div
@@ -80,7 +81,7 @@
       <div
         v-for="level in [0, 1, 2, 3, 4]"
         :key="level"
-        class="h-3 w-3 rounded-[0.25rem]"
+        class="h-2.5 w-2.5 rounded-[3px]"
         :style="levelStyle(level)"
       ></div>
       <span class="text-[0.65rem] font-bold text-pencil-gray/70">más</span>

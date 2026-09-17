@@ -14,7 +14,7 @@ describe("ActivityCalendar", () => {
     });
 
     // The blanks are the only cells with no styling of their own
-    expect(wrapper.findAll('div[class="h-3 w-3"]')).toHaveLength(2);
+    expect(wrapper.findAll('div[class="h-2.5 w-2.5"]')).toHaveLength(2);
   });
 
   it("counts the days that were actually practiced", () => {
@@ -64,6 +64,19 @@ describe("ActivityCalendar", () => {
     });
 
     expect(wrapper.text()).toContain("3 sesiones en 1 día");
+  });
+
+  it("fits a year of columns in the page's content width", () => {
+    const wrapper = mount(ActivityCalendar, {
+      props: { activity: activity(365, new Date(2026, 2, 12)) },
+    });
+
+    const columns = wrapper.findAll('div[class="flex flex-col gap-[3px]"]');
+    // 53 weeks at 10px plus a 3px gap, after a 28px label column
+    const width = 28 + columns.length * 13;
+
+    expect(columns.length).toBeLessThanOrEqual(53);
+    expect(width).toBeLessThanOrEqual(720);
   });
 
   it("renders nothing odd for an empty history", () => {

@@ -576,8 +576,12 @@ const recentAccuracy = computed(() => {
 const keyStatsResults = computed(() =>
   filteredResults.value.slice(0, RECENT_INSIGHT_SESSIONS)
 );
-// Roughly three months, which is what fits a 13-week grid without scrolling
-const ACTIVITY_DAYS = 91;
+// A full year, the way every contribution grid shows one. 365 days plus
+// the padding of a first week that rarely starts on a Sunday comes to at
+// most 53 columns; at 10px a cell with a 3px gap that's 717px, which fits
+// this page's content width with three pixels to spare. A 54th column --
+// which 371 days would produce -- pushes it into scrolling sideways.
+const ACTIVITY_DAYS = 365;
 const dailyActivity = computed(() =>
   computeDailyActivity(historyStore.results, { days: ACTIVITY_DAYS })
 );
