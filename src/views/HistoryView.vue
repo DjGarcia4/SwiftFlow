@@ -21,6 +21,28 @@
     </div>
 
     <template v-else>
+      <!-- Which mode the numbers below are about -->
+      <div
+        v-if="availableModes.length > 1"
+        class="flex flex-wrap items-center gap-1.5 mb-4 animate-rise"
+      >
+        <IconButton
+          :variant="selectedMode === null ? 'primary' : 'secondary'"
+          size="xs"
+          text="Todos"
+          @click="selectedMode = null"
+        />
+        <IconButton
+          v-for="mode in availableModes"
+          :key="mode"
+          :value="mode"
+          :variant="selectedMode === mode ? 'primary' : 'secondary'"
+          size="xs"
+          :text="modeName(mode)"
+          @click="selectedMode = mode"
+        />
+      </div>
+
       <!-- Summary cards -->
       <div
         class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6 [&>*]:animate-rise [&>*:nth-child(2)]:[animation-delay:50ms] [&>*:nth-child(3)]:[animation-delay:100ms] [&>*:nth-child(4)]:[animation-delay:150ms] [&>*:nth-child(5)]:[animation-delay:200ms]"
@@ -49,7 +71,7 @@
           <div
             class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
           >
-            <AnimatedNumber :value="historyStore.sessionsCount" />
+            <AnimatedNumber :value="summary.sessions" />
           </div>
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
@@ -61,7 +83,7 @@
           class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
         >
           <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
-            <AnimatedNumber v-if="hasCurrent" :value="historyStore.bestWpm" />
+            <AnimatedNumber v-if="hasCurrent" :value="summary.bestWpm" />
             <template v-else>—</template>
           </div>
           <div
@@ -76,7 +98,7 @@
           <div
             class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
           >
-            <AnimatedNumber v-if="hasCurrent" :value="historyStore.averageWpm" />
+            <AnimatedNumber v-if="hasCurrent" :value="summary.averageWpm" />
             <template v-else>—</template>
           </div>
           <div
@@ -92,7 +114,7 @@
             class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
           >
             <template v-if="hasCurrent">
-              <AnimatedNumber :value="historyStore.averageAccuracy" />%
+              <AnimatedNumber :value="summary.averageAccuracy" />%
             </template>
             <template v-else>—</template>
           </div>
@@ -328,7 +350,7 @@
         move-class="transition-transform duration-500 ease-smooth"
       >
         <div
-          v-for="(result, index) in historyStore.results"
+          v-for="(result, index) in filteredResults"
           :key="result.id"
           class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray flex items-center justify-between gap-3 animate-rise transition-[border-color,translate] duration-300 ease-smooth hover:border-primary/50 hover:-translate-y-0.5"
           :style="staggerStyle(index, { step: 40, base: 700, max: 1100 })"
@@ -385,6 +407,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { FireIcon } from "@heroicons/vue/24/outline";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
+import IconButton from "@/shared/components/IconButton.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
@@ -407,6 +430,8 @@ import {
   RECENT_INSIGHT_SESSIONS,
   computeDailyActivity,
   computeAverageAccuracy,
+  computeAverageWpm,
+  computeBestWpm,
   isCurrentMetrics,
 } from "@/features/history/utils/historyStats";
 import {
@@ -441,8 +466,47 @@ const formatDuration = (seconds) => {
   return `${seconds}s`;
 };
 
+// Which mode the page is looking at (null = all of them). A 15-second test
+// and a Python snippet are different exercises, so pooling them into one
+// average makes the average mean nothing.
+const selectedMode = ref(null);
+
+// The mode on its own, without the value that formatModeLabel tacks on --
+// "Tiempo", not "15s", since the chip covers every length at once.
+const MODE_NAMES = {
+  time: "Tiempo",
+  words: "Palabras",
+  numbers: "Números",
+  quote: "Cita",
+  code: "Código",
+  zen: "Zen",
+  drill: "Entrenar",
+};
+const modeName = (mode) => MODE_NAMES[mode] ?? mode;
+
+const availableModes = computed(() => [
+  ...new Set(historyStore.results.map((result) => result.mode)),
+]);
+
+const filteredResults = computed(() =>
+  selectedMode.value
+    ? historyStore.results.filter((result) => result.mode === selectedMode.value)
+    : historyStore.results
+);
+
+// Sessions measured with the current formula, within the current filter --
+// the same distinction the store makes, narrowed down.
+const filteredCurrent = computed(() => filteredResults.value.filter(isCurrentMetrics));
+
+const summary = computed(() => ({
+  sessions: filteredResults.value.length,
+  bestWpm: computeBestWpm(filteredCurrent.value),
+  averageWpm: computeAverageWpm(filteredCurrent.value),
+  averageAccuracy: computeAverageAccuracy(filteredCurrent.value),
+}));
+
 const extraStats = computed(() => {
-  const results = historyStore.results;
+  const results = filteredResults.value;
   const corrected = computeTotalCorrectedErrors(results);
   const keystrokes = computeTotalKeystrokes(results);
   return [
@@ -461,13 +525,13 @@ const extraStats = computed(() => {
 
 const formatThousands = (value) => value.toLocaleString("es");
 
-const hasCurrent = computed(() => historyStore.currentResults.length > 0);
+const hasCurrent = computed(() => filteredCurrent.value.length > 0);
 
 // Accuracy over the last few comparable sessions — recent habits matter more
 // than old ones for "what to work on now".
 const RECENT_SESSIONS = 10;
 const recentAccuracy = computed(() => {
-  const recent = historyStore.currentResults.slice(0, RECENT_SESSIONS);
+  const recent = filteredCurrent.value.slice(0, RECENT_SESSIONS);
   return recent.length ? computeAverageAccuracy(recent) : null;
 });
 
@@ -475,7 +539,7 @@ const recentAccuracy = computed(() => {
 // stored history -- see RECENT_INSIGHT_SESSIONS. Wider than RECENT_SESSIONS,
 // which is about comparing a handful of like sessions rather than volume.
 const keyStatsResults = computed(() =>
-  historyStore.results.slice(0, RECENT_INSIGHT_SESSIONS)
+  filteredResults.value.slice(0, RECENT_INSIGHT_SESSIONS)
 );
 // Roughly three months, which is what fits a 13-week grid without scrolling
 const ACTIVITY_DAYS = 91;
@@ -504,7 +568,7 @@ const showAllAchievements = ref(false);
 // most-recent-first, so reverse the last 30 sessions.
 const TREND_SESSIONS = 30;
 const trendValues = computed(() =>
-  historyStore.currentResults
+  filteredCurrent.value
     .slice(0, TREND_SESSIONS)
     .map((r) => r.wpm)
     .reverse()
