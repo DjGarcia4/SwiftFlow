@@ -395,6 +395,7 @@ import {
   computeTranspositionStats,
   computeKeyTimingStats,
   computeBigramTimingStats,
+  RECENT_INSIGHT_SESSIONS,
   computeAverageAccuracy,
   isCurrentMetrics,
 } from "@/features/history/utils/historyStats";
@@ -460,12 +461,12 @@ const recentAccuracy = computed(() => {
   return recent.length ? computeAverageAccuracy(recent) : null;
 });
 
-// Per-key stats read a window of recent sessions rather than the whole stored
-// history: what you fumbled fifty sessions ago isn't what to practice now.
-// Wider than RECENT_SESSIONS because miss rates per key need keystroke volume
-// before they mean anything (see MIN_TOTAL_ATTEMPTS in improvementTips).
-const KEY_STATS_SESSIONS = 30;
-const keyStatsResults = computed(() => historyStore.results.slice(0, KEY_STATS_SESSIONS));
+// Per-key stats read a window of recent sessions rather than the whole
+// stored history -- see RECENT_INSIGHT_SESSIONS. Wider than RECENT_SESSIONS,
+// which is about comparing a handful of like sessions rather than volume.
+const keyStatsResults = computed(() =>
+  historyStore.results.slice(0, RECENT_INSIGHT_SESSIONS)
+);
 const keyErrorStats = computed(() => computeKeyErrorStats(keyStatsResults.value));
 const confusionStats = computed(() => computeConfusionStats(keyStatsResults.value));
 const transpositionStats = computed(() =>

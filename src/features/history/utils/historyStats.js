@@ -16,6 +16,11 @@ export const isCurrentMetrics = (result) => result.metricsVersion === METRICS_VE
 // stale insights should never throw out someone's records along with them.
 export const INSIGHTS_VERSION = 1;
 
+// How far back the per-keystroke insights look. What you fumbled fifty
+// sessions ago isn't what to practice now, and a rate per key needs
+// keystroke volume before it means anything.
+export const RECENT_INSIGHT_SESSIONS = 30;
+
 export const hasCurrentInsights = (result) => result.insightsVersion === INSIGHTS_VERSION;
 
 export const computeBestWpm = (results) => {
@@ -42,6 +47,7 @@ const MODE_LABELS = {
   code: (value) => (value ? `Código · ${value}` : "Código"),
   quote: () => "Cita",
   zen: () => "Zen",
+  drill: (value) => `Entrenar · ${value} palabras`,
 };
 
 export const formatModeLabel = ({ mode, modeValue }) => {

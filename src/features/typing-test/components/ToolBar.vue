@@ -43,7 +43,8 @@
           configStore.type === 'time' ||
           configStore.type === 'words' ||
           configStore.type === 'numbers' ||
-          configStore.type === 'code'
+          configStore.type === 'code' ||
+          configStore.type === 'drill'
         "
       >
         <!-- Divisor -->
@@ -64,7 +65,13 @@
               @click="configStore.handleTime(time)"
             />
           </template>
-          <template v-if="configStore.type === 'words' || configStore.type === 'numbers'">
+          <template
+            v-if="
+              configStore.type === 'words' ||
+              configStore.type === 'numbers' ||
+              configStore.type === 'drill'
+            "
+          >
             <IconButton
               v-for="word in configStore.words"
               :key="word"
@@ -95,6 +102,26 @@
             />
           </template>
         </div>
+
+        <!-- Which keys the drill aims at. Nothing picked means the ones
+             the history panel says are worth practicing. -->
+        <template v-if="configStore.type === 'drill'">
+          <div class="h-px w-full bg-faded-gray sm:h-4 sm:w-px"></div>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <span class="mr-1 text-xs font-bold text-pencil-gray">
+              {{ configStore.drillKeys.length ? "Teclas:" : "Tus teclas flojas" }}
+            </span>
+            <IconButton
+              v-for="key in DRILL_KEYS"
+              :key="key"
+              :value="key"
+              :variant="configStore.drillKeys.includes(key) ? 'primary' : 'secondary'"
+              size="xs"
+              :text="key.toUpperCase()"
+              @click="toggleDrillKey(key)"
+            />
+          </div>
+        </template>
       </template>
     </div>
 
@@ -141,7 +168,8 @@
           configStore.type === 'time' ||
           configStore.type === 'words' ||
           configStore.type === 'numbers' ||
-          configStore.type === 'code'
+          configStore.type === 'code' ||
+          configStore.type === 'drill'
         "
       >
         <!-- Divisor -->
@@ -162,7 +190,13 @@
               @click="configStore.handleTime(time)"
             />
           </template>
-          <template v-if="configStore.type === 'words' || configStore.type === 'numbers'">
+          <template
+            v-if="
+              configStore.type === 'words' ||
+              configStore.type === 'numbers' ||
+              configStore.type === 'drill'
+            "
+          >
             <IconButton
               v-for="word in configStore.words"
               :key="word"
@@ -193,6 +227,26 @@
             />
           </template>
         </div>
+
+        <!-- Which keys the drill aims at. Nothing picked means the ones
+             the history panel says are worth practicing. -->
+        <template v-if="configStore.type === 'drill'">
+          <div class="h-px w-full bg-faded-gray sm:h-4 sm:w-px"></div>
+          <div class="flex flex-wrap items-center justify-center gap-1">
+            <span class="mr-1 text-xs font-bold text-pencil-gray">
+              {{ configStore.drillKeys.length ? "Teclas:" : "Tus teclas flojas" }}
+            </span>
+            <IconButton
+              v-for="key in DRILL_KEYS"
+              :key="key"
+              :value="key"
+              :variant="configStore.drillKeys.includes(key) ? 'primary' : 'secondary'"
+              size="xs"
+              :text="key.toUpperCase()"
+              @click="toggleDrillKey(key)"
+            />
+          </div>
+        </template>
       </template>
     </div>
   </div>
@@ -212,6 +266,19 @@ const typeMeta = {
   quote: { icon: "quote", label: "Cita" },
   code: { icon: "code", label: "Código" },
   zen: { icon: "zen", label: "Zen" },
+  drill: { icon: "target", label: "Entrenar" },
+};
+
+// Letters the drill can aim at, in the order the keyboard has them
+const DRILL_KEYS = [..."qwertyuiopasdfghjklñzxcvbnm"];
+
+// An empty list means "work them out from my history" -- the same keys the
+// history panel suggests practicing.
+const toggleDrillKey = (key) => {
+  const current = configStore.drillKeys;
+  configStore.handleDrillKeys(
+    current.includes(key) ? current.filter((k) => k !== key) : [...current, key]
+  );
 };
 </script>
 

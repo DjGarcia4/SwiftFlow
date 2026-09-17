@@ -29,6 +29,12 @@ describe("computeImprovementTips", () => {
     const weak = computeImprovementTips(stats).tips.find((t) => t.id === "weak-keys");
 
     expect(weak.keys).toEqual(["b", "r"]);
+    // ...and the tip can hand those straight to the training mode
+    expect(weak.action).toEqual({
+      label: "Entrenar estas",
+      mode: "drill",
+      keys: ["b", "r"],
+    });
     expect(weak.title).toBe("Practicá la B y R");
     expect(weak.detail).toContain("1 de cada 4");
     expect(weak.detail).toContain("22 errores");

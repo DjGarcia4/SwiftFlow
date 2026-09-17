@@ -83,6 +83,29 @@ const joinKeys = (keys) =>
 // typed 20 times (+5), which is what "worth practicing" actually means.
 const excessMisses = (stat, overallRate) => stat.misses - stat.attempts * overallRate;
 
+// The letters worth practicing: clearly worse than the typist's own average,
+// on enough attempts to mean something, ranked by the misses they actually
+// cost. Exported because the training mode builds its text from exactly
+// these -- one definition, so the advice and the drill can't disagree.
+export const selectWeakKeys = (keyStats, { limit = 3 } = {}) => {
+  const totalAttempts = keyStats.reduce((sum, s) => sum + s.attempts, 0);
+  const totalMisses = keyStats.reduce((sum, s) => sum + s.misses, 0);
+  if (!totalAttempts || !totalMisses) return [];
+  const overallRate = totalMisses / totalAttempts;
+
+  return keyStats
+    .filter(
+      (s) =>
+        /^\p{L}$/u.test(s.key) &&
+        s.attempts >= MIN_KEY_ATTEMPTS &&
+        s.misses >= MIN_KEY_MISSES &&
+        s.misses / totalMisses >= MIN_MISS_SHARE &&
+        s.rate >= overallRate * WEAK_FACTOR
+    )
+    .sort((a, b) => excessMisses(b, overallRate) - excessMisses(a, overallRate))
+    .slice(0, limit);
+};
+
 const groupRate = (stats, keySet) => {
   let attempts = 0;
   let misses = 0;
@@ -121,20 +144,9 @@ export const computeImprovementTips = (
   const topByMisses = [...keyStats].sort((a, b) => b.misses - a.misses)[0];
   const label = (stat) => stat.key.toUpperCase();
 
-  // 1. The specific letters worth practicing: clearly worse than the typist's
-  //    own average, on enough attempts to mean something, ranked by the misses
-  //    they actually cost. Digits, space and symbols get their own tips below.
-  const weakKeys = keyStats
-    .filter(
-      (s) =>
-        /^\p{L}$/u.test(s.key) &&
-        s.attempts >= MIN_KEY_ATTEMPTS &&
-        s.misses >= MIN_KEY_MISSES &&
-        s.misses / totalMisses >= MIN_MISS_SHARE &&
-        s.rate >= overallRate * WEAK_FACTOR
-    )
-    .sort((a, b) => excessMisses(b, overallRate) - excessMisses(a, overallRate))
-    .slice(0, 3);
+  // 1. The specific letters worth practicing. Digits, space and symbols get
+  //    their own tips below.
+  const weakKeys = selectWeakKeys(keyStats);
 
   // The strongest confusion, whether or not it ends up with its own tip.
   const topConfusion = confusions.find(
@@ -166,6 +178,11 @@ export const computeImprovementTips = (
       title: `Practicá la ${joinKeys(weakKeys.map(label))}`,
       detail: `${weakKeys.length === 1 ? "Es la tecla" : "Son las teclas"} que más se te escapan en proporción: la ${label(worst)} te sale mal ${oneIn(worst.rate)} veces (${worst.misses} errores) contra tu promedio de ${percent(overallRate)}.${contrast}${merged}`,
       keys: weakKeys.map((s) => s.key),
+      action: {
+        label: "Entrenar estas",
+        mode: "drill",
+        keys: weakKeys.map((s) => s.key),
+      },
     });
   }
 
@@ -190,6 +207,11 @@ export const computeImprovementTips = (
           : "Fijate en esa mano: es un error de posición, no de velocidad."
       }`,
       keys: [topConfusion.expected, topConfusion.typed],
+      action: {
+        label: "Entrenar estas",
+        mode: "drill",
+        keys: [topConfusion.expected, topConfusion.typed],
+      },
     });
   }
 

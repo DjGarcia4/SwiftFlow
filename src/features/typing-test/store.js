@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { codeLanguages } from "@/features/typing-test/content/code";
+import { normalizeDrillKeys } from "@/features/typing-test/content/drill";
 import {
   computeWpm,
   computeRawWpm,
@@ -20,12 +21,15 @@ import {
 
 const BEST_WPM_KEY = "swiftflow_best_wpm_v3";
 
+// Kept in step with the cap in configRepository's sanitizeConfig.
+const MAX_DRILL_KEYS = 5;
+
 // Below this much typing time, live wpm is computed as if this much had
 // passed — otherwise the first couple of keystrokes show absurd spikes.
 const MIN_LIVE_WPM_MS = 1000;
 
 export const useConfigStore = defineStore("config", () => {
-  const types = ref(["time", "words", "numbers", "quote", "code", "zen"]);
+  const types = ref(["time", "words", "numbers", "quote", "code", "zen", "drill"]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
   const words = ref([10, 25, 50, 100]);
@@ -45,6 +49,9 @@ export const useConfigStore = defineStore("config", () => {
   const selectedWords = ref(savedConfig.selectedWords);
   const selectedContentTypes = ref(savedConfig.selectedContentTypes);
   const selectedCodeLanguage = ref(savedConfig.selectedCodeLanguage); // null = "Todos" (mixed languages)
+  // Keys the training mode aims at. Empty means "work it out from my
+  // history", which is what it does until the list is edited by hand.
+  const drillKeys = ref(savedConfig.drillKeys);
 
   const persistConfig = () => {
     saveConfig({
@@ -53,6 +60,7 @@ export const useConfigStore = defineStore("config", () => {
       selectedWords: selectedWords.value,
       selectedContentTypes: selectedContentTypes.value,
       selectedCodeLanguage: selectedCodeLanguage.value,
+      drillKeys: drillKeys.value,
     });
   };
 
@@ -109,6 +117,12 @@ export const useConfigStore = defineStore("config", () => {
   const bestWpm = ref(Number(localStorage.getItem(BEST_WPM_KEY)) || 0);
 
   // Configuration handlers
+  const handleDrillKeys = (keys) => {
+    drillKeys.value = normalizeDrillKeys(keys).slice(0, MAX_DRILL_KEYS);
+    persistConfig();
+    resetTypingSession();
+  };
+
   const handleType = (selectedType) => {
     type.value = selectedType;
     persistConfig();
@@ -585,12 +599,14 @@ export const useConfigStore = defineStore("config", () => {
     selectedWords,
     selectedContentTypes,
     selectedCodeLanguage,
+    drillKeys,
     contentTypes,
     times,
     words,
     languages,
     types,
     handleType,
+    handleDrillKeys,
     handleTime,
     handleWords,
     handleContentTypes,

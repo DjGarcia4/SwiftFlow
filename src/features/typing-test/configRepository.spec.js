@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { loadConfig, saveConfig, sanitizeConfig } from "./configRepository";
 
 const options = {
-  types: ["time", "words", "quote", "code", "zen"],
+  types: ["time", "words", "numbers", "quote", "code", "zen", "drill"],
   times: [15, 30, 60, 120],
   words: [10, 25, 50, 100],
   languages: ["JavaScript", "Python", "Java"],
@@ -20,6 +20,7 @@ describe("loadConfig", () => {
       selectedWords: 100,
       selectedContentTypes: "punctuation",
       selectedCodeLanguage: null,
+      drillKeys: [],
     });
   });
 
@@ -36,6 +37,7 @@ describe("loadConfig", () => {
       selectedWords: 100,
       selectedContentTypes: "punctuation",
       selectedCodeLanguage: null,
+      drillKeys: [],
     });
   });
 });
@@ -48,6 +50,7 @@ describe("sanitizeConfig", () => {
       selectedWords: 50,
       selectedContentTypes: null,
       selectedCodeLanguage: "Python",
+      drillKeys: ["r", "t"],
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });
@@ -72,6 +75,23 @@ describe("sanitizeConfig", () => {
       selectedCodeLanguage: null,
     };
     expect(sanitizeConfig(config, options).selectedTime).toBe(15);
+  });
+
+  it("cleans up the drill keys and caps how many there can be", () => {
+    const config = {
+      type: "drill",
+      selectedTime: 15,
+      selectedWords: 100,
+      selectedContentTypes: "punctuation",
+      selectedCodeLanguage: null,
+      drillKeys: ["R", "r", " ", "1", "ab", "t", "b", "c", "d", "f"],
+    };
+    expect(sanitizeConfig(config, options).drillKeys).toEqual(["r", "t", "b", "c", "d"]);
+  });
+
+  it("drops drill keys that aren't a usable list at all", () => {
+    const config = { type: "drill", drillKeys: "rt" };
+    expect(sanitizeConfig(config, options).drillKeys).toEqual([]);
   });
 
   it("falls back to null for a code language no longer in the content bank", () => {

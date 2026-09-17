@@ -83,6 +83,7 @@ import {
   ChatBubbleBottomCenterTextIcon,
   CodeBracketIcon,
   ShareIcon,
+  ViewfinderCircleIcon,
 } from "@heroicons/vue/24/outline";
 
 // Props
@@ -123,6 +124,7 @@ const props = defineProps({
         "quote",
         "code",
         "share",
+        "target",
       ].includes(value),
   },
   variant: {
@@ -179,6 +181,7 @@ const iconMap = {
   quote: ChatBubbleBottomCenterTextIcon,
   code: CodeBracketIcon,
   share: ShareIcon,
+  target: ViewfinderCircleIcon,
 };
 
 // Computed icon component

@@ -111,8 +111,10 @@ const result = computed(() =>
 const router = useRouter();
 const configStore = useConfigStore();
 
-// Jump straight into the suggested practice mode
+// Jump straight into the suggested practice mode. Setting the drill's keys
+// first means the session is already aimed by the time it loads.
 const practice = (action) => {
+  if (action.keys) configStore.handleDrillKeys(action.keys);
   if (action.mode && configStore.type !== action.mode) {
     configStore.handleType(action.mode);
   }

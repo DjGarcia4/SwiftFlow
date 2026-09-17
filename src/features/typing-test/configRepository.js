@@ -1,6 +1,12 @@
 // Persists the user's mode/settings selection so it survives a reload,
 // isolated behind its own module the same way results/history are.
+import { normalizeDrillKeys } from "@/features/typing-test/content/drill";
+
 const STORAGE_KEY = "swiftflow_config";
+
+// More than a handful of target keys isn't a drill any more, it's a word
+// test with extra steps.
+const MAX_DRILL_KEYS = 5;
 
 const DEFAULTS = {
   type: "time",
@@ -8,6 +14,7 @@ const DEFAULTS = {
   selectedWords: 100,
   selectedContentTypes: "punctuation",
   selectedCodeLanguage: null,
+  drillKeys: [],
 };
 
 export const loadConfig = () => {
@@ -45,4 +52,5 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
     languages.includes(config.selectedCodeLanguage)
       ? config.selectedCodeLanguage
       : null,
+  drillKeys: normalizeDrillKeys(config.drillKeys).slice(0, MAX_DRILL_KEYS),
 });

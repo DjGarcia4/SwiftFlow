@@ -286,6 +286,32 @@ describe("useConfigStore", () => {
     });
   });
 
+  describe("drill mode", () => {
+    it("keeps the target keys, cleaned up and capped", () => {
+      const store = useConfigStore();
+
+      store.handleDrillKeys(["R", "r", " ", "ab", "t", "b", "c", "d", "f"]);
+
+      expect(store.drillKeys).toEqual(["r", "t", "b", "c", "d"]);
+    });
+
+    it("survives a reload", () => {
+      useConfigStore().handleDrillKeys(["ñ", "q"]);
+
+      setActivePinia(createPinia());
+      expect(useConfigStore().drillKeys).toEqual(["ñ", "q"]);
+    });
+
+    it("is a mode you can actually pick", () => {
+      const store = useConfigStore();
+
+      store.handleType("drill");
+
+      expect(store.types).toContain("drill");
+      expect(store.type).toBe("drill");
+    });
+  });
+
   describe("endSession", () => {
     it("does nothing before the session has started", () => {
       const store = useConfigStore();
