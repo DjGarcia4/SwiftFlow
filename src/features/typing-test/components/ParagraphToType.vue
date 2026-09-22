@@ -188,6 +188,15 @@
             <span class="text-pencil-gray font-bold">wpm bruto</span>
           </div>
           <div
+            v-if="sessionConsistency !== null"
+            class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
+            :style="staggerStyle(1, { step: 70, base: 440 })"
+            title="Qué tan parejo fue tu ritmo segundo a segundo: 100% es un metrónomo"
+          >
+            <span class="font-extrabold text-charcoal">{{ sessionConsistency }}%</span>
+            <span class="text-pencil-gray font-bold">consistencia</span>
+          </div>
+          <div
             class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
             :style="staggerStyle(2, { step: 70, base: 400 })"
           >
@@ -713,6 +722,7 @@ import {
 } from "@/features/typing-test/utils/drillTargets";
 import { computeLiveCoach } from "@/features/typing-test/utils/liveCoach";
 import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
+import { computeConsistency } from "@/features/typing-test/utils/typingMetrics";
 import {
   ghostKey,
   ghostPositionOnText,
@@ -938,6 +948,11 @@ const isCompleted = computed(() => configStore.isCompleted);
 // Per-keystroke results: how many mistakes got fixed, and the key missed
 // most this session.
 
+// How steady this session's pace was; null when too short to say
+const sessionConsistency = computed(() =>
+  computeConsistency(configStore.progressSamples)
+);
+
 const correctedErrors = computed(() =>
   Math.max(0, configStore.errorKeystrokes - configStore.errors)
 );
@@ -1066,6 +1081,7 @@ watch(isCompleted, (completed) => {
         accuracy: configStore.accuracy,
         errors: configStore.errors,
         rawWpm: configStore.rawWpm,
+        consistency: sessionConsistency.value,
         timeElapsed: configStore.timeElapsed,
         modeValue: currentModeValue(),
         // The letters a drill aimed at, so the review schedule knows which

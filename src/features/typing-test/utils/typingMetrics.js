@@ -132,3 +132,42 @@ export const isTransposition = (previous, current) =>
   !current.correct &&
   previous.typed === current.expected &&
   current.typed === previous.expected;
+
+// How steady the pace was, 0-100: not how fast, but how little the speed
+// moved from one second to the next. Counted from the run's timeline
+// (progressSamples: [activeMs, inputLength] per change) as the characters
+// of new ground covered in each whole second -- the cumulative wpm the chart shows
+// smooths itself out over a session and can't show a stumble.
+//
+// The spread is the coefficient of variation mapped the way Monkeytype
+// does it, so the number means the same thing people already know from
+// there: 100 for a metronome, dropping off smoothly as it gets uneven.
+const CONSISTENCY_BUCKET_MS = 1000;
+// Fewer whole seconds than this and one slow second is the whole story
+const MIN_CONSISTENCY_BUCKETS = 3;
+
+const kogasa = (cv) => 100 * (1 - Math.tanh(cv + cv ** 3 / 3 + cv ** 5 / 5));
+
+export const computeConsistency = (samples) => {
+  if (!samples?.length) return null;
+  const lastMs = samples[samples.length - 1][0];
+  // Only whole seconds: the last, partial one would read as a slowdown
+  const buckets = Array(Math.floor(lastMs / CONSISTENCY_BUCKET_MS)).fill(0);
+  if (buckets.length < MIN_CONSISTENCY_BUCKETS) return null;
+
+  // Only new ground counts: retyping what a backspace just took back is
+  // covering the same distance twice, not pace
+  let furthest = 0;
+  for (const [ms, length] of samples) {
+    const bucket = Math.floor(ms / CONSISTENCY_BUCKET_MS);
+    if (length > furthest) {
+      if (bucket < buckets.length) buckets[bucket] += length - furthest;
+      furthest = length;
+    }
+  }
+
+  const mean = buckets.reduce((sum, n) => sum + n, 0) / buckets.length;
+  if (!mean) return null;
+  const variance = buckets.reduce((sum, n) => sum + (n - mean) ** 2, 0) / buckets.length;
+  return Math.round(kogasa(Math.sqrt(variance) / mean));
+};

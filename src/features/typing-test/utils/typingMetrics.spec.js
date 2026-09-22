@@ -7,6 +7,7 @@ import {
   computeStreak,
   diffKeystrokes,
   isTransposition,
+  computeConsistency,
 } from "./typingMetrics";
 
 describe("computeWpm", () => {
@@ -176,5 +177,45 @@ describe("isTransposition", () => {
     const first = { index: 4, expected: "l", typed: "k", correct: false };
     const second = { index: 5, expected: "l", typed: "k", correct: false };
     expect(isTransposition(first, second)).toBe(false);
+  });
+});
+
+describe("computeConsistency", () => {
+  // `perSecond[i]` keystrokes spread evenly through second i
+  const timeline = (perSecond) => {
+    const samples = [];
+    let length = 0;
+    perSecond.forEach((count, second) => {
+      for (let k = 0; k < count; k++) {
+        samples.push([second * 1000 + Math.floor((k * 1000) / count), ++length]);
+      }
+    });
+    // One more keystroke to close the last whole second
+    samples.push([perSecond.length * 1000, ++length]);
+    return samples;
+  };
+
+  it("is 100 for a perfectly even pace", () => {
+    expect(computeConsistency(timeline([5, 5, 5, 5, 5]))).toBe(100);
+  });
+
+  it("drops as the pace gets uneven", () => {
+    const steady = computeConsistency(timeline([5, 6, 5, 4, 5]));
+    const bumpy = computeConsistency(timeline([2, 9, 3, 8, 1]));
+    expect(steady).toBeGreaterThan(80);
+    expect(bumpy).toBeLessThan(60);
+    expect(steady).toBeGreaterThan(bumpy);
+  });
+
+  it("doesn't count backspaces as pace", () => {
+    const samples = timeline([5, 5, 5, 5]);
+    // A backspace and a retype in the second second
+    samples.splice(7, 0, [1500, samples[6][1] - 1], [1550, samples[6][1]]);
+    expect(computeConsistency(samples)).toBe(100);
+  });
+
+  it("has nothing to say about a run under three seconds", () => {
+    expect(computeConsistency(timeline([5, 5]))).toBeNull();
+    expect(computeConsistency([])).toBeNull();
   });
 });

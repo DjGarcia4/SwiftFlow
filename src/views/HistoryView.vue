@@ -225,7 +225,7 @@
       </div>
 
       <!-- Totals / per-keystroke stats -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
         <div
           v-for="(stat, index) in extraStats"
           :key="stat.label"
@@ -618,6 +618,7 @@ import {
   RECENT_INSIGHT_SESSIONS,
   computeDailyActivity,
   computeAverageAccuracy,
+  computeAverageConsistency,
   computeAverageWpm,
   computeBestWpm,
   isCurrentMetrics,
@@ -688,8 +689,14 @@ const extraStats = computed(() => {
   const results = filteredResults.value;
   const corrected = computeTotalCorrectedErrors(results);
   const keystrokes = computeTotalKeystrokes(results);
+  // Recent habits, like the accuracy tips: how steady you type now
+  const consistency = computeAverageConsistency(results.slice(0, RECENT_SESSIONS));
   return [
     { label: "Mejor combo", value: computeBestStreak(results) || "—" },
+    {
+      label: "Consistencia",
+      value: consistency === null ? "—" : `${consistency}%`,
+    },
     { label: "Tiempo total", value: formatDuration(computeTotalTimeElapsed(results)) },
     {
       label: "Teclas pulsadas",

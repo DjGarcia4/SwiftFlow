@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  computeAverageConsistency,
   computeBestWpm,
   computeAverageWpm,
   computeAverageAccuracy,
@@ -469,5 +470,17 @@ describe("computeDailyActivity", () => {
     });
 
     expect(activity.map((d) => d.sessions)).toEqual([1, 0]);
+  });
+});
+
+describe("computeAverageConsistency", () => {
+  it("averages the sessions that measured it", () => {
+    expect(
+      computeAverageConsistency([{ consistency: 80 }, { consistency: 91 }, { wpm: 50 }])
+    ).toBe(86);
+  });
+
+  it("is null when none did", () => {
+    expect(computeAverageConsistency([{ wpm: 50 }])).toBeNull();
   });
 });

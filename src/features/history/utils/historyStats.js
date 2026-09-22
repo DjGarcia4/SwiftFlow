@@ -35,6 +35,16 @@ export const computeAverageWpm = (results) => {
   return Math.round(total / results.length);
 };
 
+// Average pace consistency, over the sessions that measured it (older ones
+// didn't); null when none did
+export const computeAverageConsistency = (results) => {
+  const measured = results.filter((r) => Number.isFinite(r.consistency));
+  if (!measured.length) return null;
+  return Math.round(
+    measured.reduce((sum, r) => sum + r.consistency, 0) / measured.length
+  );
+};
+
 export const computeAverageAccuracy = (results) => {
   if (!results.length) return 0;
   const total = results.reduce((sum, r) => sum + r.accuracy, 0);
