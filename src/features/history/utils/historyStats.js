@@ -1,5 +1,6 @@
 // Pure helpers over a list of history results (most-recent-first), kept
 // separate from the store so they're trivial to unit test.
+import { weeklyLabel } from "@/features/typing-test/content/weekly";
 
 // Bumped whenever how wpm/accuracy are measured changes. v1 (unversioned)
 // counted whole words over whole seconds and accuracy on the final text
@@ -49,6 +50,7 @@ const MODE_LABELS = {
   zen: () => "Zen",
   // Sessions saved before the drill reported its word count have no value
   drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
+  weekly: (value) => (value ? `Semanal · ${weeklyLabel(value)}` : "Semanal"),
 };
 
 // The mode on its own, without the value formatModeLabel tacks on --
@@ -61,6 +63,7 @@ const MODE_NAMES = {
   code: "Código",
   zen: "Zen",
   drill: "Entrenar",
+  weekly: "Semanal",
 };
 
 export const formatModeName = (mode) => MODE_NAMES[mode] ?? mode;

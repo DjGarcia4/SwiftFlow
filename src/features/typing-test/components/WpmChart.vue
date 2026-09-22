@@ -46,12 +46,14 @@
 
       <!-- X-axis time labels -->
       <g>
+        <!-- The last label sits on the right edge, so it hangs inward
+             instead of being cut off half outside the drawing -->
         <text
-          v-for="tick in xTicks"
+          v-for="(tick, index) in xTicks"
           :key="tick.time"
           :x="xScale(tick.time)"
           :y="height - padding.bottom + 16"
-          text-anchor="middle"
+          :text-anchor="index === xTicks.length - 1 ? 'end' : 'middle'"
           class="fill-pencil-gray"
           font-size="12"
         >

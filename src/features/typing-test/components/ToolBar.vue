@@ -3,7 +3,7 @@
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
       <!-- Content type selection (code is always typed as-is) -->
-      <template v-if="configStore.type !== 'code'">
+      <template v-if="configStore.type !== 'code' && configStore.type !== 'weekly'">
         <div class="flex flex-wrap items-center justify-center gap-2">
           <IconButton
             v-for="contentType in configStore.contentTypes"
@@ -26,7 +26,7 @@
       <!-- Type selection -->
       <div class="flex flex-wrap items-center justify-center gap-2">
         <IconButton
-          v-for="type in configStore.types"
+          v-for="type in offeredTypes"
           :key="type"
           :value="type"
           :icon="typeMeta[type].icon"
@@ -111,7 +111,7 @@
     <div class="hidden sm:flex flex-nowrap items-center justify-center gap-2 lg:gap-3">
       <!-- Content type (code is always typed as-is) -->
       <button
-        v-if="configStore.type !== 'code'"
+        v-if="configStore.type !== 'code' && configStore.type !== 'weekly'"
         type="button"
         :aria-pressed="configStore.selectedContentTypes === 'punctuation'"
         title="Puntuación y mayúsculas"
@@ -265,6 +265,7 @@ import {
   SparklesIcon,
   ViewfinderCircleIcon,
   ChevronDownIcon,
+  TrophyIcon,
 } from "@heroicons/vue/24/outline";
 import IconButton from "@/shared/components/IconButton.vue";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
@@ -286,10 +287,17 @@ const typeMeta = {
   code: { icon: "code", component: CodeBracketIcon, label: "Código" },
   zen: { icon: "zen", component: SparklesIcon, label: "Zen" },
   drill: { icon: "target", component: ViewfinderCircleIcon, label: "Entrenar" },
+  weekly: { icon: "trophy", component: TrophyIcon, label: "Semanal" },
 };
 
+// The weekly challenge is started from the challenges, so the bar only
+// shows it while it's the one being played -- as the way out of it, too.
+const offeredTypes = computed(() =>
+  configStore.types.filter((type) => type !== "weekly" || configStore.type === "weekly")
+);
+
 const modeOptions = computed(() =>
-  configStore.types.map((type) => ({
+  offeredTypes.value.map((type) => ({
     value: type,
     label: typeMeta[type].label,
     icon: typeMeta[type].component,

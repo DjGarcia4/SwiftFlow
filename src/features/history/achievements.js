@@ -473,6 +473,24 @@ export const ACHIEVEMENTS = [
     check: (ctx) => ctx.fullChallengeDays >= 7,
   },
 
+  // The shared weekly text
+  {
+    id: "weekly_challenge_1",
+    category: "challenge",
+    icon: "trophy",
+    title: "Reto semanal",
+    description: "Jugá el reto semanal, el mismo texto para todos",
+    check: (ctx) => ctx.weeklyChallengeWeeks >= 1,
+  },
+  {
+    id: "weekly_challenge_4",
+    category: "challenge",
+    icon: "trophy",
+    title: "Habitué del reto",
+    description: "Jugá el reto semanal en 4 semanas distintas",
+    check: (ctx) => ctx.weeklyChallengeWeeks >= 4,
+  },
+
   // Special — playful, tied to when and how you show up
   {
     id: "night_owl",
@@ -594,6 +612,9 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
     completedChallenges: challengeStats.completed,
     fullChallengeDays: challengeStats.fullDays,
     weeksCompleted,
+    weeklyChallengeWeeks: new Set(
+      results.filter((r) => r.mode === "weekly" && r.modeValue).map((r) => r.modeValue)
+    ).size,
     bestWpm: computeBestWpm(results),
     averageAccuracy: computeAverageAccuracy(results),
     bestStreak: computeBestStreak(results),

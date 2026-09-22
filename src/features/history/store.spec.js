@@ -587,4 +587,32 @@ describe("useHistoryStore", () => {
       expect(store.ghostFor("time:30:p")).toBeNull();
     });
   });
+
+  it("keeps the best weekly challenge run of each week", () => {
+    const store = useHistoryStore();
+    const run = (week, wpm) =>
+      store.recordResult({
+        mode: "weekly",
+        modeValue: week,
+        wpm,
+        accuracy: 96,
+        errors: 1,
+        timeElapsed: 40,
+        keystrokes: 200,
+        errorKeystrokes: 8,
+      });
+    run("2026-W38", 50);
+    run("2026-W39", 55);
+    run("2026-W39", 61);
+    run("2026-W39", 58);
+
+    expect(store.weeklyChallenges.map((w) => [w.key, w.best.wpm, w.attempts])).toEqual([
+      ["2026-W39", 61, 3],
+      ["2026-W38", 50, 1],
+    ]);
+    expect(store.weeklyChallengeFor("2026-W40")).toBeNull();
+    expect(store.achievements.find((a) => a.id === "weekly_challenge_1").unlocked).toBe(
+      true
+    );
+  });
 });

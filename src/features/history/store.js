@@ -168,6 +168,26 @@ export const useHistoryStore = defineStore("history", () => {
     });
   };
 
+  // The weekly challenge, week by week: best run and how many tries, the
+  // latest week first
+  const weeklyChallenges = computed(() => {
+    const byWeek = new Map();
+    for (const result of results.value) {
+      if (result.mode !== "weekly" || !result.modeValue) continue;
+      const week = byWeek.get(result.modeValue) ?? {
+        key: result.modeValue,
+        best: null,
+        attempts: 0,
+      };
+      week.attempts++;
+      if (!week.best || result.wpm > week.best.wpm) week.best = result;
+      byWeek.set(result.modeValue, week);
+    }
+    return [...byWeek.values()].sort((a, b) => b.key.localeCompare(a.key));
+  });
+  const weeklyChallengeFor = (key) =>
+    weeklyChallenges.value.find((week) => week.key === key) ?? null;
+
   // Ghosts: the best run at each kind of session, to race
   const ghosts = ref(loadGhosts());
   const ghostFor = (key) => (key ? (ghosts.value[key] ?? null) : null);
@@ -419,6 +439,8 @@ export const useHistoryStore = defineStore("history", () => {
     reviewToday,
     reviewKeys,
     drillReadinessFor,
+    weeklyChallenges,
+    weeklyChallengeFor,
     ghostFor,
     offerGhost,
     weeklyGoal,
@@ -431,6 +453,7 @@ export const useHistoryStore = defineStore("history", () => {
     perfectRoundsTotal,
     dailyChallenges,
     challengeStats,
+    challengeDay,
     refreshDay,
     recordResult,
     importResults,

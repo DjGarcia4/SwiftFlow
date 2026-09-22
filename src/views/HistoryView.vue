@@ -177,6 +177,30 @@
         </div>
         <ReviewToday v-if="historyStore.reviewToday.keys.length" class="mb-2" />
         <DailyChallengesList :challenges="historyStore.dailyChallenges" />
+        <WeeklyChallengeCard class="mt-2" />
+
+        <!-- Past weeks of the shared text, for comparing with a friend's -->
+        <div v-if="pastWeeklyChallenges.length" class="mt-4">
+          <div
+            class="mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+          >
+            Semanas anteriores
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <div
+              v-for="week in pastWeeklyChallenges"
+              :key="week.key"
+              class="flex items-center gap-2 rounded-xl border-2 border-faded-gray px-3 py-1.5"
+            >
+              <span class="font-display font-extrabold text-charcoal">{{
+                week.best.wpm
+              }}</span>
+              <span class="text-xs font-bold text-pencil-gray">{{
+                weeklyLabel(week.key)
+              }}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Weekly goal, with the picker for it -->
@@ -568,6 +592,8 @@ import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue
 import DailyChallengesList from "@/features/history/components/DailyChallengesList.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import WeeklyGoal from "@/features/history/components/WeeklyGoal.vue";
+import WeeklyChallengeCard from "@/features/history/components/WeeklyChallengeCard.vue";
+import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
 import ReviewToday from "@/features/history/components/ReviewToday.vue";
 import ReviewKeysList from "@/features/history/components/ReviewKeysList.vue";
 import LevelRoadmap from "@/features/history/components/LevelRoadmap.vue";
@@ -681,6 +707,12 @@ const formatThousands = (value) => value.toLocaleString("es");
 const hasCurrent = computed(() => filteredCurrent.value.length > 0);
 
 const showLevels = ref(false);
+
+// This week has its own card; the list is for the ones before it
+const pastWeeklyChallenges = computed(() => {
+  const current = weeklyKey(historyStore.challengeDay);
+  return historyStore.weeklyChallenges.filter((week) => week.key !== current);
+});
 
 const filteredPerfectRounds = computed(() =>
   selectedMode.value

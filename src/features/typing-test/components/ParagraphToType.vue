@@ -91,6 +91,29 @@
         </div>
       </Transition>
 
+      <!-- The weekly challenge: where this run leaves your week -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-150"
+        enter-from-class="opacity-0 -translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+      >
+        <div v-if="isCompleted && weeklyOutcome" class="text-center">
+          <div
+            class="inline-flex items-center gap-2 rounded-xl border-2 border-amber-500/40 bg-amber-500/10 px-5 py-2.5 text-sm font-extrabold text-charcoal"
+          >
+            <TrophyIcon class="w-5 h-5 text-amber-500" />
+            Reto semanal {{ weeklyOutcome.label }}
+            <span class="font-bold opacity-80">
+              {{
+                weeklyOutcome.improved
+                  ? `· ¡tu mejor marca de la semana! Compartila y desafiá a alguien`
+                  : `· tu mejor sigue en ${weeklyOutcome.best} wpm`
+              }}
+            </span>
+          </div>
+        </div>
+      </Transition>
+
       <!-- The race against the ghost, or a new ghost to race next time -->
       <Transition
         enter-active-class="transition-all duration-700 ease-smooth delay-150"
@@ -668,6 +691,11 @@ import { generateRandomWords } from "@/features/typing-test/content/words";
 import { generateRandomNumbers } from "@/features/typing-test/content/numbers";
 import { getRandomQuote } from "@/features/typing-test/content/quotes";
 import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
+import {
+  weeklyKey,
+  weeklyLabel,
+  generateWeeklyText,
+} from "@/features/typing-test/content/weekly";
 import { useConfigStore } from "@/features/typing-test/store";
 import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
 import { computeKeyboardViewportStyle } from "@/features/typing-test/utils/keyboardViewport";
@@ -831,7 +859,9 @@ const raceKey = computed(() => {
         ? configStore.selectedWords
         : type === "code"
           ? configStore.selectedCodeLanguage
-          : null;
+          : type === "weekly"
+            ? weeklyKey()
+            : null;
   return ghostKey({
     mode: type,
     modeValue,
@@ -842,6 +872,9 @@ const availableGhost = computed(() => historyStore.ghostFor(raceKey.value));
 // The ghost this run is racing, fixed when its text is loaded -- a faster
 // run replacing it at the end shouldn't change what it was measured against
 const raceGhost = ref(null);
+
+// The week whose shared text is loaded, if it's the weekly challenge
+const currentWeeklyKey = ref(null);
 
 const refreshReferenceText = () => {
   textVersion.value++;
@@ -861,6 +894,12 @@ const refreshReferenceText = () => {
     );
     return;
   }
+  if (configStore.type === "weekly") {
+    currentWeeklyKey.value = weeklyKey();
+    configStore.setReferenceText(generateWeeklyText(currentWeeklyKey.value));
+    return;
+  }
+
   if (configStore.type === "numbers") {
     configStore.setReferenceText(generateRandomNumbers(configStore.selectedWords));
     return;
@@ -974,6 +1013,7 @@ const currentModeValue = () => {
     return configStore.selectedWords;
   }
   if (configStore.type === "code") return currentCodeLanguage.value;
+  if (configStore.type === "weekly") return currentWeeklyKey.value;
   return null;
 };
 
@@ -999,6 +1039,7 @@ watch(isCompleted, (completed) => {
       reviewChanges.value = [];
       drilledKeys.value = [];
       ghostOutcome.value = null;
+      weeklyOutcome.value = null;
     } else {
       justBrokeRecord.value = configStore.isBeatingBest;
       if (
@@ -1009,6 +1050,10 @@ watch(isCompleted, (completed) => {
         playCelebrationSound();
       }
       configStore.updateBestWpm();
+      const weeklyBefore =
+        configStore.type === "weekly"
+          ? historyStore.weeklyChallengeFor(currentWeeklyKey.value)
+          : null;
       // Resolved before saving: with no hand-picked letters they come from
       // the history, which this session is about to become part of
       const sessionDrillKeys =
@@ -1065,6 +1110,14 @@ watch(isCompleted, (completed) => {
         samples: configStore.progressSamples.map(([ms, length]) => [ms, length]),
       });
       ghostOutcome.value = describeGhostOutcome(raceGhost.value, offered.saved);
+      weeklyOutcome.value =
+        configStore.type === "weekly"
+          ? {
+              label: weeklyLabel(currentWeeklyKey.value),
+              improved: !weeklyBefore || configStore.wpm > weeklyBefore.best.wpm,
+              best: weeklyBefore?.best.wpm ?? configStore.wpm,
+            }
+          : null;
     }
 
     // Add global keydown listener for space key restart
@@ -1199,6 +1252,9 @@ const toggleGhost = () => {
   configStore.toggleGhostMode();
   nextTick(focusInput);
 };
+
+// Where a weekly challenge run leaves the week: a new best, or the one to beat
+const weeklyOutcome = ref(null);
 
 // What the results say about the ghost: how the race went, or that this
 // run is now the one to race
@@ -1409,6 +1465,7 @@ const restart = () => {
   reviewChanges.value = [];
   drilledKeys.value = [];
   ghostOutcome.value = null;
+  weeklyOutcome.value = null;
   refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {
@@ -1450,10 +1507,15 @@ const canNativeShare = ref(false);
 
 const shareFileName = "swiftflow-resultado.png";
 
-const shareText = () =>
-  justBrokeRecord.value
+const shareText = () => {
+  // Everyone gets the same weekly text, so a weekly result is a dare
+  if (configStore.type === "weekly" && currentWeeklyKey.value) {
+    return `Hice ${configStore.wpm} WPM en el reto semanal ${weeklyLabel(currentWeeklyKey.value)} de SwiftFlow ⚡ ¿Me ganás?`;
+  }
+  return justBrokeRecord.value
     ? `¡Nuevo récord! ${configStore.wpm} WPM en SwiftFlow 🏆`
     : `${configStore.wpm} WPM en SwiftFlow ⚡`;
+};
 
 const handleShare = () => {
   const canvas = document.createElement("canvas");

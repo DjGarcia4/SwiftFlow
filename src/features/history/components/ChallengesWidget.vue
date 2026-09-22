@@ -44,6 +44,8 @@
           ¡Día redondo! Mañana hay retos nuevos.
         </p>
 
+        <WeeklyChallengeCard class="mt-2" @play="open = false" />
+
         <div class="mt-4 pt-4 border-t-2 border-faded-gray">
           <WeeklyGoal compact />
         </div>
@@ -80,6 +82,7 @@ import { FlagIcon } from "@heroicons/vue/24/outline";
 import DailyChallengesList from "./DailyChallengesList.vue";
 import WeeklyGoal from "./WeeklyGoal.vue";
 import ReviewToday from "./ReviewToday.vue";
+import WeeklyChallengeCard from "./WeeklyChallengeCard.vue";
 import { useHistoryStore } from "@/features/history/store";
 import { useConfigStore } from "@/features/typing-test/store";
 import { msUntilNextDay } from "@/features/history/dailyChallenges";

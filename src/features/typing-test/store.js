@@ -29,7 +29,19 @@ const MAX_DRILL_KEYS = 5;
 const MIN_LIVE_WPM_MS = 1000;
 
 export const useConfigStore = defineStore("config", () => {
-  const types = ref(["time", "words", "numbers", "quote", "code", "zen", "drill"]);
+  // "weekly" is the shared weekly challenge: a real mode for storing and
+  // filtering results, but only offered in the bar while it's being played
+  // (it's started from the challenges)
+  const types = ref([
+    "time",
+    "words",
+    "numbers",
+    "quote",
+    "code",
+    "zen",
+    "drill",
+    "weekly",
+  ]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
   const words = ref([10, 25, 50, 100]);
@@ -603,9 +615,13 @@ export const useConfigStore = defineStore("config", () => {
     // The drill is exempt for a different reason: its text is already plain
     // lowercase words, so formatting would do nothing except strip the
     // accents — and drilling the Á with every á removed practices nothing.
+    //
+    // The weekly challenge, because it has to be the same text for everyone
+    // whatever their punctuation setting.
     if (
       type.value === "code" ||
       type.value === "drill" ||
+      type.value === "weekly" ||
       selectedContentTypes.value === "punctuation"
     ) {
       referenceText.value = text; // Show original when selected
