@@ -14,6 +14,7 @@ import {
   computePersonalBests,
   computeDailyStreak,
   computeKeyErrorStats,
+  toLocalDayKey,
   RECENT_INSIGHT_SESSIONS,
   isCurrentMetrics,
   METRICS_VERSION,
@@ -27,6 +28,7 @@ import {
   saveKeyReview,
   clearKeyReview,
 } from "@/features/history/keyReviewRepository";
+import { computeDrillReadiness } from "@/features/history/utils/drillReadiness";
 import {
   applyDrillSession,
   sessionKeyRates,
@@ -142,6 +144,28 @@ export const useHistoryStore = defineStore("history", () => {
   const keyReview = ref(loadKeyReview());
   const reviewToday = computed(() => reviewForDay(keyReview.value, challengeDay.value));
   const reviewKeys = computed(() => listReviewKeys(keyReview.value, challengeDay.value));
+
+  // Whether a set of letters has been drilled enough for today: today's
+  // drill rounds on them against where each letter stood before today.
+  const drillReadinessFor = (keys) => {
+    const start = new Date(challengeDay.value);
+    start.setHours(0, 0, 0, 0);
+    const dayKey = toLocalDayKey(start);
+    const today = results.value.filter((r) => toLocalDayKey(r.date) === dayKey);
+    const before = results.value.filter((r) => Date.parse(r.date) < start.getTime());
+    const baselineRates = Object.fromEntries(
+      computeKeyErrorStats(before.slice(0, RECENT_INSIGHT_SESSIONS)).map((stat) => [
+        stat.key,
+        stat.rate,
+      ])
+    );
+    // Results are newest first; the rounds read oldest first
+    return computeDrillReadiness({
+      keys,
+      sessions: [...today].reverse(),
+      baselineRates,
+    });
+  };
 
   // Running experience total, seeded from the history the first time and
   // kept on its own after that, like the perfect rounds.
@@ -371,6 +395,7 @@ export const useHistoryStore = defineStore("history", () => {
     level,
     reviewToday,
     reviewKeys,
+    drillReadinessFor,
     weeklyGoal,
     weeklyGoalIsAuto,
     suggestedWeeklyGoal,

@@ -135,7 +135,12 @@ export const useConfigStore = defineStore("config", () => {
     resetTypingSession();
   };
 
+  // Where a drill was started from, so finishing it can offer the way back
+  const previousType = ref(null);
+
   const handleType = (selectedType) => {
+    if (selectedType === "drill" && type.value !== "drill")
+      previousType.value = type.value;
     type.value = selectedType;
     persistConfig();
     resetTypingSession();
@@ -620,6 +625,7 @@ export const useConfigStore = defineStore("config", () => {
     selectedContentTypes,
     selectedCodeLanguage,
     drillKeys,
+    previousType,
     showKeyboard,
     keyboardVisible,
     toggleKeyboard,

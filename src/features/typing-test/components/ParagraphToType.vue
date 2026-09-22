@@ -170,7 +170,7 @@
         enter-to-class="opacity-100 translate-y-0"
       >
         <div
-          v-if="isCompleted && (xpGained || resultsCoach || reviewChanges.length)"
+          v-if="isCompleted && (xpGained || resultsCoach || drillReadiness)"
           class="flex flex-col sm:flex-row gap-3 sm:gap-4"
         >
           <div
@@ -180,11 +180,15 @@
             <XpProgress class="w-full" :gained="xpGained" />
           </div>
           <!-- A drill has no coach (it already is the practice), so its spot
-               shows how the drilled letters did against their review -->
-          <ReviewResults
-            v-if="reviewChanges.length"
+               says whether these letters need another round today -->
+          <DrillSummary
+            v-if="drillReadiness"
             class="flex-1 min-w-0"
-            :changes="reviewChanges"
+            :readiness="drillReadiness"
+            :review-changes="reviewChanges"
+            :leave-label="formatModeName(configStore.previousType ?? 'time')"
+            @again="restart"
+            @leave="leaveDrill"
           />
           <CoachCard
             v-if="resultsCoach"
@@ -580,7 +584,7 @@ import ComboMeter from "./ComboMeter.vue";
 import CoachCard from "./CoachCard.vue";
 import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
-import ReviewResults from "@/features/history/components/ReviewResults.vue";
+import DrillSummary from "@/features/history/components/DrillSummary.vue";
 import {
   ClockIcon,
   DocumentTextIcon,
@@ -602,6 +606,7 @@ import { computeKeyboardViewportStyle } from "@/features/typing-test/utils/keybo
 import { useHistoryStore } from "@/features/history/store";
 import {
   formatModeLabel,
+  formatModeName,
   formatKeyLabel,
   computeKeyErrorStats,
 } from "@/features/history/utils/historyStats";
@@ -647,8 +652,23 @@ const justBrokeRecord = ref(false);
 const perfectRound = ref(null);
 // Experience the session just saved earned; 0 when nothing was saved
 const xpGained = ref(0);
-// What a drill did to its letters' review schedule
+// What a drill did to its letters' review schedule, and which letters it
+// was on
 const reviewChanges = ref([]);
+const drilledKeys = ref([]);
+
+// "¿Otra ronda o ya está?" for the letters just drilled, from every round
+// on them today
+const drillReadiness = computed(() => {
+  if (!drilledKeys.value.length) return null;
+  const readiness = historyStore.drillReadinessFor(drilledKeys.value);
+  return readiness.verdict === "new" ? null : readiness;
+});
+
+// Done drilling: back to whatever mode the drill was started from
+const leaveDrill = () => {
+  configStore.handleType(configStore.previousType ?? "time");
+};
 
 // On mobile, `top-1/2` (and the "vh"-based max-height) is computed against
 // the full layout viewport, which most mobile browsers DON'T shrink when
@@ -875,6 +895,7 @@ watch(isCompleted, (completed) => {
       perfectRound.value = null;
       xpGained.value = 0;
       reviewChanges.value = [];
+      drilledKeys.value = [];
     } else {
       justBrokeRecord.value = configStore.isBeatingBest;
       if (
@@ -885,6 +906,12 @@ watch(isCompleted, (completed) => {
         playCelebrationSound();
       }
       configStore.updateBestWpm();
+      // Resolved before saving: with no hand-picked letters they come from
+      // the history, which this session is about to become part of
+      const sessionDrillKeys =
+        configStore.type === "drill"
+          ? resolveDrillKeys(configStore.drillKeys, historyStore.results)
+          : undefined;
       const saved = historyStore.recordResult({
         mode: configStore.type,
         wpm: configStore.wpm,
@@ -895,10 +922,7 @@ watch(isCompleted, (completed) => {
         modeValue: currentModeValue(),
         // The letters a drill aimed at, so the review schedule knows which
         // ones this session was practice for
-        drillKeys:
-          configStore.type === "drill"
-            ? resolveDrillKeys(configStore.drillKeys, historyStore.results)
-            : undefined,
+        drillKeys: sessionDrillKeys,
         maxStreak: configStore.maxStreak,
         keystrokes: configStore.keystrokes,
         errorKeystrokes: configStore.errorKeystrokes,
@@ -914,6 +938,7 @@ watch(isCompleted, (completed) => {
       });
       xpGained.value = saved.xpGained;
       reviewChanges.value = saved.reviewChanges;
+      drilledKeys.value = sessionDrillKeys ?? [];
       perfectRound.value = saved.perfect
         ? {
             count: saved.perfectCount,
@@ -1131,6 +1156,7 @@ const restart = () => {
   perfectRound.value = null;
   xpGained.value = 0;
   reviewChanges.value = [];
+  drilledKeys.value = [];
   refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {

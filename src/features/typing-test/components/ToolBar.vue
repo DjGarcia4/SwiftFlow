@@ -172,10 +172,16 @@
         >
           <ViewfinderCircleIcon class="w-4 h-4" />
           <template v-if="targetKeys.length">
+            <!-- Green once that letter is done for today -->
             <kbd
               v-for="key in targetKeys"
               :key="key"
-              class="rounded-md bg-primary-tint px-1.5 font-mono text-xs font-extrabold uppercase text-primary"
+              class="rounded-md px-1.5 font-mono text-xs font-extrabold uppercase"
+              :class="
+                readyKeys.has(key)
+                  ? 'bg-success-tint text-success-dark'
+                  : 'bg-primary-tint text-primary'
+              "
               >{{ key }}</kbd
             >
           </template>
@@ -338,6 +344,17 @@ const pickerOpen = ref(false);
 const targetKeys = computed(() =>
   resolveDrillKeys(configStore.drillKeys, historyStore.results)
 );
+
+// Letters already drilled enough today
+const readyKeys = computed(() => {
+  if (configStore.type !== "drill" || !targetKeys.value.length) return new Set();
+  return new Set(
+    historyStore
+      .drillReadinessFor(targetKeys.value)
+      .letters.filter((letter) => letter.ready)
+      .map((letter) => letter.key)
+  );
+});
 
 // The desktop popover closes on a click outside it, on Esc, and whenever
 // the mode changes away from the drill.
