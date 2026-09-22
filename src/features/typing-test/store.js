@@ -70,6 +70,10 @@ export const useConfigStore = defineStore("config", () => {
     });
   };
 
+  const toggleGhostMode = () => {
+    ghostMode.value = !ghostMode.value;
+  };
+
   // Doesn't touch the session: it's only about what's drawn on screen.
   const toggleKeyboard = () => {
     showKeyboard.value = !keyboardVisible.value;
@@ -120,6 +124,13 @@ export const useConfigStore = defineStore("config", () => {
   // mistake can be compared against the one before it -- a swap only shows
   // up as a pair -- and so the gap to the next one can be measured.
   const lastTyped = ref(null); // { index, expected, typed, correct, elapsedMs }
+  // [activeMs, inputLength] at every change: the run's timeline, which is
+  // what a ghost replays.
+  const progressSamples = ref([]);
+  // Racing your record: the text becomes the record's and its ghost runs
+  // alongside. Kept for the visit, not saved -- it's a thing you choose to
+  // do, not a setting.
+  const ghostMode = ref(false);
 
   // Momentum state (best WPM record + live streak)
   // Stored under a versioned key: wpm used to be measured differently and
@@ -399,6 +410,8 @@ export const useConfigStore = defineStore("config", () => {
         lastTyped.value = { ...stroke, elapsedMs: activeElapsed };
       }
       maxStreak.value = Math.max(maxStreak.value, currentStreak.value);
+      if (next.length || prev)
+        progressSamples.value.push([Math.round(activeElapsed), next.length]);
 
       if (next.length > 0) {
         lastKeystrokeAt.value = Date.now();
@@ -570,6 +583,7 @@ export const useConfigStore = defineStore("config", () => {
     keyTiming.value = {};
     bigramTiming.value = {};
     lastTyped.value = null;
+    progressSamples.value = [];
 
     if (timer.value) {
       clearInterval(timer.value);
@@ -579,9 +593,16 @@ export const useConfigStore = defineStore("config", () => {
     clearInactivityTimer();
   };
 
-  const setReferenceText = (text) => {
+  // raw: use the text exactly as given, already formatted -- a ghost's
+  // text is replayed as it was raced, whatever the settings would make of it
+  const setReferenceText = (text, { raw = false } = {}) => {
     // Always store the original text
     originalReferenceText.value = text;
+    if (raw) {
+      referenceText.value = text;
+      resetTypingSession();
+      return;
+    }
 
     // Code is case- and symbol-sensitive — stripping punctuation or
     // lowercasing it would break the syntax, so it always stays as-is.
@@ -662,6 +683,9 @@ export const useConfigStore = defineStore("config", () => {
     transpositions,
     keyTiming,
     bigramTiming,
+    progressSamples,
+    ghostMode,
+    toggleGhostMode,
 
     // Computed properties
     wpm,

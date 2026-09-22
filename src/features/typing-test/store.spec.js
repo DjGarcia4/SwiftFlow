@@ -575,4 +575,42 @@ describe("useConfigStore", () => {
       expect(store.rawWpm).toBeGreaterThan(store.wpm);
     });
   });
+
+  describe("ghost", () => {
+    afterEach(() => vi.useRealTimers());
+
+    it("records how far into the text the run was at each moment", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(10_000);
+      const store = useConfigStore();
+      store.handleType("words");
+      store.setReferenceText("hola mundo", { raw: true });
+
+      store.userInput = "h";
+      store.handleTyping();
+      vi.setSystemTime(10_300);
+      store.userInput = "ho";
+      store.handleTyping();
+      vi.setSystemTime(10_500);
+      store.userInput = "h"; // backspace
+      store.handleTyping();
+
+      expect(store.progressSamples).toEqual([
+        [0, 1],
+        [300, 2],
+        [500, 1],
+      ]);
+
+      store.resetTypingSession();
+      expect(store.progressSamples).toEqual([]);
+    });
+
+    it("takes a ghost's text exactly as it was raced", () => {
+      const store = useConfigStore();
+      store.handleType("words");
+      store.handleContentTypes("punctuation"); // off: normal text gets lowercased
+      store.setReferenceText("Hola, Mundo.", { raw: true });
+      expect(store.referenceText).toBe("Hola, Mundo.");
+    });
+  });
 });

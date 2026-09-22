@@ -86,6 +86,7 @@ import {
   ViewfinderCircleIcon,
 } from "@heroicons/vue/24/outline";
 import KeyboardIcon from "./icons/KeyboardIcon";
+import GhostIcon from "./icons/GhostIcon";
 
 // Props
 const props = defineProps({
@@ -127,6 +128,7 @@ const props = defineProps({
         "share",
         "target",
         "keyboard",
+        "ghost",
       ].includes(value),
   },
   variant: {
@@ -185,6 +187,7 @@ const iconMap = {
   share: ShareIcon,
   target: ViewfinderCircleIcon,
   keyboard: KeyboardIcon,
+  ghost: GhostIcon,
 };
 
 // Computed icon component

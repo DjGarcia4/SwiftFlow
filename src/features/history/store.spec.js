@@ -543,4 +543,50 @@ describe("useHistoryStore", () => {
       expect(store.reviewKeys).toEqual([]);
     });
   });
+
+  describe("ghosts", () => {
+    const run = (wpm) => ({
+      key: "time:30:p",
+      mode: "time",
+      modeValue: 30,
+      wpm,
+      accuracy: 97,
+      text: "hola mundo",
+      samples: [
+        [0, 1],
+        [400, 4],
+      ],
+      meta: {},
+    });
+
+    it("keeps the first run of a kind and only a faster one after it", () => {
+      const store = useHistoryStore();
+      expect(store.offerGhost(run(50))).toEqual({ saved: true, previous: null });
+      expect(store.offerGhost(run(45))).toMatchObject({ saved: false });
+      expect(store.ghostFor("time:30:p").wpm).toBe(50);
+
+      const faster = store.offerGhost(run(60));
+      expect(faster.saved).toBe(true);
+      expect(faster.previous.wpm).toBe(50);
+
+      setActivePinia(createPinia());
+      expect(useHistoryStore().ghostFor("time:30:p").wpm).toBe(60);
+    });
+
+    it("has no ghost for a kind that can't have one", () => {
+      const store = useHistoryStore();
+      expect(store.offerGhost({ ...run(50), key: null })).toEqual({
+        saved: false,
+        previous: null,
+      });
+      expect(store.ghostFor(null)).toBeNull();
+    });
+
+    it("goes when the history is cleared", () => {
+      const store = useHistoryStore();
+      store.offerGhost(run(50));
+      store.clearHistory();
+      expect(store.ghostFor("time:30:p")).toBeNull();
+    });
+  });
 });

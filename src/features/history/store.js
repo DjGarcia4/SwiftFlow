@@ -29,6 +29,7 @@ import {
   clearKeyReview,
 } from "@/features/history/keyReviewRepository";
 import { computeDrillReadiness } from "@/features/history/utils/drillReadiness";
+import { loadGhosts, saveGhosts, clearGhosts } from "@/features/history/ghostRepository";
 import {
   applyDrillSession,
   sessionKeyRates,
@@ -165,6 +166,26 @@ export const useHistoryStore = defineStore("history", () => {
       sessions: [...today].reverse(),
       baselineRates,
     });
+  };
+
+  // Ghosts: the best run at each kind of session, to race
+  const ghosts = ref(loadGhosts());
+  const ghostFor = (key) => (key ? (ghosts.value[key] ?? null) : null);
+
+  // run: { key, mode, modeValue, wpm, accuracy, text, samples, meta }. Kept
+  // if it's the first of its kind or faster than the one there; returns
+  // whether it was, and the ghost it was measured against.
+  const offerGhost = (run) => {
+    if (!run.key || !run.samples.length) return { saved: false, previous: null };
+    const previous = ghostFor(run.key);
+    if (previous && run.wpm <= previous.wpm) return { saved: false, previous };
+
+    ghosts.value = {
+      ...ghosts.value,
+      [run.key]: { ...run, date: new Date().toISOString() },
+    };
+    saveGhosts(ghosts.value);
+    return { saved: true, previous };
   };
 
   // Running experience total, seeded from the history the first time and
@@ -370,6 +391,8 @@ export const useHistoryStore = defineStore("history", () => {
     clearExperience();
     clearKeyReview();
     keyReview.value = {};
+    clearGhosts();
+    ghosts.value = {};
     // The goal itself is a preference and stays; the weeks met go with the
     // history they came from.
     weeklyGoalState.value = { ...weeklyGoalState.value, completedWeeks: [] };
@@ -396,6 +419,8 @@ export const useHistoryStore = defineStore("history", () => {
     reviewToday,
     reviewKeys,
     drillReadinessFor,
+    ghostFor,
+    offerGhost,
     weeklyGoal,
     weeklyGoalIsAuto,
     suggestedWeeklyGoal,

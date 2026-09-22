@@ -91,6 +91,30 @@
         </div>
       </Transition>
 
+      <!-- The race against the ghost, or a new ghost to race next time -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-150"
+        enter-from-class="opacity-0 -translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+      >
+        <div v-if="isCompleted && ghostOutcome" class="text-center">
+          <div
+            class="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-extrabold"
+            :class="
+              ghostOutcome.racing && !ghostOutcome.won
+                ? 'border-faded-gray text-charcoal'
+                : 'border-primary/40 bg-primary-tint text-primary'
+            "
+          >
+            <GhostIcon class="w-5 h-5" />
+            {{ ghostOutcome.headline }}
+            <span v-if="ghostOutcome.detail" class="font-bold opacity-80">
+              {{ ghostOutcome.detail }}
+            </span>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Main result cards: rise in one after another, numbers count up -->
       <div
         v-if="isCompleted"
@@ -283,6 +307,21 @@
             v-if="configStore.userInput.length > 0"
             class="flex flex-shrink-0 items-center gap-2"
           >
+            <!-- Ahead of or behind the ghost, in characters -->
+            <div
+              v-if="raceGhost"
+              class="inline-flex items-center gap-1 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold tabular-nums transition-colors duration-200"
+              :class="
+                ghostLeadNow >= 0
+                  ? 'border-success/50 text-success'
+                  : 'border-danger/50 text-danger'
+              "
+              :title="`${Math.abs(ghostLeadNow)} caracteres ${ghostLeadNow >= 0 ? 'adelante' : 'atrás'} de tu fantasma`"
+            >
+              <GhostIcon class="w-4 h-4" />
+              {{ ghostLeadNow >= 0 ? "+" : "−" }}{{ Math.abs(ghostLeadNow) }}
+            </div>
+
             <!-- New record badge: a bit more "solid"/celebratory than the
                streak badge below, since breaking your best is the bigger
                deal — same success-green family, just filled instead of
@@ -455,6 +494,21 @@
                 }"
               ></div>
 
+              <!-- The ghost's caret: where your record was at this moment -->
+              <div
+                v-if="raceGhost && ghostCaret && !isCompleted"
+                class="absolute w-1 rounded-full bg-pencil-gray/60 transition-[top,left] duration-150 ease-out pointer-events-none"
+                :style="{
+                  top: `${ghostCaret.top}px`,
+                  left: `${ghostCaret.left}px`,
+                  height: `${ghostCaret.height}px`,
+                }"
+              >
+                <GhostIcon
+                  class="absolute -top-5 left-1/2 w-4 h-4 -translate-x-1/2 text-pencil-gray"
+                />
+              </div>
+
               <span v-for="(group, groupIndex) in wordGroups" :key="groupIndex">
                 <span
                   v-if="group.type === 'word'"
@@ -515,6 +569,20 @@
             @click="toggleKeyboard"
           />
         </div>
+
+        <IconButton
+          v-if="raceKey"
+          icon="ghost"
+          :variant="
+            raceGhost || (configStore.ghostMode && availableGhost)
+              ? 'primary'
+              : 'secondary'
+          "
+          size="lg"
+          :disabled="!availableGhost"
+          :tooltip="ghostTooltip"
+          @click="toggleGhost"
+        />
 
         <!-- Pausing only makes sense once there's an actual session going -->
         <template v-if="configStore.userInput.length > 0">
@@ -617,6 +685,14 @@ import {
 } from "@/features/typing-test/utils/drillTargets";
 import { computeLiveCoach } from "@/features/typing-test/utils/liveCoach";
 import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
+import {
+  ghostKey,
+  ghostPositionAt,
+  ghostFinishMs,
+  buildGhostRun,
+  ghostLead,
+} from "@/features/typing-test/utils/ghost";
+import GhostIcon from "@/shared/components/icons/GhostIcon";
 import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 import { useSoundStore } from "@/shared/stores/sound";
 import {
@@ -743,8 +819,44 @@ const pickRandomParagraph = () => {
 // appends more), keying the text block so it fades in fresh.
 const textVersion = ref(0);
 
+// The kind of session about to be played, to find its ghost. Written out
+// rather than through currentModeValue, which is declared further down and
+// this runs during setup. Code goes by the language filter: a race needs
+// one language, not "Todos".
+const raceKey = computed(() => {
+  const type = configStore.type;
+  const modeValue =
+    type === "time"
+      ? configStore.selectedTime
+      : type === "words" || type === "numbers" || type === "drill"
+        ? configStore.selectedWords
+        : type === "code"
+          ? configStore.selectedCodeLanguage
+          : null;
+  return ghostKey({
+    mode: type,
+    modeValue,
+    punctuation: configStore.selectedContentTypes === "punctuation",
+  });
+});
+const availableGhost = computed(() => historyStore.ghostFor(raceKey.value));
+// The ghost this run is racing, fixed when its text is loaded -- a faster
+// run replacing it at the end shouldn't change what it was measured against
+const raceGhost = ref(null);
+
 const refreshReferenceText = () => {
   textVersion.value++;
+  raceGhost.value = null;
+
+  // Racing: the record's own text, exactly as it was typed
+  if (configStore.ghostMode && availableGhost.value) {
+    const ghost = availableGhost.value;
+    raceGhost.value = ghost;
+    if (ghost.meta?.author) currentQuoteAuthor.value = ghost.meta.author;
+    if (ghost.meta?.language) currentCodeLanguage.value = ghost.meta.language;
+    configStore.setReferenceText(ghost.text, { raw: true });
+    return;
+  }
   if (configStore.type === "words") {
     configStore.setReferenceText(generateRandomWords(configStore.selectedWords));
     return;
@@ -896,6 +1008,7 @@ watch(isCompleted, (completed) => {
       xpGained.value = 0;
       reviewChanges.value = [];
       drilledKeys.value = [];
+      ghostOutcome.value = null;
     } else {
       justBrokeRecord.value = configStore.isBeatingBest;
       if (
@@ -948,6 +1061,28 @@ watch(isCompleted, (completed) => {
             }),
           }
         : null;
+
+      const offered = historyStore.offerGhost({
+        key: ghostKey({
+          mode: configStore.type,
+          modeValue: currentModeValue(),
+          punctuation: configStore.selectedContentTypes === "punctuation",
+        }),
+        mode: configStore.type,
+        modeValue: currentModeValue(),
+        wpm: configStore.wpm,
+        accuracy: configStore.accuracy,
+        ...buildGhostRun({
+          mode: configStore.type,
+          text: configStore.referenceText,
+          samples: configStore.progressSamples.map(([ms, length]) => [ms, length]),
+        }),
+        meta: {
+          author: configStore.type === "quote" ? currentQuoteAuthor.value : null,
+          language: configStore.type === "code" ? currentCodeLanguage.value : null,
+        },
+      });
+      ghostOutcome.value = describeGhostOutcome(raceGhost.value, offered.saved);
     }
 
     // Add global keydown listener for space key restart
@@ -996,8 +1131,138 @@ const updateCaretPosition = () => {
 
 // Keep the caret synced with the reference text and current typing progress
 watch(referenceText, () => {
-  nextTick(updateCaretPosition);
+  nextTick(() => {
+    updateCaretPosition();
+    updateGhostCaret();
+  });
 });
+
+// --- The ghost -------------------------------------------------------------
+
+// Where the ghost is in the text, and its caret drawn there
+const ghostIndex = ref(0);
+const ghostCaret = ref(null);
+
+const updateGhostCaret = () => {
+  if (!raceGhost.value || !typingContainer.value || !textContentEl.value) {
+    ghostCaret.value = null;
+    return;
+  }
+  const length = referenceText.value.length;
+  // Past the end of the text (a finished ghost), it waits after the last
+  // character
+  const index = Math.min(ghostIndex.value, length - 1);
+  const target = typingContainer.value.querySelector(`[data-char-index="${index}"]`);
+  if (!target) return;
+  const containerRect = textContentEl.value.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  ghostCaret.value = {
+    top: targetRect.top - containerRect.top,
+    left:
+      (ghostIndex.value >= length ? targetRect.right : targetRect.left) -
+      containerRect.left,
+    height: targetRect.height,
+  };
+};
+
+// The ghost moves on the same clock as you: active typing time since your
+// first keystroke, so it waits for you to start and stops when you pause.
+let ghostFrame = null;
+const tickGhost = () => {
+  ghostFrame = null;
+  if (!raceGhost.value || isCompleted.value || !configStore.startTime) return;
+  if (!configStore.isPaused) {
+    const position = ghostPositionAt(
+      raceGhost.value.samples,
+      Date.now() - configStore.startTime
+    );
+    if (position !== ghostIndex.value) {
+      ghostIndex.value = position;
+      updateGhostCaret();
+    }
+  }
+  ghostFrame = requestAnimationFrame(tickGhost);
+};
+
+watch(
+  () => [raceGhost.value, Boolean(configStore.startTime), isCompleted.value],
+  ([ghost, started, completed]) => {
+    if (ghostFrame) cancelAnimationFrame(ghostFrame);
+    ghostFrame = null;
+    if (!ghost || !started) {
+      ghostIndex.value = 0;
+      nextTick(updateGhostCaret);
+    }
+    if (ghost && started && !completed) ghostFrame = requestAnimationFrame(tickGhost);
+  }
+);
+
+onUnmounted(() => {
+  if (ghostFrame) cancelAnimationFrame(ghostFrame);
+});
+
+const ghostLeadNow = computed(() =>
+  ghostLead(configStore.userInput.length, ghostIndex.value)
+);
+
+const ghostTooltip = computed(() => {
+  if (!availableGhost.value) return "Todavía no hay récord de este tipo";
+  return configStore.ghostMode
+    ? "Dejar de correr contra tu récord"
+    : `Correr contra tu récord (${availableGhost.value.wpm} wpm)`;
+});
+
+const toggleGhost = () => {
+  configStore.toggleGhostMode();
+  nextTick(focusInput);
+};
+
+// What the results say about the ghost: how the race went, or that this
+// run is now the one to race
+const ghostOutcome = ref(null);
+
+const formatSeconds = (ms) => (ms / 1000).toFixed(1).replace(".", ",");
+
+const describeGhostOutcome = (ghost, saved) => {
+  if (!ghost) {
+    return saved
+      ? {
+          racing: false,
+          headline: "Nuevo fantasma guardado",
+          detail: "· corré contra él con el botón del fantasma",
+        }
+      : null;
+  }
+
+  const wpm = configStore.wpm;
+  const won = wpm > ghost.wpm;
+  const tie = wpm === ghost.wpm;
+  // Runs with a fixed text can also be compared on the clock: how much
+  // sooner (or later) you reached the end than the ghost did
+  const diffMs =
+    configStore.type === "time"
+      ? null
+      : ghostFinishMs(ghost.samples) - configStore.elapsedMs;
+  const clock =
+    diffMs === null
+      ? ""
+      : diffMs > 0
+        ? ` · ${formatSeconds(diffMs)} s más rápido`
+        : diffMs < 0
+          ? ` · ${formatSeconds(-diffMs)} s más lento`
+          : "";
+
+  return {
+    racing: true,
+    won,
+    headline: won
+      ? "¡Le ganaste a tu fantasma!"
+      : tie
+        ? "Empate con tu fantasma"
+        : "Tu fantasma ganó esta vez",
+    detail: `${wpm} vs ${ghost.wpm} wpm${clock}${saved ? " · es tu nuevo fantasma" : ""}`,
+  };
+};
 
 // Keystroke feedback sound: only for an actual new character typed (not a
 // backspace, and not the reset back to "" between sessions/reference-text
@@ -1030,6 +1295,7 @@ watch(
     configStore.selectedWords,
     configStore.selectedCodeLanguage,
     configStore.drillKeys,
+    configStore.ghostMode,
   ],
   () => {
     refreshReferenceText();
@@ -1050,6 +1316,7 @@ watch(
     configStore.selectedCodeLanguage,
     configStore.selectedContentTypes,
     configStore.drillKeys,
+    configStore.ghostMode,
   ],
   () => {
     if (window.matchMedia?.("(pointer: fine)").matches) {
@@ -1157,6 +1424,7 @@ const restart = () => {
   xpGained.value = 0;
   reviewChanges.value = [];
   drilledKeys.value = [];
+  ghostOutcome.value = null;
   refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {
