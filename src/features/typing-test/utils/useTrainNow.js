@@ -10,3 +10,12 @@ export const useTrainNow = () => {
     if (configStore.type !== "drill") configStore.handleType("drill");
   };
 };
+
+// The same, aimed at whole words instead of letters
+export const useTrainWords = () => {
+  const configStore = useConfigStore();
+  return (words) => {
+    configStore.handleDrillWords(words);
+    if (configStore.type !== "drill") configStore.handleType("drill");
+  };
+};

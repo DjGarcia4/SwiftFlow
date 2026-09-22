@@ -226,7 +226,10 @@
           @click="pickerOpen = !pickerOpen"
         >
           <ViewfinderCircleIcon class="w-4 h-4" />
-          <template v-if="targetKeys.length">
+          <span v-if="configStore.drillWords.length">
+            Palabras ({{ configStore.drillWords.length }})
+          </span>
+          <template v-else-if="targetKeys.length">
             <!-- Green once that letter is done for today -->
             <kbd
               v-for="key in targetKeys"
@@ -259,16 +262,39 @@
             v-if="pickerOpen"
             class="absolute right-0 top-full z-40 mt-3 w-max rounded-card border-2 border-faded-gray bg-paper-white p-4 shadow-xl"
           >
-            <p class="mb-3 text-center text-xs font-bold text-pencil-gray">
-              {{
-                configStore.drillKeys.length
-                  ? "Elegí hasta 5 teclas"
-                  : targetKeys.length
-                    ? "Según tu historial. Elegí otras si querés:"
-                    : "Todavía no sé qué te cuesta: elegí teclas"
-              }}
-            </p>
-            <DrillKeysPicker />
+            <!-- Drilling words: which ones, and the way back to letters -->
+            <template v-if="configStore.drillWords.length">
+              <p class="mb-3 text-center text-xs font-bold text-pencil-gray">
+                Entrenando estas palabras:
+              </p>
+              <div class="flex max-w-80 flex-wrap justify-center gap-1.5">
+                <span
+                  v-for="word in configStore.drillWords"
+                  :key="word"
+                  class="rounded-md bg-primary-tint px-2 py-0.5 font-mono text-sm font-extrabold text-primary"
+                  >{{ word }}</span
+                >
+              </div>
+              <button
+                type="button"
+                class="mx-auto mt-3 block text-xs font-bold text-pencil-gray underline underline-offset-2 hover:text-primary"
+                @click="configStore.handleDrillKeys([])"
+              >
+                Volver a entrenar letras
+              </button>
+            </template>
+            <template v-else>
+              <p class="mb-3 text-center text-xs font-bold text-pencil-gray">
+                {{
+                  configStore.drillKeys.length
+                    ? "Elegí hasta 5 teclas"
+                    : targetKeys.length
+                      ? "Según tu historial. Elegí otras si querés:"
+                      : "Todavía no sé qué te cuesta: elegí teclas"
+                }}
+              </p>
+              <DrillKeysPicker />
+            </template>
           </div>
         </Transition>
       </div>
@@ -281,7 +307,27 @@
       data-drill-row
       class="sm:hidden mt-3 pt-3 border-t-2 border-faded-gray flex flex-col items-center gap-2"
     >
-      <div class="flex flex-wrap items-center justify-center gap-1.5">
+      <!-- Drilling words: which ones, and the way back to letters -->
+      <div
+        v-if="configStore.drillWords.length"
+        class="flex flex-wrap items-center justify-center gap-1.5"
+      >
+        <span class="text-xs font-bold text-pencil-gray">Entrenando palabras:</span>
+        <span
+          v-for="word in configStore.drillWords"
+          :key="word"
+          class="rounded-md border-2 border-primary/30 bg-primary-tint px-2 py-0.5 font-mono text-sm font-extrabold text-primary"
+          >{{ word }}</span
+        >
+        <IconButton
+          variant="secondary"
+          size="xs"
+          text="Volver a letras"
+          @click="configStore.handleDrillKeys([])"
+        />
+      </div>
+
+      <div v-else class="flex flex-wrap items-center justify-center gap-1.5">
         <span class="text-xs font-bold text-pencil-gray">
           {{ targetKeys.length ? "Entrenando:" : "Todavía no sé qué te cuesta:" }}
         </span>
@@ -304,7 +350,10 @@
         />
       </div>
 
-      <DrillKeysPicker v-if="editingKeys" class="animate-rise" />
+      <DrillKeysPicker
+        v-if="editingKeys && !configStore.drillWords.length"
+        class="animate-rise"
+      />
     </div>
   </div>
 </template>

@@ -1,6 +1,9 @@
 // Persists the user's mode/settings selection so it survives a reload,
 // isolated behind its own module the same way results/history are.
-import { normalizeDrillKeys } from "@/features/typing-test/content/drill";
+import {
+  normalizeDrillKeys,
+  normalizeDrillWords,
+} from "@/features/typing-test/content/drill";
 
 const STORAGE_KEY = "swiftflow_config";
 
@@ -19,6 +22,7 @@ const DEFAULTS = {
   pacerWpm: null, // null = Auto
   blindMode: false,
   selectedCustomTextId: null,
+  drillWords: [], // non-empty: the drill is on these words, not letters
 };
 
 export const loadConfig = () => {
@@ -67,4 +71,5 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
   // falls back to the first one there
   selectedCustomTextId:
     typeof config.selectedCustomTextId === "string" ? config.selectedCustomTextId : null,
+  drillWords: normalizeDrillWords(config.drillWords),
 });

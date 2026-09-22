@@ -300,7 +300,16 @@
           :transpositions="transpositionStats"
           :key-timing="keyTimingStats"
           :bigram-timing="bigramTimingStats"
+          :problem-words="problemWords"
         />
+      </div>
+
+      <!-- Whole words you stumble on, with a drill on them -->
+      <div
+        v-if="problemWords.length"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:510ms]"
+      >
+        <ProblemWordsCard :words="problemWords" />
       </div>
 
       <!-- Where the time goes: slow keys and slow transitions. Separate
@@ -609,6 +618,8 @@ import XpProgress from "@/features/history/components/XpProgress.vue";
 import WeeklyGoal from "@/features/history/components/WeeklyGoal.vue";
 import WeeklyChallengeCard from "@/features/history/components/WeeklyChallengeCard.vue";
 import TimeOfDayCard from "@/features/history/components/TimeOfDayCard.vue";
+import ProblemWordsCard from "@/features/history/components/ProblemWordsCard.vue";
+import { computeProblemWords } from "@/features/history/utils/problemWords";
 import { computeTimeOfDay } from "@/features/history/utils/timeOfDay";
 import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
 import ReviewToday from "@/features/history/components/ReviewToday.vue";
@@ -733,6 +744,8 @@ const hasCurrent = computed(() => filteredCurrent.value.length > 0);
 const showLevels = ref(false);
 
 const timeOfDay = computed(() => computeTimeOfDay(filteredResults.value));
+
+const problemWords = computed(() => computeProblemWords(keyStatsResults.value));
 
 // This week has its own card; the list is for the ones before it
 const pastWeeklyChallenges = computed(() => {

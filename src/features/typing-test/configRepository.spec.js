@@ -25,6 +25,7 @@ describe("loadConfig", () => {
       pacerWpm: null,
       blindMode: false,
       selectedCustomTextId: null,
+      drillWords: [],
     });
   });
 
@@ -46,6 +47,7 @@ describe("loadConfig", () => {
       pacerWpm: null,
       blindMode: false,
       selectedCustomTextId: null,
+      drillWords: [],
     });
   });
 });
@@ -63,6 +65,7 @@ describe("sanitizeConfig", () => {
       pacerWpm: 60,
       blindMode: true,
       selectedCustomTextId: "abc",
+      drillWords: ["desarrollo"],
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });

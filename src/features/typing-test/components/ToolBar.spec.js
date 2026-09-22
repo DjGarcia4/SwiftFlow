@@ -85,4 +85,22 @@ describe("ToolBar", () => {
     expect(wrapper.findAll("[role=radiogroup]")).toHaveLength(2);
     expect(wrapper.find("[role=radio][aria-checked=true]").text()).toBe("Entrenar");
   });
+
+  it("says when the drill is on words, with a way back to letters", async () => {
+    const store = useConfigStore();
+    store.handleType("drill");
+    store.handleDrillWords(["desarrollo", "exactamente"]);
+    const wrapper = mount(ToolBar);
+
+    const chip = wrapper.find("[data-drill-chip]");
+    expect(chip.text()).toContain("Palabras (2)");
+    await chip.find("button").trigger("click");
+    expect(chip.text()).toContain("desarrollo");
+
+    await chip
+      .findAll("button")
+      .find((b) => b.text() === "Volver a entrenar letras")
+      .trigger("click");
+    expect(store.drillWords).toEqual([]);
+  });
 });

@@ -345,4 +345,21 @@ describe("computeImprovementTips · speed patterns", () => {
       computeImprovementTips(stats, { keyTiming: [], bigramTiming: [] })
     );
   });
+
+  it("names the whole words you stumble on, with a drill on them", () => {
+    const stats = [{ key: "a", attempts: 300, misses: 9, rate: 0.03 }];
+    const { tips } = computeImprovementTips(stats, {
+      problemWords: [
+        { word: "desarrollo", times: 5, errors: 4, errorRate: 0.8, slowRatio: 1.1 },
+        { word: "exactamente", times: 4, errors: 0, errorRate: 0, slowRatio: 1.9 },
+      ],
+    });
+    const tip = tips.find((t) => t.id === "problem-words");
+    expect(tip.title).toBe("Se te traban «desarrollo» y «exactamente»");
+    expect(tip.action).toEqual({
+      label: "Entrenar estas",
+      mode: "drill",
+      words: ["desarrollo", "exactamente"],
+    });
+  });
 });

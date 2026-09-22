@@ -1,7 +1,10 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { codeLanguages } from "@/features/typing-test/content/code";
-import { normalizeDrillKeys } from "@/features/typing-test/content/drill";
+import {
+  normalizeDrillKeys,
+  normalizeDrillWords,
+} from "@/features/typing-test/content/drill";
 import {
   loadCustomTexts,
   saveCustomTexts,
@@ -73,6 +76,8 @@ export const useConfigStore = defineStore("config", () => {
   // Keys the training mode aims at. Empty means "work it out from my
   // history", which is what it does until the list is edited by hand.
   const drillKeys = ref(savedConfig.drillKeys);
+  // Words to drill instead of letters; empty means the drill is on letters
+  const drillWords = ref(savedConfig.drillWords);
   // The on-screen keyboard: true/false once chosen, null until then, which
   // shows it only in the drill -- the mode where looking at the keys is the
   // point.
@@ -104,6 +109,7 @@ export const useConfigStore = defineStore("config", () => {
       selectedContentTypes: selectedContentTypes.value,
       selectedCodeLanguage: selectedCodeLanguage.value,
       drillKeys: drillKeys.value,
+      drillWords: drillWords.value,
       showKeyboard: showKeyboard.value,
       pacerWpm: pacerWpm.value,
       blindMode: blindMode.value,
@@ -232,6 +238,9 @@ export const useConfigStore = defineStore("config", () => {
   // [activeMs, inputLength] at every change: the run's timeline, which is
   // what a ghost replays.
   const progressSamples = ref([]);
+  // Where in the text each mistake was made, fixed later or not -- which
+  // word it was in, where missedKeys only knows which letter
+  const errorIndexes = ref([]);
   // What a run races, if anything: "ghost" (your record's pace) or "pacer"
   // (a steady speed). Kept for the visit, not saved -- it's a thing you
   // choose to do, not a setting. The pacer's speed is a setting, though.
@@ -245,7 +254,9 @@ export const useConfigStore = defineStore("config", () => {
   const bestWpm = ref(Number(localStorage.getItem(BEST_WPM_KEY)) || 0);
 
   // Configuration handlers
+  // Picking letters puts the drill back on letters
   const handleDrillKeys = (keys) => {
+    drillWords.value = [];
     drillKeys.value = normalizeDrillKeys(keys).slice(0, MAX_DRILL_KEYS);
     persistConfig();
     resetTypingSession();
@@ -253,6 +264,12 @@ export const useConfigStore = defineStore("config", () => {
 
   // Where a drill was started from, so finishing it can offer the way back
   const previousType = ref(null);
+
+  const handleDrillWords = (words) => {
+    drillWords.value = normalizeDrillWords(words);
+    persistConfig();
+    resetTypingSession();
+  };
 
   const handleType = (selectedType) => {
     if (selectedType === "drill" && type.value !== "drill")
@@ -477,6 +494,7 @@ export const useConfigStore = defineStore("config", () => {
         keyAttempts.value[expected] = (keyAttempts.value[expected] || 0) + 1;
         if (!correct) {
           errorKeystrokes.value++;
+          errorIndexes.value.push(stroke.index);
           missedKeys.value[expected] = (missedKeys.value[expected] || 0) + 1;
 
           const pair = expected + stroke.typed;
@@ -691,6 +709,7 @@ export const useConfigStore = defineStore("config", () => {
     bigramTiming.value = {};
     lastTyped.value = null;
     progressSamples.value = [];
+    errorIndexes.value = [];
 
     if (timer.value) {
       clearInterval(timer.value);
@@ -751,6 +770,8 @@ export const useConfigStore = defineStore("config", () => {
     selectedContentTypes,
     selectedCodeLanguage,
     drillKeys,
+    drillWords,
+    handleDrillWords,
     previousType,
     showKeyboard,
     keyboardVisible,
@@ -789,6 +810,7 @@ export const useConfigStore = defineStore("config", () => {
     keyTiming,
     bigramTiming,
     progressSamples,
+    errorIndexes,
     raceMode,
     toggleRaceMode,
     pacerWpm,

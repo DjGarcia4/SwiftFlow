@@ -794,6 +794,7 @@
         :open="replayOpen"
         :replay="replay"
         @close="closeReplay"
+        @train="trainSlowWords"
       />
 
       <ShareResultModal
@@ -822,6 +823,7 @@ import ComboMeter from "./ComboMeter.vue";
 import CoachCard from "./CoachCard.vue";
 import ReplayModal from "./ReplayModal.vue";
 import { computeReplay } from "@/features/typing-test/utils/replay";
+import { sessionWordStats } from "@/features/typing-test/utils/wordStats";
 import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import DrillSummary from "@/features/history/components/DrillSummary.vue";
@@ -858,13 +860,16 @@ import {
   formatKeyLabel,
   computeKeyErrorStats,
 } from "@/features/history/utils/historyStats";
-import { generateDrillText } from "@/features/typing-test/content/drill";
+import {
+  generateDrillText,
+  generateWordDrillText,
+} from "@/features/typing-test/content/drill";
 import {
   resolveDrillKeys,
   suggestedDrillKeys,
 } from "@/features/typing-test/utils/drillTargets";
 import { computeLiveCoach } from "@/features/typing-test/utils/liveCoach";
-import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
+import { useTrainNow, useTrainWords } from "@/features/typing-test/utils/useTrainNow";
 import { computeConsistency } from "@/features/typing-test/utils/typingMetrics";
 import {
   ghostKey,
@@ -1092,6 +1097,13 @@ const refreshReferenceText = () => {
     return;
   }
 
+  if (configStore.type === "drill" && configStore.drillWords.length) {
+    configStore.setReferenceText(
+      generateWordDrillText(configStore.drillWords, configStore.selectedWords)
+    );
+    return;
+  }
+
   if (configStore.type === "drill") {
     configStore.setReferenceText(
       generateDrillText(
@@ -1167,6 +1179,13 @@ const openReplay = () => {
 
 const closeReplay = () => {
   replayOpen.value = false;
+};
+
+// From the replay straight into a drill on the words that held you up
+const trainWords = useTrainWords();
+const trainSlowWords = (words) => {
+  closeReplay();
+  trainWords(words);
 };
 
 // How steady this session's pace was; null when too short to say
@@ -1301,8 +1320,11 @@ watch(isCompleted, (completed) => {
           : null;
       // Resolved before saving: with no hand-picked letters they come from
       // the history, which this session is about to become part of
+      // A drill on words has no letters to put on the review schedule
+      const drillingWords =
+        configStore.type === "drill" && configStore.drillWords.length > 0;
       const sessionDrillKeys =
-        configStore.type === "drill"
+        configStore.type === "drill" && !drillingWords
           ? resolveDrillKeys(configStore.drillKeys, historyStore.results)
           : undefined;
       const saved = historyStore.recordResult({
@@ -1319,6 +1341,15 @@ watch(isCompleted, (completed) => {
         // The letters a drill aimed at, so the review schedule knows which
         // ones this session was practice for
         drillKeys: sessionDrillKeys,
+        drillWords: drillingWords ? [...configStore.drillWords] : undefined,
+        // The words stumbled on, for "palabras que te cuestan"
+        wordStats: sessionWordStats({
+          mode: configStore.type,
+          text: configStore.referenceText,
+          input: configStore.userInput,
+          samples: configStore.progressSamples,
+          errorIndexes: configStore.errorIndexes,
+        }),
         maxStreak: configStore.maxStreak,
         keystrokes: configStore.keystrokes,
         errorKeystrokes: configStore.errorKeystrokes,
@@ -1635,6 +1666,7 @@ watch(
     configStore.selectedWords,
     configStore.selectedCodeLanguage,
     configStore.drillKeys,
+    configStore.drillWords,
     configStore.raceMode,
     configStore.pacerWpm,
     configStore.selectedCustomText?.id,
@@ -1659,6 +1691,7 @@ watch(
     configStore.selectedCodeLanguage,
     configStore.selectedContentTypes,
     configStore.drillKeys,
+    configStore.drillWords,
     configStore.raceMode,
     configStore.pacerWpm,
     configStore.selectedCustomText?.id,

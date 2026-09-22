@@ -95,8 +95,17 @@
 
           <!-- The ones worth a second look -->
           <div v-if="replay.slowest.length" class="mt-4">
-            <div class="mb-2 text-xs font-bold uppercase tracking-wide text-pencil-gray">
-              Tus palabras más lentas
+            <div class="mb-2 flex items-center justify-between gap-3">
+              <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+                Tus palabras más lentas
+              </div>
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 rounded-lg border-2 border-primary px-2.5 py-1 text-xs font-extrabold text-primary transition-[background-color,color,scale] duration-200 ease-spring hover:bg-primary hover:text-white active:scale-95"
+                @click="emit('train', slowestWords)"
+              >
+                Entrenar estas
+              </button>
             </div>
             <div class="flex flex-wrap gap-2">
               <span
@@ -121,7 +130,8 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
+import { normalizeWord } from "@/features/typing-test/utils/wordStats";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps({
@@ -130,7 +140,14 @@ const props = defineProps({
   replay: { type: Object, required: true },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "train"]);
+
+// The slow words as a drill takes them: once each, without punctuation
+const slowestWords = computed(() => [
+  ...new Set(
+    props.replay.slowest.map((word) => normalizeWord(word.text)).filter(Boolean)
+  ),
+]);
 
 const TIER_CLASSES = {
   fast: "text-success",

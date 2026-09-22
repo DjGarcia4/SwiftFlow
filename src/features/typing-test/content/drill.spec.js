@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { generateDrillText, normalizeDrillKeys } from "./drill";
+import {
+  generateWordDrillText,
+  normalizeDrillWords,
+  generateDrillText,
+  normalizeDrillKeys,
+} from "./drill";
 import { spanishWords } from "./words";
 
 const groupsOf = (text) => text.split(" ");
@@ -92,5 +97,35 @@ describe("generateDrillText", () => {
 
   it("returns an empty string for a count of 0", () => {
     expect(generateDrillText(["r"], 0)).toBe("");
+  });
+});
+
+describe("generateWordDrillText", () => {
+  it("drills just the given words, each several times", () => {
+    const text = generateWordDrillText(["desarrollo", "exactamente"], 10).split(" ");
+    expect(text).toHaveLength(10);
+    expect(new Set(text)).toEqual(new Set(["desarrollo", "exactamente"]));
+    expect(text.filter((w) => w === "desarrollo")).toHaveLength(5);
+  });
+
+  it("never repeats a word back to back", () => {
+    const text = generateWordDrillText(["uno", "dos", "tres"], 60).split(" ");
+    for (let i = 1; i < text.length; i++) expect(text[i]).not.toBe(text[i - 1]);
+  });
+
+  it("falls back to ordinary words with nothing to drill", () => {
+    expect(generateWordDrillText([], 5).split(" ")).toHaveLength(5);
+  });
+});
+
+describe("normalizeDrillWords", () => {
+  it("keeps single lowercase words, once each, up to ten", () => {
+    expect(normalizeDrillWords(["Hola", "hola", "dos palabras", "", 3, "chau"])).toEqual([
+      "hola",
+      "chau",
+    ]);
+    expect(
+      normalizeDrillWords(Array.from({ length: 15 }, (_, i) => `p${i}`))
+    ).toHaveLength(10);
   });
 });

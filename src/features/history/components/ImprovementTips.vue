@@ -65,6 +65,7 @@ import {
   LinkIcon,
   BoltIcon,
   ArrowRightIcon,
+  DocumentTextIcon,
 } from "@heroicons/vue/24/outline";
 import { computeImprovementTips } from "@/features/history/utils/improvementTips";
 import { useConfigStore } from "@/features/typing-test/store";
@@ -81,6 +82,8 @@ const props = defineProps({
   // Output of computeKeyTimingStats / computeBigramTimingStats
   keyTiming: { type: Array, default: () => [] },
   bigramTiming: { type: Array, default: () => [] },
+  // Output of computeProblemWords
+  problemWords: { type: Array, default: () => [] },
 });
 
 const TIP_ICONS = {
@@ -96,6 +99,7 @@ const TIP_ICONS = {
   clock: ClockIcon,
   link: LinkIcon,
   bolt: BoltIcon,
+  document: DocumentTextIcon,
 };
 
 const result = computed(() =>
@@ -105,6 +109,7 @@ const result = computed(() =>
     transpositions: props.transpositions,
     keyTiming: props.keyTiming,
     bigramTiming: props.bigramTiming,
+    problemWords: props.problemWords,
   })
 );
 
@@ -115,6 +120,7 @@ const configStore = useConfigStore();
 // first means the session is already aimed by the time it loads.
 const practice = (action) => {
   if (action.keys) configStore.handleDrillKeys(action.keys);
+  if (action.words) configStore.handleDrillWords(action.words);
   if (action.mode && configStore.type !== action.mode) {
     configStore.handleType(action.mode);
   }

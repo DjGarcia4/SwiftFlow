@@ -1,4 +1,5 @@
 import { formatPairLabel } from "./historyStats";
+import { ERROR_RATE_BAR, SLOW_RATIO_BAR } from "./problemWords";
 
 // Turns the per-key error stats into a short list of concrete, readable
 // "work on this" tips. Pure data in, pure data out (icons are string keys),
@@ -133,6 +134,7 @@ export const computeImprovementTips = (
     transpositions = [],
     keyTiming = [],
     bigramTiming = [],
+    problemWords = [],
   } = {}
 ) => {
   const totalAttempts = keyStats.reduce((sum, s) => sum + s.attempts, 0);
@@ -350,6 +352,29 @@ export const computeImprovementTips = (
 
   if (speedCandidates.length) {
     tips.push(speedCandidates.sort((a, b) => b.severity - a.severity)[0]);
+  }
+
+  // 3c. Whole words you stumble on: the fix there is the word itself, not
+  //     any one of its letters
+  if (problemWords.length) {
+    const named = problemWords.slice(0, 3).map((w) => `«${w.word}»`);
+    const worst = problemWords[0];
+    tips.push({
+      id: "problem-words",
+      icon: "document",
+      severity: Math.max(
+        worst.errorRate / ERROR_RATE_BAR,
+        worst.slowRatio / SLOW_RATIO_BAR
+      ),
+      title: `Se te ${named.length === 1 ? "traba" : "traban"} ${joinKeys(named)}`,
+      detail:
+        "Son palabras enteras, no letras sueltas: las errás o te frenan cada vez que aparecen. Repetirlas solas hasta que salgan de corrido las vuelve automáticas.",
+      action: {
+        label: "Entrenar estas",
+        mode: "drill",
+        words: problemWords.map((w) => w.word),
+      },
+    });
   }
 
   // 4. Numbers and accents: whole skills with their own practice path

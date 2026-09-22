@@ -92,3 +92,37 @@ export const generateDrillText = (keys, count) => {
 
   return result.join(" ");
 };
+
+// The drill on whole words instead of letters: the words you stumble on,
+// each coming back a few times, shuffled so it's never the same run twice
+// and never the same word twice in a row.
+export const MAX_DRILL_WORDS = 10;
+
+export const normalizeDrillWords = (words) =>
+  [
+    ...new Set(
+      (Array.isArray(words) ? words : [])
+        .filter((word) => typeof word === "string")
+        .map((word) => word.trim().toLowerCase())
+        .filter((word) => word && word.length <= 40 && !/\s/.test(word))
+    ),
+  ].slice(0, MAX_DRILL_WORDS);
+
+export const generateWordDrillText = (words, count) => {
+  const targets = normalizeDrillWords(words);
+  if (!targets.length) return generateRandomWords(count);
+
+  const result = [];
+  let cycle = [];
+  for (let i = 0; i < count; i++) {
+    if (!cycle.length) cycle = shuffled(targets);
+    let word = cycle.pop();
+    // A fresh cycle can start with the word the last one ended on
+    if (word === result[result.length - 1] && targets.length > 1) {
+      cycle.unshift(word);
+      word = cycle.pop();
+    }
+    result.push(word);
+  }
+  return result.join(" ");
+};
