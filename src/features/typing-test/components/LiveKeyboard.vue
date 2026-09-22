@@ -30,6 +30,8 @@ const next = computed(() =>
 
 // This session's miss rate per key, as a share of the worst one's
 const missTint = computed(() => {
+  // Sin red: no key gives away that it's being missed
+  if (configStore.blindMode) return {};
   const misses = foldByKey(configStore.missedKeys);
   const attempts = foldByKey(configStore.keyAttempts);
   const rates = {};
@@ -52,7 +54,7 @@ watch(
     if (input.length !== (previous?.length ?? 0) + 1) return;
     const index = input.length - 1;
     const expected = configStore.referenceText[index];
-    if (input[index] === expected) return;
+    if (input[index] === expected || configStore.blindMode) return;
 
     flash.value = {
       wanted: keyboardTarget(expected)?.key ?? null,

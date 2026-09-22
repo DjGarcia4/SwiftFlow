@@ -2,9 +2,10 @@
   <div class="bg-paper-white rounded-card p-3 sm:px-3 sm:py-2 border-2 border-faded-gray">
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
-      <!-- Content type selection (code is always typed as-is) -->
-      <template v-if="configStore.type !== 'code' && configStore.type !== 'weekly'">
-        <div class="flex flex-wrap items-center justify-center gap-2">
+      <!-- Content type (code and the weekly text are typed as-is) and
+           "sin red", which goes with any mode -->
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <template v-if="configStore.type !== 'code' && configStore.type !== 'weekly'">
           <IconButton
             v-for="contentType in configStore.contentTypes"
             :key="contentType"
@@ -17,11 +18,18 @@
             :text="`${contentType == 'punctuation' ? 'Puntuación' : 'Números'}`"
             @click="configStore.handleContentTypes(contentType)"
           />
-        </div>
+        </template>
+        <IconButton
+          icon="eye-slash"
+          :variant="configStore.blindMode ? 'primary' : 'secondary'"
+          size="sm"
+          text="Sin red"
+          @click="configStore.toggleBlindMode"
+        />
+      </div>
 
-        <!-- Divisor -->
-        <div class="h-px w-full bg-faded-gray"></div>
-      </template>
+      <!-- Divisor -->
+      <div class="h-px w-full bg-faded-gray"></div>
 
       <!-- Type selection -->
       <div class="flex flex-wrap items-center justify-center gap-2">
@@ -125,6 +133,23 @@
       >
         <AtSymbolIcon class="w-4 h-4" />
         <span class="hidden lg:inline">Puntuación</span>
+      </button>
+
+      <!-- "Sin red": mistakes stay hidden until the results -->
+      <button
+        type="button"
+        :aria-pressed="configStore.blindMode"
+        title="Sin red: los errores no se marcan hasta el final"
+        class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
+        :class="
+          configStore.blindMode
+            ? 'border-primary/50 bg-primary-tint text-primary'
+            : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
+        "
+        @click="configStore.toggleBlindMode"
+      >
+        <EyeSlashIcon class="w-4 h-4" />
+        <span class="hidden lg:inline">Sin red</span>
       </button>
 
       <SegmentedControl
@@ -258,6 +283,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import {
   AtSymbolIcon,
+  EyeSlashIcon,
   ClockIcon,
   HashtagIcon,
   ChatBubbleBottomCenterTextIcon,

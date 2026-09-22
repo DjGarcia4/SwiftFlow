@@ -72,6 +72,8 @@ export const useConfigStore = defineStore("config", () => {
   // The pacer's speed in wpm, or null for "Auto" (a notch above your
   // recent average)
   const pacerWpm = ref(savedConfig.pacerWpm);
+  // "Sin red": nothing on screen gives a mistake away until the results
+  const blindMode = ref(savedConfig.blindMode);
 
   const persistConfig = () => {
     saveConfig({
@@ -83,6 +85,7 @@ export const useConfigStore = defineStore("config", () => {
       drillKeys: drillKeys.value,
       showKeyboard: showKeyboard.value,
       pacerWpm: pacerWpm.value,
+      blindMode: blindMode.value,
     });
   };
 
@@ -90,6 +93,11 @@ export const useConfigStore = defineStore("config", () => {
   // once would be noise, not a race. Picking the one that's on turns it off.
   const toggleRaceMode = (mode) => {
     raceMode.value = raceMode.value === mode ? null : mode;
+  };
+
+  const toggleBlindMode = () => {
+    blindMode.value = !blindMode.value;
+    persistConfig();
   };
 
   const setPacerWpm = (wpm) => {
@@ -709,6 +717,8 @@ export const useConfigStore = defineStore("config", () => {
     toggleRaceMode,
     pacerWpm,
     setPacerWpm,
+    blindMode,
+    toggleBlindMode,
 
     // Computed properties
     wpm,

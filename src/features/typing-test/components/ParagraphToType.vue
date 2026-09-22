@@ -91,6 +91,34 @@
         </div>
       </Transition>
 
+      <!-- Sin red: the mistakes nobody saw until now -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-150"
+        enter-from-class="opacity-0 -translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+      >
+        <div v-if="isCompleted && configStore.blindMode" class="text-center">
+          <div
+            class="inline-flex flex-wrap items-center justify-center gap-2 rounded-xl border-2 border-charcoal/20 bg-faded-gray/20 px-5 py-2.5 text-sm font-extrabold text-charcoal"
+          >
+            <EyeSlashIcon class="w-5 h-5" />
+            {{
+              configStore.errorKeystrokes === 0
+                ? "Sin red y sin un solo error"
+                : `Jugaste sin red: ${configStore.errorKeystrokes} ${configStore.errorKeystrokes === 1 ? "error" : "errores"} que no viste`
+            }}
+            <button
+              v-if="configStore.errorKeystrokes > 0 && configStore.progressSamples.length"
+              type="button"
+              class="font-bold text-primary underline underline-offset-2 hover:text-primary-dark"
+              @click="openReplay"
+            >
+              ver dónde
+            </button>
+          </div>
+        </div>
+      </Transition>
+
       <!-- The weekly challenge: where this run leaves your week -->
       <Transition
         enter-active-class="transition-all duration-700 ease-smooth delay-150"
@@ -350,7 +378,11 @@
           </div>
 
           <!-- Live combo: fills toward the next milestone -->
-          <ComboMeter v-if="configStore.userInput.length > 0" class="flex-1 min-w-0" />
+          <!-- Not sin red: a combo dropping to zero would give a mistake away -->
+          <ComboMeter
+            v-if="configStore.userInput.length > 0 && !configStore.blindMode"
+            class="flex-1 min-w-0"
+          />
 
           <div
             v-if="configStore.userInput.length > 0"
@@ -780,6 +812,7 @@ import {
   StopIcon,
   SparklesIcon,
   MagnifyingGlassIcon,
+  EyeSlashIcon,
 } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/features/typing-test/content/paragraphs";
 import { generateRandomWords } from "@/features/typing-test/content/words";
@@ -1238,6 +1271,8 @@ watch(isCompleted, (completed) => {
         errors: configStore.errors,
         rawWpm: configStore.rawWpm,
         consistency: sessionConsistency.value,
+        // Only when on: a result without it was played with the net
+        blind: configStore.blindMode || undefined,
         timeElapsed: configStore.timeElapsed,
         modeValue: currentModeValue(),
         // The letters a drill aimed at, so the review schedule knows which
@@ -1539,7 +1574,8 @@ watch(
     const lastIndex = newValue.length - 1;
     const isCorrect = newValue[lastIndex] === referenceText.value[lastIndex];
 
-    if (isCorrect) {
+    // Sin red: a wrong key sounds like any other
+    if (isCorrect || configStore.blindMode) {
       if (soundStore.keystrokeSound) playKeystrokeSound();
     } else if (soundStore.errorSound) {
       playErrorSound();
@@ -1669,6 +1705,10 @@ const getCharacterClass = (index) => {
   const isJustTyped = index === configStore.userInput.length - 1;
 
   if (index < configStore.userInput.length) {
+    // Sin red: right or wrong, everything typed looks the same until the end
+    if (configStore.blindMode) {
+      return `${baseClasses} text-charcoal font-bold${isJustTyped ? " animate-key-pop" : ""}`;
+    }
     if (configStore.userInput[index] === visibleText.value[index]) {
       return `${baseClasses} text-success font-bold${isJustTyped ? " animate-key-pop" : ""}`;
     } else {

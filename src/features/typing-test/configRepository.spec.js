@@ -23,6 +23,7 @@ describe("loadConfig", () => {
       drillKeys: [],
       showKeyboard: null,
       pacerWpm: null,
+      blindMode: false,
     });
   });
 
@@ -42,6 +43,7 @@ describe("loadConfig", () => {
       drillKeys: [],
       showKeyboard: null,
       pacerWpm: null,
+      blindMode: false,
     });
   });
 });
@@ -57,6 +59,7 @@ describe("sanitizeConfig", () => {
       drillKeys: ["r", "t"],
       showKeyboard: true,
       pacerWpm: 60,
+      blindMode: true,
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });

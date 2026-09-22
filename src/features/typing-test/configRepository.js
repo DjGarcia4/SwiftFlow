@@ -17,6 +17,7 @@ const DEFAULTS = {
   drillKeys: [],
   showKeyboard: null, // null = only while drilling
   pacerWpm: null, // null = Auto
+  blindMode: false,
 };
 
 export const loadConfig = () => {
@@ -60,4 +61,5 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
     Number.isInteger(config.pacerWpm) && config.pacerWpm >= 10 && config.pacerWpm <= 250
       ? config.pacerWpm
       : null,
+  blindMode: config.blindMode === true,
 });

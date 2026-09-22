@@ -69,6 +69,8 @@ const hide = () => {
 watch(
   () => configStore.currentStreak,
   (streak, previousStreak) => {
+    // Sin red: a combo cheered, or not, would say whether you slipped
+    if (configStore.blindMode) return;
     const milestone = detectComboMilestone(previousStreak, streak, celebratedOnce);
     if (!milestone) return;
 

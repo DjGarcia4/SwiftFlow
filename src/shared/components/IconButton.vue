@@ -84,6 +84,7 @@ import {
   CodeBracketIcon,
   ShareIcon,
   ViewfinderCircleIcon,
+  EyeSlashIcon,
 } from "@heroicons/vue/24/outline";
 import KeyboardIcon from "./icons/KeyboardIcon";
 import GhostIcon from "./icons/GhostIcon";
@@ -131,6 +132,7 @@ const props = defineProps({
         "keyboard",
         "ghost",
         "metronome",
+        "eye-slash",
       ].includes(value),
   },
   variant: {
@@ -191,6 +193,7 @@ const iconMap = {
   keyboard: KeyboardIcon,
   ghost: GhostIcon,
   metronome: MetronomeIcon,
+  "eye-slash": EyeSlashIcon,
 };
 
 // Computed icon component

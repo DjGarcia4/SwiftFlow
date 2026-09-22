@@ -57,6 +57,8 @@ const coach = computed(() =>
 const visibleCoach = computed(() => {
   // Already drilling: sending you to a drill from a drill says nothing new
   if (configStore.type === "drill" || dismissed.value) return null;
+  // Sin red: naming the letter you keep missing is naming your mistakes
+  if (configStore.blindMode) return null;
   // The results screen has its own, inline version
   if (configStore.isCompleted || configStore.userInput.length === 0) return null;
   return coach.value;

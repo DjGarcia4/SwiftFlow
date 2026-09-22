@@ -605,4 +605,13 @@ describe("useConfigStore", () => {
       expect(store.progressSamples).toEqual([]);
     });
   });
+
+  it("remembers sin red across reloads", () => {
+    const store = useConfigStore();
+    expect(store.blindMode).toBe(false);
+    store.toggleBlindMode();
+
+    setActivePinia(createPinia());
+    expect(useConfigStore().blindMode).toBe(true);
+  });
 });

@@ -515,6 +515,12 @@
             <div class="flex items-center gap-1.5 font-bold text-charcoal min-w-0">
               <span class="truncate">{{ formatModeLabel(result) }}</span>
               <span
+                v-if="result.blind"
+                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                title="Jugada sin red: los errores no se veían mientras escribías"
+                >sin red</span
+              >
+              <span
                 v-if="!isCurrentMetrics(result)"
                 class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
                 title="Medida con la fórmula anterior de WPM: no cuenta para récords ni promedios"
