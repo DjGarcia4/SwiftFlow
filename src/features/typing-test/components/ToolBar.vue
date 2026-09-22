@@ -203,30 +203,8 @@
         />
       </div>
 
-      <!-- Your own texts: edit the one picked, or add another -->
-      <div
-        v-if="configStore.type === 'custom'"
-        class="flex flex-shrink-0 items-center gap-1.5"
-      >
-        <button
-          v-if="configStore.selectedCustomText"
-          type="button"
-          title="Editar este texto"
-          aria-label="Editar este texto"
-          class="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-faded-gray/60 text-pencil-gray transition-[color,scale] duration-200 ease-spring hover:text-primary active:scale-90"
-          @click="configStore.openCustomEditor(configStore.selectedCustomText.id)"
-        >
-          <PencilSquareIcon class="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          class="flex flex-shrink-0 items-center gap-1 rounded-xl border-2 border-primary/50 px-2.5 py-1 text-xs font-extrabold text-primary transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-tint active:scale-95"
-          @click="configStore.openCustomEditor()"
-        >
-          <PlusIcon class="w-4 h-4" />
-          {{ configStore.customTexts.length ? "Nuevo" : "Agregar texto" }}
-        </button>
-      </div>
+      <!-- Your own texts: the one picked, opening the list -->
+      <CustomTextPicker v-if="configStore.type === 'custom'" />
 
       <!-- Drill targets: a chip showing them, opening the picker -->
       <div
@@ -345,11 +323,11 @@ import {
   ChevronDownIcon,
   TrophyIcon,
   PencilSquareIcon,
-  PlusIcon,
 } from "@heroicons/vue/24/outline";
 import IconButton from "@/shared/components/IconButton.vue";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import DrillKeysPicker from "./DrillKeysPicker.vue";
+import CustomTextPicker from "./CustomTextPicker.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import { useHistoryStore } from "@/features/history/store";
 import { resolveDrillKeys } from "@/features/typing-test/utils/drillTargets";
@@ -409,17 +387,6 @@ const valueOptions = computed(() => {
       options: configStore.words.map((count) => ({ value: count, label: `${count}` })),
       selected: configStore.selectedWords,
       select: configStore.handleWords,
-    };
-  }
-  if (type === "custom" && configStore.customTexts.length) {
-    return {
-      label: "Texto",
-      options: configStore.customTexts.map((entry) => ({
-        value: entry.id,
-        label: entry.name,
-      })),
-      selected: configStore.selectedCustomText?.id ?? null,
-      select: configStore.selectCustomText,
     };
   }
   if (type === "code") {
