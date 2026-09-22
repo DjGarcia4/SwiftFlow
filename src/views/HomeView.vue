@@ -79,6 +79,11 @@
          transformed, which would make it the containing block for anything
          "fixed" inside it (and clip it). -->
     <ComboToast />
+
+    <!-- Mid-session "what to work on", with a jump straight into a drill -->
+    <LiveCoach />
+
+    <ChallengesWidget />
   </div>
 </template>
 
@@ -88,6 +93,8 @@ import { Cog6ToothIcon } from "@heroicons/vue/24/outline";
 import ParagraphToType from "@/features/typing-test/components/ParagraphToType.vue";
 import ToolBar from "@/features/typing-test/components/ToolBar.vue";
 import ComboToast from "@/features/typing-test/components/ComboToast.vue";
+import LiveCoach from "@/features/typing-test/components/LiveCoach.vue";
+import ChallengesWidget from "@/features/history/components/ChallengesWidget.vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 

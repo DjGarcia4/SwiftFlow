@@ -126,6 +126,28 @@
         </div>
       </div>
 
+      <!-- Today's challenges: for the whole day, whatever the filter says -->
+      <div
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:220ms]"
+      >
+        <div class="flex items-baseline justify-between gap-3 mb-3">
+          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+            Retos de hoy
+          </div>
+          <div
+            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+          >
+            {{ historyStore.challengeStats.completed }}
+            {{ historyStore.challengeStats.completed === 1 ? "cumplido" : "cumplidos" }} ·
+            {{ historyStore.challengeStats.fullDays }}
+            {{
+              historyStore.challengeStats.fullDays === 1 ? "día redondo" : "días redondos"
+            }}
+          </div>
+        </div>
+        <DailyChallengesList :challenges="historyStore.dailyChallenges" />
+      </div>
+
       <!-- Totals / per-keystroke stats -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div
@@ -250,6 +272,34 @@
             </div>
           </div>
         </TransitionGroup>
+      </div>
+
+      <!-- Perfect rounds: kept apart from the history, so the count survives
+           old sessions dropping off the end of it -->
+      <div
+        v-if="filteredPerfectRounds.length"
+        class="mb-6 animate-rise [animation-delay:575ms]"
+      >
+        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
+          Rondas perfectas ({{ filteredPerfectTotal }})
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <div
+            v-for="entry in filteredPerfectRounds"
+            :key="`${entry.mode}:${entry.modeValue}`"
+            class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3 transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-success"
+          >
+            <div
+              class="flex items-center gap-1 font-display font-extrabold text-success text-lg"
+            >
+              <SparklesIcon class="w-4 h-4" />
+              {{ entry.count }}
+            </div>
+            <div class="text-xs text-pencil-gray font-bold">
+              {{ formatModeLabel(entry) }}
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Achievements -->
@@ -435,7 +485,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { FireIcon } from "@heroicons/vue/24/outline";
+import { FireIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
@@ -445,6 +495,7 @@ import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
+import DailyChallengesList from "@/features/history/components/DailyChallengesList.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {
   buildBackup,
@@ -453,6 +504,7 @@ import {
 } from "@/features/history/utils/historyBackup";
 import {
   formatModeLabel as formatModeLabelUtil,
+  formatModeName,
   computeBestStreak,
   computeTotalTimeElapsed,
   computeTotalKeystrokes,
@@ -491,6 +543,7 @@ const handleKeydown = (event) => {
 
 onMounted(() => {
   document.addEventListener("keydown", handleKeydown);
+  historyStore.refreshDay();
 });
 
 const formatDuration = (seconds) => {
@@ -506,18 +559,8 @@ const formatDuration = (seconds) => {
 // average makes the average mean nothing.
 const selectedMode = ref(null);
 
-// The mode on its own, without the value that formatModeLabel tacks on --
-// "Tiempo", not "15s", since the chip covers every length at once.
-const MODE_NAMES = {
-  time: "Tiempo",
-  words: "Palabras",
-  numbers: "Números",
-  quote: "Cita",
-  code: "Código",
-  zen: "Zen",
-  drill: "Entrenar",
-};
-const modeName = (mode) => MODE_NAMES[mode] ?? mode;
+// Just the mode, since the chip covers every length at once
+const modeName = formatModeName;
 
 const availableModes = computed(() => [
   ...new Set(historyStore.results.map((result) => result.mode)),
@@ -561,6 +604,15 @@ const extraStats = computed(() => {
 const formatThousands = (value) => value.toLocaleString("es");
 
 const hasCurrent = computed(() => filteredCurrent.value.length > 0);
+
+const filteredPerfectRounds = computed(() =>
+  selectedMode.value
+    ? historyStore.perfectRoundsList.filter((entry) => entry.mode === selectedMode.value)
+    : historyStore.perfectRoundsList
+);
+const filteredPerfectTotal = computed(() =>
+  filteredPerfectRounds.value.reduce((sum, entry) => sum + entry.count, 0)
+);
 
 // Accuracy over the last few comparable sessions — recent habits matter more
 // than old ones for "what to work on now".

@@ -1,5 +1,6 @@
 <template>
-  <!-- Keyed by achievement so a queued one leaves before the next pops in -->
+  <!-- Keyed by achievement so a queued one leaves before the next pops in.
+       Completed daily challenges share this queue, with their own kicker. -->
   <Transition
     mode="out-in"
     enter-active-class="transition-all duration-600 ease-spring"
@@ -22,7 +23,7 @@
       />
       <div>
         <div class="text-[10px] font-bold uppercase tracking-wide opacity-80">
-          ¡Logro desbloqueado!
+          {{ achievement.kicker ?? "¡Logro desbloqueado!" }}
         </div>
         <div class="font-display font-extrabold leading-tight">
           {{ achievement.title }}

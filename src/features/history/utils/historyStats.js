@@ -51,6 +51,20 @@ const MODE_LABELS = {
   drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
 };
 
+// The mode on its own, without the value formatModeLabel tacks on --
+// "Tiempo", not "15s", for anything that covers every length at once.
+const MODE_NAMES = {
+  time: "Tiempo",
+  words: "Palabras",
+  numbers: "Números",
+  quote: "Cita",
+  code: "Código",
+  zen: "Zen",
+  drill: "Entrenar",
+};
+
+export const formatModeName = (mode) => MODE_NAMES[mode] ?? mode;
+
 export const formatModeLabel = ({ mode, modeValue }) => {
   const format = MODE_LABELS[mode];
   return format ? format(modeValue) : mode;

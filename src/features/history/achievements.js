@@ -5,6 +5,7 @@ import {
   computeBestStreak,
   toLocalDayKey,
 } from "@/features/history/utils/historyStats";
+import { computeChallengeStats } from "@/features/history/dailyChallenges";
 
 // MODES_COUNT stays at 5 even though there are now 6 modes (numbers was
 // added later), so nobody loses "Explorador" after having earned it.
@@ -404,6 +405,48 @@ export const ACHIEVEMENTS = [
     check: (ctx) => ctx.zenSessionsCount >= 10,
   },
 
+  // Challenges — the daily ones
+  {
+    id: "challenge_1",
+    category: "challenge",
+    icon: "flag",
+    title: "Primer reto",
+    description: "Cumplí tu primer reto diario",
+    check: (ctx) => ctx.completedChallenges >= 1,
+  },
+  {
+    id: "challenge_25",
+    category: "challenge",
+    icon: "flag",
+    title: "Retador",
+    description: "Cumplí 25 retos diarios",
+    check: (ctx) => ctx.completedChallenges >= 25,
+  },
+  {
+    id: "challenge_100",
+    category: "challenge",
+    icon: "flag",
+    title: "Sin excusas",
+    description: "Cumplí 100 retos diarios",
+    check: (ctx) => ctx.completedChallenges >= 100,
+  },
+  {
+    id: "challenge_full_day",
+    category: "challenge",
+    icon: "flag",
+    title: "Día redondo",
+    description: "Cumplí los 3 retos de un mismo día",
+    check: (ctx) => ctx.fullChallengeDays >= 1,
+  },
+  {
+    id: "challenge_full_day_7",
+    category: "challenge",
+    icon: "flag",
+    title: "Siete días redondos",
+    description: "Cumplí los 3 retos del día en 7 días distintos",
+    check: (ctx) => ctx.fullChallengeDays >= 7,
+  },
+
   // Special — playful, tied to when and how you show up
   {
     id: "night_owl",
@@ -516,8 +559,12 @@ export const computeAchievements = (results) => {
   const timeResults = results.filter((r) => r.mode === "time");
   const wordsResults = results.filter((r) => r.mode === "words");
 
+  const challengeStats = computeChallengeStats(results);
+
   const context = {
     sessionsCount: results.length,
+    completedChallenges: challengeStats.completed,
+    fullChallengeDays: challengeStats.fullDays,
     bestWpm: computeBestWpm(results),
     averageAccuracy: computeAverageAccuracy(results),
     bestStreak: computeBestStreak(results),

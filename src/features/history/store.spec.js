@@ -272,4 +272,92 @@ describe("useHistoryStore", () => {
     expect(store.results).toEqual([]);
     expect(localStorage.getItem("swiftflow_results")).toBeNull();
   });
+
+  it("counts perfect rounds per kind and reports the count back", () => {
+    const store = useHistoryStore();
+    const perfect = {
+      mode: "time",
+      modeValue: 15,
+      wpm: 60,
+      accuracy: 100,
+      errors: 0,
+      timeElapsed: 15,
+      keystrokes: 80,
+      errorKeystrokes: 0,
+    };
+
+    expect(store.recordResult(perfect)).toEqual({ perfect: true, perfectCount: 1 });
+    expect(store.recordResult(perfect)).toEqual({ perfect: true, perfectCount: 2 });
+    expect(store.recordResult({ ...perfect, errorKeystrokes: 1 })).toEqual({
+      perfect: false,
+      perfectCount: 0,
+    });
+    expect(store.perfectRoundsTotal).toBe(2);
+    expect(store.perfectRoundsList).toEqual([{ mode: "time", modeValue: 15, count: 2 }]);
+
+    // Persisted on its own, so a reload keeps it
+    setActivePinia(createPinia());
+    expect(useHistoryStore().perfectRoundsTotal).toBe(2);
+  });
+
+  it("seeds the perfect-round count from an existing history", () => {
+    localStorage.setItem(
+      "swiftflow_results",
+      JSON.stringify([
+        {
+          id: "a",
+          date: new Date().toISOString(),
+          mode: "quote",
+          wpm: 50,
+          accuracy: 100,
+          keystrokes: 90,
+          errorKeystrokes: 0,
+        },
+      ])
+    );
+    expect(useHistoryStore().perfectRoundsList).toEqual([
+      { mode: "quote", modeValue: null, count: 1 },
+    ]);
+  });
+
+  it("clearing the history clears the perfect rounds too", () => {
+    const store = useHistoryStore();
+    store.recordResult({
+      mode: "zen",
+      wpm: 40,
+      accuracy: 100,
+      errors: 0,
+      timeElapsed: 60,
+      keystrokes: 200,
+      errorKeystrokes: 0,
+    });
+    store.clearHistory();
+    expect(store.perfectRoundsTotal).toBe(0);
+  });
+
+  it("celebrates a daily challenge the moment it's completed", () => {
+    const store = useHistoryStore();
+    const [challenge] = store.dailyChallenges;
+    expect(challenge.completed).toBe(false);
+
+    // Play until the first challenge is done, whatever it turned out to be
+    for (let i = 0; i < 10 && !store.dailyChallenges[0].completed; i++) {
+      store.recordResult({
+        mode: challenge.action?.mode ?? "time",
+        modeValue: 60,
+        wpm: 300,
+        accuracy: 100,
+        errors: 0,
+        timeElapsed: 60,
+        maxStreak: 1000,
+        keystrokes: 1500,
+        errorKeystrokes: 0,
+      });
+    }
+
+    expect(store.dailyChallenges[0].completed).toBe(true);
+    const toasts = store.newlyUnlocked.filter((a) => a.category === "challenge");
+    expect(toasts.map((t) => t.title)).toContain(challenge.title);
+    expect(new Set(toasts.map((t) => t.id)).size).toBe(toasts.length);
+  });
 });

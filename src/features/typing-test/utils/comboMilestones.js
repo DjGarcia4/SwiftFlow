@@ -34,3 +34,14 @@ export const pickComboMessage = (milestone, random = Math.random) => {
   const tier = [...MESSAGES].reverse().find((m) => milestone >= m.from) ?? MESSAGES[0];
   return tier.texts[Math.floor(random() * tier.texts.length)];
 };
+
+// Where the live combo meter sits: filling from the last milestone reached
+// toward the next one, so each milestone reads as a bar topped off (and
+// the push that celebrates it) rather than a number creeping up. Past the
+// last milestone there's nothing left to fill toward, so it stays full.
+export const comboProgress = (streak) => {
+  const next = COMBO_MILESTONES.find((milestone) => milestone > streak) ?? null;
+  const from = [...COMBO_MILESTONES].reverse().find((m) => m <= streak) ?? 0;
+  if (next === null) return { from, next, fraction: 1 };
+  return { from, next, fraction: (streak - from) / (next - from) };
+};

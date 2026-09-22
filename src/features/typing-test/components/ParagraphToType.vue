@@ -47,6 +47,29 @@
       </div>
     </Transition>
 
+    <!-- Perfect round: its own line, since it can land alongside a record -->
+    <Transition
+      enter-active-class="transition-all duration-700 ease-smooth delay-150"
+      enter-from-class="opacity-0 -translate-y-2 scale-95"
+      enter-to-class="opacity-100 translate-y-0 scale-100"
+    >
+      <div v-if="isCompleted && perfectRound" class="text-center">
+        <div
+          class="inline-flex items-center gap-2 bg-success-tint text-success-dark border-2 border-success/40 rounded-xl px-5 py-2.5 text-sm font-extrabold animate-key-pop"
+        >
+          <SparklesIcon class="w-5 h-5 animate-badge-glow" />
+          ¡Ronda perfecta!
+          <span class="font-bold opacity-80">
+            {{
+              perfectRound.count === 1
+                ? `La primera en ${perfectRound.label}`
+                : `#${perfectRound.count} en ${perfectRound.label}`
+            }}
+          </span>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Main result cards: rise in one after another, numbers count up -->
     <div
       v-if="isCompleted"
@@ -118,6 +141,17 @@
       </div>
     </Transition>
 
+    <!-- What to practice after this one, one click away -->
+    <Transition
+      enter-active-class="transition-all duration-700 ease-smooth delay-200"
+      enter-from-class="opacity-0 translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+    >
+      <div v-if="isCompleted && resultsCoach" class="max-w-xl mx-auto">
+        <CoachCard :coach="resultsCoach" @train="trainNow" />
+      </div>
+    </Transition>
+
     <!-- Results chart: WPM over time, with error markers -->
     <Transition
       enter-active-class="transition-all duration-700 ease-smooth delay-100"
@@ -156,11 +190,16 @@
     </Transition>
 
     <div v-if="!isCompleted" class="relative animate-fade-in">
-      <!-- Header row: WPM (left) + streak/counter (right). Always in normal
-           flow, above the scrolling text, so it can never end up overlapping
-           it once the paragraph scrolls. -->
-      <div class="flex items-start justify-between gap-2 mb-3 sm:mb-4">
-        <div class="min-h-[1.75rem] sm:min-h-[2.25rem]">
+      <!-- Header row: WPM (left), combo bar stretched across the middle,
+           record/counter (right). Always in normal flow, above the scrolling
+           text, so it can never end up overlapping it once the paragraph
+           scrolls. -->
+      <div class="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <!-- Wide enough for three digits, so the bar doesn't twitch as the
+             wpm changes length -->
+        <div
+          class="flex-shrink-0 min-w-[4.25rem] sm:min-w-[5.5rem] min-h-[1.75rem] sm:min-h-[2.25rem] flex items-center"
+        >
           <Transition
             enter-active-class="transition-all duration-200 ease-out"
             enter-from-class="opacity-0 -translate-y-1"
@@ -190,7 +229,13 @@
           </Transition>
         </div>
 
-        <div v-if="configStore.userInput.length > 0" class="flex items-center gap-2">
+        <!-- Live combo: fills toward the next milestone -->
+        <ComboMeter v-if="configStore.userInput.length > 0" class="flex-1 min-w-0" />
+
+        <div
+          v-if="configStore.userInput.length > 0"
+          class="flex flex-shrink-0 items-center gap-2"
+        >
           <!-- New record badge: a bit more "solid"/celebratory than the
                streak badge below, since breaking your best is the bigger
                deal — same success-green family, just filled instead of
@@ -210,26 +255,6 @@
             >
               <TrophyIcon class="w-3.5 h-3.5 text-white animate-badge-glow" />
               <span class="text-xs font-extrabold text-white">Récord</span>
-            </div>
-          </Transition>
-
-          <!-- Streak badge -->
-          <Transition
-            enter-active-class="transition-all duration-200 ease-out"
-            enter-from-class="opacity-0 scale-75"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-75"
-          >
-            <div
-              v-if="configStore.currentStreak >= 15"
-              :key="Math.floor(configStore.currentStreak / 10)"
-              :style="streakBadgeStyle"
-              class="inline-flex items-center gap-1 rounded-xl border-2 px-2.5 py-1.5 animate-key-pop"
-            >
-              <FireIcon class="w-3.5 h-3.5 animate-badge-glow" />
-              <span class="text-xs font-extrabold">{{ configStore.currentStreak }}</span>
             </div>
           </Transition>
 
@@ -481,6 +506,8 @@ import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
 import WpmChart from "./WpmChart.vue";
 import ShareResultModal from "./ShareResultModal.vue";
+import ComboMeter from "./ComboMeter.vue";
+import CoachCard from "./CoachCard.vue";
 import {
   ClockIcon,
   DocumentTextIcon,
@@ -489,6 +516,7 @@ import {
   FireIcon,
   TrophyIcon,
   StopIcon,
+  SparklesIcon,
 } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/features/typing-test/content/paragraphs";
 import { generateRandomWords } from "@/features/typing-test/content/words";
@@ -497,7 +525,6 @@ import { getRandomQuote } from "@/features/typing-test/content/quotes";
 import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
 import { useConfigStore } from "@/features/typing-test/store";
 import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
-import { getCharacterStreakColorRgb } from "@/shared/utils/flameColor";
 import { computeKeyboardViewportStyle } from "@/features/typing-test/utils/keyboardViewport";
 import { useHistoryStore } from "@/features/history/store";
 import {
@@ -506,7 +533,12 @@ import {
   computeKeyErrorStats,
 } from "@/features/history/utils/historyStats";
 import { generateDrillText } from "@/features/typing-test/content/drill";
-import { resolveDrillKeys } from "@/features/typing-test/utils/drillTargets";
+import {
+  resolveDrillKeys,
+  suggestedDrillKeys,
+} from "@/features/typing-test/utils/drillTargets";
+import { computeLiveCoach } from "@/features/typing-test/utils/liveCoach";
+import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
 import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 import { useSoundStore } from "@/shared/stores/sound";
 import {
@@ -536,6 +568,10 @@ const textContentEl = ref(null);
 // strictly greater), so the results screen/share card need this frozen
 // copy instead of reading the live computed.
 const justBrokeRecord = ref(false);
+
+// { count, label } when the session just saved was a perfect round, frozen
+// the same way and for the same reason as justBrokeRecord.
+const perfectRound = ref(null);
 
 // On mobile, `top-1/2` (and the "vh"-based max-height) is computed against
 // the full layout viewport, which most mobile browsers DON'T shrink when
@@ -661,20 +697,6 @@ refreshReferenceText();
 // show the toolbar again).
 const isCompleted = computed(() => configStore.isCompleted);
 
-// The streak badge's color escalates like a flame (amber -> orange -> red)
-// as the streak grows, instead of staying a flat color — computed as
-// inline styles since Tailwind's utility classes can't interpolate at
-// runtime. Text/icon pick up the color via `currentColor` (unset).
-const streakBadgeStyle = computed(() => {
-  const [r, g, b] = getCharacterStreakColorRgb(configStore.currentStreak);
-  return {
-    color: `rgb(${r} ${g} ${b})`,
-    borderColor: `rgb(${r} ${g} ${b})`,
-    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
-    boxShadow: `0 1px 3px 0 rgba(${r}, ${g}, ${b}, 0.35)`,
-  };
-});
-
 // Per-keystroke results: how many mistakes got fixed, and the key missed
 // most this session.
 
@@ -697,6 +719,31 @@ const resultCards = computed(() => {
     },
     { label: "Errores", value: configStore.errors, decimals: 0, suffix: "" },
   ];
+});
+
+const trainNow = useTrainNow();
+
+// This session's weak letters if it showed any, otherwise the ones the
+// history keeps pointing at. Not offered after a drill: space already
+// starts another one.
+const resultsCoach = computed(() => {
+  if (configStore.type === "drill") return null;
+
+  const session = computeLiveCoach({
+    keyAttempts: configStore.keyAttempts,
+    missedKeys: configStore.missedKeys,
+    confusions: configStore.confusions,
+  });
+  if (session) return session;
+
+  const keys = suggestedDrillKeys(historyStore.results);
+  if (!keys.length) return null;
+  const labels = keys.map((key) => `la ${key.toUpperCase()}`);
+  return {
+    keys,
+    title: `Seguí con ${labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(", ")} y ${labels[labels.length - 1]}`}`,
+    detail: "Es lo que más se te escapa en tus últimas sesiones.",
+  };
 });
 
 const topMissedKey = computed(() => {
@@ -748,6 +795,7 @@ watch(isCompleted, (completed) => {
     // real attempt at the mode, so it doesn't touch records or history.
     if (configStore.endedEarly) {
       justBrokeRecord.value = false;
+      perfectRound.value = null;
     } else {
       justBrokeRecord.value = configStore.isBeatingBest;
       if (
@@ -758,7 +806,7 @@ watch(isCompleted, (completed) => {
         playCelebrationSound();
       }
       configStore.updateBestWpm();
-      historyStore.recordResult({
+      const saved = historyStore.recordResult({
         mode: configStore.type,
         wpm: configStore.wpm,
         accuracy: configStore.accuracy,
@@ -779,6 +827,15 @@ watch(isCompleted, (completed) => {
         keyTiming: copyTiming(configStore.keyTiming),
         bigramTiming: copyTiming(configStore.bigramTiming),
       });
+      perfectRound.value = saved.perfect
+        ? {
+            count: saved.perfectCount,
+            label: formatModeLabel({
+              mode: configStore.type,
+              modeValue: currentModeValue(),
+            }),
+          }
+        : null;
     }
 
     // Add global keydown listener for space key restart
@@ -984,6 +1041,7 @@ const getCharacterClass = (index) => {
 
 const restart = () => {
   justBrokeRecord.value = false;
+  perfectRound.value = null;
   refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {

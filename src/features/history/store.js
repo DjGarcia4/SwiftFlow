@@ -18,6 +18,21 @@ import {
   INSIGHTS_VERSION,
 } from "@/features/history/utils/historyStats";
 import { computeAchievements } from "@/features/history/achievements";
+import {
+  buildDailyChallenges,
+  computeChallengeStats,
+} from "@/features/history/dailyChallenges";
+import {
+  loadPerfectRounds,
+  savePerfectRounds,
+  clearPerfectRounds,
+} from "@/features/history/perfectRoundsRepository";
+import {
+  isPerfectRound,
+  perfectRoundKey,
+  tallyPerfectRounds,
+  mergePerfectTallies,
+} from "@/features/history/utils/perfectRounds";
 
 export const useHistoryStore = defineStore("history", () => {
   const results = ref(getResults());
@@ -39,6 +54,33 @@ export const useHistoryStore = defineStore("history", () => {
     () => achievements.value.filter((a) => a.unlocked).length
   );
 
+  // Perfect rounds per kind of session. Seeded from the history the first
+  // time, then kept on its own so it outlives the history's size cap.
+  const perfectRounds = ref(loadPerfectRounds() ?? tallyPerfectRounds(results.value));
+  savePerfectRounds(perfectRounds.value);
+
+  const perfectRoundsList = computed(() =>
+    Object.values(perfectRounds.value).sort((a, b) => b.count - a.count)
+  );
+  const perfectRoundsTotal = computed(() =>
+    perfectRoundsList.value.reduce((sum, entry) => sum + entry.count, 0)
+  );
+
+  // The day the challenges are for. Moved on by refreshDay, which the views
+  // call when they come back into focus or the clock passes midnight.
+  const challengeDay = ref(new Date());
+  const dailyChallenges = computed(() =>
+    buildDailyChallenges(results.value, challengeDay.value)
+  );
+  const challengeStats = computed(() => computeChallengeStats(results.value));
+
+  const refreshDay = () => {
+    const now = new Date();
+    if (now.toDateString() !== challengeDay.value.toDateString()) {
+      challengeDay.value = now;
+    }
+  };
+
   // Queue of achievements to celebrate with a toast — populated by
   // recordResult when a session crosses a new threshold. The toast
   // component shows newlyUnlocked[0] and calls dismissNewlyUnlocked to
@@ -46,9 +88,15 @@ export const useHistoryStore = defineStore("history", () => {
   const newlyUnlocked = ref([]);
 
   // entry: { mode, wpm, accuracy, errors, timeElapsed, modeValue }
+  // Returns what the results screen wants to know about the session it just
+  // saved: whether it was a perfect round, and which one of its kind.
   const recordResult = (entry) => {
+    refreshDay();
     const unlockedBefore = new Set(
       achievements.value.filter((a) => a.unlocked).map((a) => a.id)
+    );
+    const challengesDoneBefore = new Set(
+      dailyChallenges.value.filter((c) => c.completed).map((c) => c.id)
     );
 
     const fullEntry = {
@@ -60,12 +108,41 @@ export const useHistoryStore = defineStore("history", () => {
     };
     results.value = saveResult(fullEntry);
 
+    let perfectCount = 0;
+    if (isPerfectRound(fullEntry)) {
+      const key = perfectRoundKey(fullEntry);
+      const current = perfectRounds.value[key];
+      perfectCount = (current?.count ?? 0) + 1;
+      perfectRounds.value = {
+        ...perfectRounds.value,
+        [key]: {
+          mode: fullEntry.mode,
+          modeValue: fullEntry.modeValue ?? null,
+          count: perfectCount,
+        },
+      };
+      savePerfectRounds(perfectRounds.value);
+    }
+
+    // Challenges first: they're what the session was probably aiming at,
+    // and an achievement they unlock should come after them, not before.
+    const justCompleted = dailyChallenges.value
+      .filter((c) => c.completed && !challengesDoneBefore.has(c.id))
+      .map((c) => ({
+        id: `challenge:${c.id}`,
+        category: "challenge",
+        icon: c.icon,
+        title: c.title,
+        kicker: "¡Reto cumplido!",
+      }));
     const justUnlocked = achievements.value.filter(
       (a) => a.unlocked && !unlockedBefore.has(a.id)
     );
-    if (justUnlocked.length) {
-      newlyUnlocked.value = [...newlyUnlocked.value, ...justUnlocked];
+    if (justCompleted.length || justUnlocked.length) {
+      newlyUnlocked.value = [...newlyUnlocked.value, ...justCompleted, ...justUnlocked];
     }
+
+    return { perfect: perfectCount > 0, perfectCount };
   };
 
   const dismissNewlyUnlocked = () => {
@@ -77,12 +154,19 @@ export const useHistoryStore = defineStore("history", () => {
   const importResults = (incoming) => {
     const before = results.value.length;
     results.value = replaceResults(mergeResults(results.value, incoming));
+    perfectRounds.value = mergePerfectTallies(
+      perfectRounds.value,
+      tallyPerfectRounds(results.value)
+    );
+    savePerfectRounds(perfectRounds.value);
     return { added: results.value.length - before };
   };
 
   const clearHistory = () => {
     clearResults();
+    clearPerfectRounds();
     results.value = [];
+    perfectRounds.value = {};
   };
 
   return {
@@ -97,6 +181,11 @@ export const useHistoryStore = defineStore("history", () => {
     achievements,
     unlockedAchievementsCount,
     newlyUnlocked,
+    perfectRoundsList,
+    perfectRoundsTotal,
+    dailyChallenges,
+    challengeStats,
+    refreshDay,
     recordResult,
     importResults,
     dismissNewlyUnlocked,
