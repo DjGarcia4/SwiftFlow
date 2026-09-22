@@ -34,6 +34,11 @@
             en total
           </div>
         </div>
+        <ReviewToday
+          v-if="historyStore.reviewToday.keys.length"
+          class="mb-2"
+          @play="open = false"
+        />
         <DailyChallengesList :challenges="challenges" @play="open = false" />
         <p v-if="allDone" class="mt-3 text-center text-xs font-bold text-success-dark">
           ¡Día redondo! Mañana hay retos nuevos.
@@ -47,7 +52,7 @@
 
     <button
       type="button"
-      class="flex h-12 items-center gap-2 rounded-full border-2 px-4 text-sm font-extrabold shadow-sm transition-[scale,border-color,background-color,color] duration-300 ease-spring hover:scale-105 active:scale-95"
+      class="relative flex h-12 items-center gap-2 rounded-full border-2 px-4 text-sm font-extrabold shadow-sm transition-[scale,border-color,background-color,color] duration-300 ease-spring hover:scale-105 active:scale-95"
       :class="
         allDone
           ? 'border-success bg-success-tint text-success-dark'
@@ -60,6 +65,11 @@
       <FlagIcon class="w-5 h-5" :class="allDone ? '' : 'text-primary'" />
       <span class="hidden xs:inline">Retos</span>
       <span class="tabular-nums">{{ doneCount }}/{{ challenges.length }}</span>
+      <!-- A review waiting doesn't change the count, so it gets a dot -->
+      <span
+        v-if="reviewPending"
+        class="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-paper-white bg-primary"
+      ></span>
     </button>
   </div>
 </template>
@@ -69,6 +79,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { FlagIcon } from "@heroicons/vue/24/outline";
 import DailyChallengesList from "./DailyChallengesList.vue";
 import WeeklyGoal from "./WeeklyGoal.vue";
+import ReviewToday from "./ReviewToday.vue";
 import { useHistoryStore } from "@/features/history/store";
 import { useConfigStore } from "@/features/typing-test/store";
 import { msUntilNextDay } from "@/features/history/dailyChallenges";
@@ -81,6 +92,9 @@ const open = ref(false);
 const challenges = computed(() => historyStore.dailyChallenges);
 const doneCount = computed(() => challenges.value.filter((c) => c.completed).length);
 const allDone = computed(() => doneCount.value === challenges.value.length);
+const reviewPending = computed(
+  () => historyStore.reviewToday.keys.length > 0 && !historyStore.reviewToday.completed
+);
 
 const hidden = computed(
   () =>

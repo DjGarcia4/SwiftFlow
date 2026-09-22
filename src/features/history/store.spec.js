@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useHistoryStore } from "./store";
 
@@ -479,5 +479,68 @@ describe("useHistoryStore", () => {
     store.setWeeklyGoal(null);
     expect(store.weeklyGoalIsAuto).toBe(true);
     expect(store.weeklyGoal).toBe(store.suggestedWeeklyGoal);
+  });
+
+  describe("letters in review", () => {
+    const drillSession = (keys, misses) => ({
+      mode: "drill",
+      modeValue: 25,
+      drillKeys: keys,
+      wpm: 40,
+      accuracy: 95,
+      errors: 0,
+      timeElapsed: 60,
+      keystrokes: 200,
+      errorKeystrokes: 4,
+      keyAttempts: Object.fromEntries(keys.map((k) => [k, 20])),
+      missedKeys: Object.fromEntries(keys.map((k) => [k, misses])),
+    });
+
+    afterEach(() => vi.useRealTimers());
+
+    it("puts drilled letters in review and brings them back the next day", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 21, 12));
+      const store = useHistoryStore();
+
+      const { reviewChanges } = store.recordResult(drillSession(["ñ", "q"], 3));
+      expect(reviewChanges.map((c) => [c.key, c.outcome, c.nextInDays])).toEqual([
+        ["ñ", "started", 1],
+        ["q", "started", 1],
+      ]);
+      expect(store.reviewToday.keys).toEqual([]);
+
+      vi.setSystemTime(new Date(2026, 8, 22, 9));
+      store.refreshDay();
+      expect(store.reviewToday).toEqual({ keys: ["ñ", "q"], done: [], completed: false });
+
+      const { xpGained } = store.recordResult(drillSession(["ñ", "q"], 2));
+      expect(store.reviewToday.completed).toBe(true);
+      expect(xpGained).toBeGreaterThanOrEqual(40);
+      expect(store.newlyUnlocked.map((t) => t.kicker)).toContain(
+        "¡Repaso del día hecho!"
+      );
+      expect(store.reviewKeys.map((k) => [k.key, k.dueInDays])).toEqual([
+        ["ñ", 3],
+        ["q", 3],
+      ]);
+
+      // Persisted, and wiped with the history
+      setActivePinia(createPinia());
+      const reloaded = useHistoryStore();
+      expect(reloaded.reviewKeys).toHaveLength(2);
+      reloaded.clearHistory();
+      expect(reloaded.reviewKeys).toEqual([]);
+    });
+
+    it("leaves other modes out of it", () => {
+      const store = useHistoryStore();
+      const { reviewChanges } = store.recordResult({
+        ...drillSession(["ñ"], 3),
+        mode: "words",
+      });
+      expect(reviewChanges).toEqual([]);
+      expect(store.reviewKeys).toEqual([]);
+    });
   });
 });

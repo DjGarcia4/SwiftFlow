@@ -14,6 +14,8 @@ export const CHALLENGE_XP = 30;
 // On top of the three challenges' own XP
 export const FULL_DAY_XP = 100;
 export const WEEKLY_GOAL_XP = 150;
+// Reviewing every letter due that day
+export const REVIEW_XP = 40;
 
 // What a single session earns by itself. Challenges are counted apart,
 // since whether one got completed depends on the rest of the day.

@@ -13,6 +13,8 @@ import {
   computeAverageAccuracy,
   computePersonalBests,
   computeDailyStreak,
+  computeKeyErrorStats,
+  RECENT_INSIGHT_SESSIONS,
   isCurrentMetrics,
   METRICS_VERSION,
   INSIGHTS_VERSION,
@@ -20,6 +22,17 @@ import {
 import { computeAchievements } from "@/features/history/achievements";
 import { suggestWeeklyGoal, computeWeekProgress } from "@/features/history/weeklyGoal";
 import { loadWeeklyGoal, saveWeeklyGoal } from "@/features/history/weeklyGoalRepository";
+import {
+  loadKeyReview,
+  saveKeyReview,
+  clearKeyReview,
+} from "@/features/history/keyReviewRepository";
+import {
+  applyDrillSession,
+  sessionKeyRates,
+  reviewForDay,
+  listReviewKeys,
+} from "@/features/history/utils/keyReview";
 import {
   buildDailyChallenges,
   computeChallengeStats,
@@ -47,6 +60,7 @@ import {
   CHALLENGE_XP,
   FULL_DAY_XP,
   WEEKLY_GOAL_XP,
+  REVIEW_XP,
 } from "@/features/history/utils/experience";
 
 export const useHistoryStore = defineStore("history", () => {
@@ -123,6 +137,12 @@ export const useHistoryStore = defineStore("history", () => {
     saveWeeklyGoal(weeklyGoalState.value);
   };
 
+  // Letters in spaced review: the schedule, what's due on the challenges'
+  // day, and every letter with its next date.
+  const keyReview = ref(loadKeyReview());
+  const reviewToday = computed(() => reviewForDay(keyReview.value, challengeDay.value));
+  const reviewKeys = computed(() => listReviewKeys(keyReview.value, challengeDay.value));
+
   // Running experience total, seeded from the history the first time and
   // kept on its own after that, like the perfect rounds.
   const experience = ref(
@@ -150,6 +170,17 @@ export const useHistoryStore = defineStore("history", () => {
     const challengesDoneBefore = new Set(
       dailyChallenges.value.filter((c) => c.completed).map((c) => c.id)
     );
+    const reviewDoneBefore = reviewToday.value.completed;
+    // How the drilled letters were doing before this session, for a letter
+    // that's being drilled for the first time
+    const baselineRates =
+      entry.mode === "drill"
+        ? Object.fromEntries(
+            computeKeyErrorStats(results.value.slice(0, RECENT_INSIGHT_SESSIONS)).map(
+              (stat) => [stat.key, stat.rate]
+            )
+          )
+        : {};
 
     const fullEntry = {
       id: crypto.randomUUID(),
@@ -187,6 +218,31 @@ export const useHistoryStore = defineStore("history", () => {
         title: c.title,
         kicker: "¡Reto cumplido!",
       }));
+    // A drill moves its letters along the review schedule
+    let reviewChanges = [];
+    if (entry.mode === "drill" && entry.drillKeys?.length) {
+      const applied = applyDrillSession(keyReview.value, {
+        keys: entry.drillKeys,
+        rates: sessionKeyRates(entry),
+        baselineRates,
+      });
+      keyReview.value = applied.schedule;
+      reviewChanges = applied.changes;
+      saveKeyReview(keyReview.value);
+    }
+    const completedReview = !reviewDoneBefore && reviewToday.value.completed;
+    const reviewToasts = completedReview
+      ? [
+          {
+            id: `review:${challengeDay.value.toDateString()}`,
+            category: "challenge",
+            icon: "check-badge",
+            title: `Repasaste ${reviewToday.value.keys.map((k) => k.toUpperCase()).join(", ")}`,
+            kicker: "¡Repaso del día hecho!",
+          },
+        ]
+      : [];
+
     // A week is written down the first time it reaches the goal, and never
     // again -- more sessions that week don't pay out twice.
     const week = weekProgress.value;
@@ -222,7 +278,8 @@ export const useHistoryStore = defineStore("history", () => {
       sessionXp(fullEntry) +
       justCompleted.length * CHALLENGE_XP +
       (completedFullDay ? FULL_DAY_XP : 0) +
-      (completedWeek ? WEEKLY_GOAL_XP : 0);
+      (completedWeek ? WEEKLY_GOAL_XP : 0) +
+      (completedReview ? REVIEW_XP : 0);
     experience.value += xpGained;
     saveExperience(experience.value);
 
@@ -242,7 +299,13 @@ export const useHistoryStore = defineStore("history", () => {
           ]
         : [];
 
-    const toasts = [...justCompleted, ...weekToasts, ...levelUps, ...justUnlocked];
+    const toasts = [
+      ...justCompleted,
+      ...reviewToasts,
+      ...weekToasts,
+      ...levelUps,
+      ...justUnlocked,
+    ];
     if (toasts.length) newlyUnlocked.value = [...newlyUnlocked.value, ...toasts];
 
     return {
@@ -250,6 +313,7 @@ export const useHistoryStore = defineStore("history", () => {
       perfectCount,
       xpGained,
       leveledUp: levelUps.length > 0,
+      reviewChanges,
     };
   };
 
@@ -280,6 +344,8 @@ export const useHistoryStore = defineStore("history", () => {
     clearResults();
     clearPerfectRounds();
     clearExperience();
+    clearKeyReview();
+    keyReview.value = {};
     // The goal itself is a preference and stays; the weeks met go with the
     // history they came from.
     weeklyGoalState.value = { ...weeklyGoalState.value, completedWeeks: [] };
@@ -303,6 +369,8 @@ export const useHistoryStore = defineStore("history", () => {
     newlyUnlocked,
     experience,
     level,
+    reviewToday,
+    reviewKeys,
     weeklyGoal,
     weeklyGoalIsAuto,
     suggestedWeeklyGoal,

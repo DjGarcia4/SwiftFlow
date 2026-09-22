@@ -175,6 +175,7 @@
             }}
           </div>
         </div>
+        <ReviewToday v-if="historyStore.reviewToday.keys.length" class="mb-2" />
         <DailyChallengesList :challenges="historyStore.dailyChallenges" />
       </div>
 
@@ -289,6 +290,24 @@
             unit-label="combo"
           />
         </div>
+      </div>
+
+      <!-- Letters in spaced review -->
+      <div
+        v-if="historyStore.reviewKeys.length"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:530ms]"
+      >
+        <div class="flex items-baseline justify-between gap-3 mb-3">
+          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+            Letras en repaso
+          </div>
+          <div
+            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+          >
+            1 · 3 · 7 · 14 · 30 días
+          </div>
+        </div>
+        <ReviewKeysList :entries="historyStore.reviewKeys" />
       </div>
 
       <!-- Personal bests -->
@@ -549,6 +568,8 @@ import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue
 import DailyChallengesList from "@/features/history/components/DailyChallengesList.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import WeeklyGoal from "@/features/history/components/WeeklyGoal.vue";
+import ReviewToday from "@/features/history/components/ReviewToday.vue";
+import ReviewKeysList from "@/features/history/components/ReviewKeysList.vue";
 import LevelRoadmap from "@/features/history/components/LevelRoadmap.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {

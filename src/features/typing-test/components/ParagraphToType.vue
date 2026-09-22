@@ -170,7 +170,7 @@
         enter-to-class="opacity-100 translate-y-0"
       >
         <div
-          v-if="isCompleted && (xpGained || resultsCoach)"
+          v-if="isCompleted && (xpGained || resultsCoach || reviewChanges.length)"
           class="flex flex-col sm:flex-row gap-3 sm:gap-4"
         >
           <div
@@ -179,6 +179,13 @@
           >
             <XpProgress class="w-full" :gained="xpGained" />
           </div>
+          <!-- A drill has no coach (it already is the practice), so its spot
+               shows how the drilled letters did against their review -->
+          <ReviewResults
+            v-if="reviewChanges.length"
+            class="flex-1 min-w-0"
+            :changes="reviewChanges"
+          />
           <CoachCard
             v-if="resultsCoach"
             class="flex-1 min-w-0"
@@ -573,6 +580,7 @@ import ComboMeter from "./ComboMeter.vue";
 import CoachCard from "./CoachCard.vue";
 import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
+import ReviewResults from "@/features/history/components/ReviewResults.vue";
 import {
   ClockIcon,
   DocumentTextIcon,
@@ -639,6 +647,8 @@ const justBrokeRecord = ref(false);
 const perfectRound = ref(null);
 // Experience the session just saved earned; 0 when nothing was saved
 const xpGained = ref(0);
+// What a drill did to its letters' review schedule
+const reviewChanges = ref([]);
 
 // On mobile, `top-1/2` (and the "vh"-based max-height) is computed against
 // the full layout viewport, which most mobile browsers DON'T shrink when
@@ -864,6 +874,7 @@ watch(isCompleted, (completed) => {
       justBrokeRecord.value = false;
       perfectRound.value = null;
       xpGained.value = 0;
+      reviewChanges.value = [];
     } else {
       justBrokeRecord.value = configStore.isBeatingBest;
       if (
@@ -882,6 +893,12 @@ watch(isCompleted, (completed) => {
         rawWpm: configStore.rawWpm,
         timeElapsed: configStore.timeElapsed,
         modeValue: currentModeValue(),
+        // The letters a drill aimed at, so the review schedule knows which
+        // ones this session was practice for
+        drillKeys:
+          configStore.type === "drill"
+            ? resolveDrillKeys(configStore.drillKeys, historyStore.results)
+            : undefined,
         maxStreak: configStore.maxStreak,
         keystrokes: configStore.keystrokes,
         errorKeystrokes: configStore.errorKeystrokes,
@@ -896,6 +913,7 @@ watch(isCompleted, (completed) => {
         bigramTiming: copyTiming(configStore.bigramTiming),
       });
       xpGained.value = saved.xpGained;
+      reviewChanges.value = saved.reviewChanges;
       perfectRound.value = saved.perfect
         ? {
             count: saved.perfectCount,
@@ -1112,6 +1130,7 @@ const restart = () => {
   justBrokeRecord.value = false;
   perfectRound.value = null;
   xpGained.value = 0;
+  reviewChanges.value = [];
   refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {
