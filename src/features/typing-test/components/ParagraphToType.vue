@@ -292,9 +292,12 @@
         leave-from-class="opacity-100 translate-y-0"
         leave-to-class="opacity-0 translate-y-2"
       >
+        <!-- Takes its space from the start and only fades in once space
+             actually restarts, so the buttons below don't jump a second later -->
         <div v-if="isCompleted" class="text-center">
           <div
-            class="inline-flex items-center gap-2 bg-success-tint rounded-xl px-5 py-2.5 text-sm text-success-dark font-bold"
+            class="inline-flex items-center gap-2 bg-success-tint rounded-xl px-5 py-2.5 text-sm text-success-dark font-bold transition-opacity duration-300"
+            :class="restartReady ? 'opacity-100' : 'opacity-0'"
           >
             Presiona
             <kbd
@@ -908,13 +911,25 @@ const handleEscapeKeydown = (event) => {
 };
 
 // Global keydown listener for space key when completed
+// Keys still in flight when a session ends -- the space after the last
+// word, most of all when the clock runs out mid-word -- shouldn't throw its
+// results away before they've been seen. For a moment after the end, and
+// for a held-down key, space does nothing.
+const RESTART_GRACE_MS = 1000;
+const restartReady = ref(false);
+let restartGraceTimeout = null;
+
+const restartOnSpace = (event) => {
+  if (event.key !== " " || !isCompleted.value) return false;
+  event.preventDefault();
+  if (restartReady.value && !event.repeat) restart();
+  return true;
+};
+
 const handleGlobalKeydown = (event) => {
   // Space belongs to whatever dialog is open, not to "play again"
   if (replayOpen.value || shareModalOpen.value) return;
-  if (event.key === " " && isCompleted.value) {
-    event.preventDefault();
-    restart();
-  }
+  restartOnSpace(event);
 };
 
 // Use the formatted reference text from the store
@@ -1279,9 +1294,16 @@ watch(isCompleted, (completed) => {
 
     // Add global keydown listener for space key restart
     document.addEventListener("keydown", handleGlobalKeydown);
+    restartReady.value = false;
+    clearTimeout(restartGraceTimeout);
+    restartGraceTimeout = setTimeout(() => {
+      restartReady.value = true;
+    }, RESTART_GRACE_MS);
   } else {
     // Remove global keydown listener when not completed
     document.removeEventListener("keydown", handleGlobalKeydown);
+    clearTimeout(restartGraceTimeout);
+    restartReady.value = false;
   }
 });
 
@@ -1635,11 +1657,7 @@ const handleTyping = () => {
 
 const handleKeydown = (event) => {
   // Handle space key when session is completed to restart
-  if (event.key === " " && isCompleted.value) {
-    event.preventDefault();
-    restart();
-    return;
-  }
+  if (restartOnSpace(event)) return;
 
   if (event.key === "Backspace" && configStore.userInput.length === 0) {
     event.preventDefault();
@@ -1792,6 +1810,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  clearTimeout(restartGraceTimeout);
   // Clear any timers from the config store
   if (configStore.timer) {
     clearInterval(configStore.timer);
