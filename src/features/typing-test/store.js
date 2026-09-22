@@ -69,6 +69,9 @@ export const useConfigStore = defineStore("config", () => {
   // point.
   const showKeyboard = ref(savedConfig.showKeyboard);
   const keyboardVisible = computed(() => showKeyboard.value ?? type.value === "drill");
+  // The pacer's speed in wpm, or null for "Auto" (a notch above your
+  // recent average)
+  const pacerWpm = ref(savedConfig.pacerWpm);
 
   const persistConfig = () => {
     saveConfig({
@@ -79,11 +82,20 @@ export const useConfigStore = defineStore("config", () => {
       selectedCodeLanguage: selectedCodeLanguage.value,
       drillKeys: drillKeys.value,
       showKeyboard: showKeyboard.value,
+      pacerWpm: pacerWpm.value,
     });
   };
 
-  const toggleGhostMode = () => {
-    ghostMode.value = !ghostMode.value;
+  // Turning one kind of race on turns the other off: two extra carets at
+  // once would be noise, not a race. Picking the one that's on turns it off.
+  const toggleRaceMode = (mode) => {
+    raceMode.value = raceMode.value === mode ? null : mode;
+  };
+
+  const setPacerWpm = (wpm) => {
+    pacerWpm.value = wpm;
+    raceMode.value = "pacer";
+    persistConfig();
   };
 
   // Doesn't touch the session: it's only about what's drawn on screen.
@@ -139,10 +151,10 @@ export const useConfigStore = defineStore("config", () => {
   // [activeMs, inputLength] at every change: the run's timeline, which is
   // what a ghost replays.
   const progressSamples = ref([]);
-  // Racing your record: the text becomes the record's and its ghost runs
-  // alongside. Kept for the visit, not saved -- it's a thing you choose to
-  // do, not a setting.
-  const ghostMode = ref(false);
+  // What a run races, if anything: "ghost" (your record's pace) or "pacer"
+  // (a steady speed). Kept for the visit, not saved -- it's a thing you
+  // choose to do, not a setting. The pacer's speed is a setting, though.
+  const raceMode = ref(null);
 
   // Momentum state (best WPM record + live streak)
   // Stored under a versioned key: wpm used to be measured differently and
@@ -693,8 +705,10 @@ export const useConfigStore = defineStore("config", () => {
     keyTiming,
     bigramTiming,
     progressSamples,
-    ghostMode,
-    toggleGhostMode,
+    raceMode,
+    toggleRaceMode,
+    pacerWpm,
+    setPacerWpm,
 
     // Computed properties
     wpm,

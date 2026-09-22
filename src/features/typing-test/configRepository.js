@@ -16,6 +16,7 @@ const DEFAULTS = {
   selectedCodeLanguage: null,
   drillKeys: [],
   showKeyboard: null, // null = only while drilling
+  pacerWpm: null, // null = Auto
 };
 
 export const loadConfig = () => {
@@ -55,4 +56,8 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
       : null,
   drillKeys: normalizeDrillKeys(config.drillKeys).slice(0, MAX_DRILL_KEYS),
   showKeyboard: typeof config.showKeyboard === "boolean" ? config.showKeyboard : null,
+  pacerWpm:
+    Number.isInteger(config.pacerWpm) && config.pacerWpm >= 10 && config.pacerWpm <= 250
+      ? config.pacerWpm
+      : null,
 });

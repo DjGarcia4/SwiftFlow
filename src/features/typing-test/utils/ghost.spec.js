@@ -6,6 +6,9 @@ import {
   ghostPositionOnText,
   ghostFinishOnText,
   ghostLead,
+  pacerPositionOnText,
+  pacerFinishOnText,
+  autoPacerWpm,
 } from "./ghost";
 
 describe("ghostKey", () => {
@@ -92,5 +95,27 @@ describe("ghostLead", () => {
   it("is positive ahead and negative behind", () => {
     expect(ghostLead(40, 30)).toBe(10);
     expect(ghostLead(30, 40)).toBe(-10);
+  });
+});
+
+describe("the pacer", () => {
+  it("moves at a steady five characters a word", () => {
+    // 60 wpm is 300 characters a minute: 5 a second
+    expect(pacerPositionOnText(60, 1000, 500)).toBe(5);
+    expect(pacerPositionOnText(60, 10_500, 500)).toBe(52);
+  });
+
+  it("stops at the end of the text", () => {
+    expect(pacerPositionOnText(60, 60_000, 100)).toBe(100);
+  });
+
+  it("knows when it reaches the end", () => {
+    expect(pacerFinishOnText(60, 100)).toBe(20_000);
+  });
+
+  it("sets Auto a notch above your recent average, in fives", () => {
+    expect(autoPacerWpm([52, 58, 55])).toBe(60);
+    expect(autoPacerWpm([])).toBe(40);
+    expect(autoPacerWpm([8])).toBe(20);
   });
 });

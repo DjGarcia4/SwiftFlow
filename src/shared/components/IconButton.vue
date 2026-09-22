@@ -87,6 +87,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import KeyboardIcon from "./icons/KeyboardIcon";
 import GhostIcon from "./icons/GhostIcon";
+import MetronomeIcon from "./icons/MetronomeIcon";
 
 // Props
 const props = defineProps({
@@ -129,6 +130,7 @@ const props = defineProps({
         "target",
         "keyboard",
         "ghost",
+        "metronome",
       ].includes(value),
   },
   variant: {
@@ -188,6 +190,7 @@ const iconMap = {
   target: ViewfinderCircleIcon,
   keyboard: KeyboardIcon,
   ghost: GhostIcon,
+  metronome: MetronomeIcon,
 };
 
 // Computed icon component

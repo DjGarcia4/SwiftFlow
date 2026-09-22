@@ -129,7 +129,10 @@
                 : 'border-primary/40 bg-primary-tint text-primary'
             "
           >
-            <GhostIcon class="w-5 h-5" />
+            <component
+              :is="ghostOutcome.kind === 'pacer' ? MetronomeIcon : GhostIcon"
+              class="w-5 h-5"
+            />
             {{ ghostOutcome.headline }}
             <span v-if="ghostOutcome.detail" class="font-bold opacity-80">
               {{ ghostOutcome.detail }}
@@ -339,18 +342,18 @@
             v-if="configStore.userInput.length > 0"
             class="flex flex-shrink-0 items-center gap-2"
           >
-            <!-- Ahead of or behind the ghost, in characters -->
+            <!-- Ahead of or behind the ghost or the pacer, in characters -->
             <div
-              v-if="raceGhost"
+              v-if="race"
               class="inline-flex items-center gap-1 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold tabular-nums transition-colors duration-200"
               :class="
                 ghostLeadNow >= 0
                   ? 'border-success/50 text-success'
                   : 'border-danger/50 text-danger'
               "
-              :title="`${Math.abs(ghostLeadNow)} caracteres ${ghostLeadNow >= 0 ? 'adelante' : 'atrás'} de tu fantasma`"
+              :title="`${Math.abs(ghostLeadNow)} caracteres ${ghostLeadNow >= 0 ? 'adelante' : 'atrás'} ${race.kind === 'pacer' ? 'del marcapasos' : 'de tu fantasma'}`"
             >
-              <GhostIcon class="w-4 h-4" />
+              <component :is="raceIcon" class="w-4 h-4" />
               {{ ghostLeadNow >= 0 ? "+" : "−" }}{{ Math.abs(ghostLeadNow) }}
             </div>
 
@@ -526,9 +529,9 @@
                 }"
               ></div>
 
-              <!-- The ghost's caret: where your record was at this moment -->
+              <!-- The rival's caret: where your record, or the pacer, is now -->
               <div
-                v-if="raceGhost && ghostCaret && !isCompleted"
+                v-if="race && ghostCaret && !isCompleted"
                 class="absolute w-1 rounded-full bg-pencil-gray/60 transition-[top,left] duration-150 ease-out pointer-events-none"
                 :style="{
                   top: `${ghostCaret.top}px`,
@@ -536,7 +539,8 @@
                   height: `${ghostCaret.height}px`,
                 }"
               >
-                <GhostIcon
+                <component
+                  :is="raceIcon"
                   class="absolute -top-5 left-1/2 w-4 h-4 -translate-x-1/2 text-pencil-gray"
                 />
               </div>
@@ -606,15 +610,73 @@
           v-if="raceKey"
           icon="ghost"
           :variant="
-            raceGhost || (configStore.ghostMode && availableGhost)
-              ? 'primary'
-              : 'secondary'
+            configStore.raceMode === 'ghost' && availableGhost ? 'primary' : 'secondary'
           "
           size="lg"
           :disabled="!availableGhost"
           :tooltip="ghostTooltip"
-          @click="toggleGhost"
+          @click="toggleRace('ghost')"
         />
+
+        <!-- The pacer: a steady speed to keep up with, picked from a menu -->
+        <div ref="pacerMenuRoot" class="relative">
+          <IconButton
+            icon="metronome"
+            :variant="configStore.raceMode === 'pacer' ? 'primary' : 'secondary'"
+            size="lg"
+            :tooltip="pacerMenuOpen ? '' : pacerTooltip"
+            @click="pacerMenuOpen = !pacerMenuOpen"
+          />
+          <Transition
+            enter-active-class="transition-[opacity,translate] duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-1"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-opacity duration-150 ease-in"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+          >
+            <div
+              v-if="pacerMenuOpen"
+              class="absolute bottom-full left-1/2 z-40 mb-3 w-max -translate-x-1/2 rounded-card border-2 border-faded-gray bg-paper-white p-3 shadow-xl"
+            >
+              <p class="mb-2 text-center text-xs font-bold text-pencil-gray">
+                Marcapasos: un ritmo parejo para seguir
+              </p>
+              <div class="flex flex-wrap justify-center gap-1.5 max-w-72">
+                <IconButton
+                  :variant="
+                    configStore.raceMode === 'pacer' && configStore.pacerWpm === null
+                      ? 'primary'
+                      : 'secondary'
+                  "
+                  size="xs"
+                  :text="`Auto (${autoPacerTarget})`"
+                  @click="pickPacer(null)"
+                />
+                <IconButton
+                  v-for="wpm in PACER_OPTIONS"
+                  :key="wpm"
+                  :variant="
+                    configStore.raceMode === 'pacer' && configStore.pacerWpm === wpm
+                      ? 'primary'
+                      : 'secondary'
+                  "
+                  size="xs"
+                  :text="`${wpm}`"
+                  @click="pickPacer(wpm)"
+                />
+              </div>
+              <button
+                v-if="configStore.raceMode === 'pacer'"
+                type="button"
+                class="mt-2 block w-full text-center text-xs font-bold text-pencil-gray underline underline-offset-2 hover:text-primary"
+                @click="toggleRace('pacer')"
+              >
+                Apagar
+              </button>
+            </div>
+          </Transition>
+        </div>
 
         <!-- Pausing only makes sense once there's an actual session going -->
         <template v-if="configStore.userInput.length > 0">
@@ -728,8 +790,13 @@ import {
   ghostPositionOnText,
   ghostFinishOnText,
   ghostLead,
+  pacerPositionOnText,
+  pacerFinishOnText,
+  autoPacerWpm,
+  PACER_OPTIONS,
 } from "@/features/typing-test/utils/ghost";
 import GhostIcon from "@/shared/components/icons/GhostIcon";
+import MetronomeIcon from "@/shared/components/icons/MetronomeIcon";
 import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 import { useSoundStore } from "@/shared/stores/sound";
 import {
@@ -879,17 +946,50 @@ const raceKey = computed(() => {
   });
 });
 const availableGhost = computed(() => historyStore.ghostFor(raceKey.value));
-// The ghost this run is racing, fixed when its text is loaded -- a faster
-// run replacing it at the end shouldn't change what it was measured against
-const raceGhost = ref(null);
+
+// "Auto" pacer: a notch above your last few sessions in this mode
+const autoPacerTarget = computed(() =>
+  autoPacerWpm(
+    historyStore.currentResults
+      .filter((result) => result.mode === configStore.type)
+      .slice(0, 10)
+      .map((result) => result.wpm)
+  )
+);
+const pacerTarget = computed(() => configStore.pacerWpm ?? autoPacerTarget.value);
+
+// What this run is racing: { kind: "ghost", wpm, samples } or
+// { kind: "pacer", wpm }. Fixed when the text is loaded -- a faster run
+// replacing the ghost at the end shouldn't change what it was measured
+// against.
+const race = ref(null);
+const raceIcon = computed(() =>
+  race.value?.kind === "pacer" ? MetronomeIcon : GhostIcon
+);
+
+const racePositionAt = (ms, textLength) =>
+  race.value.kind === "pacer"
+    ? pacerPositionOnText(race.value.wpm, ms, textLength)
+    : ghostPositionOnText(race.value.samples, ms, textLength);
+
+const raceFinishOn = (textLength) =>
+  race.value.kind === "pacer"
+    ? pacerFinishOnText(race.value.wpm, textLength)
+    : ghostFinishOnText(race.value.samples, textLength);
 
 // The week whose shared text is loaded, if it's the weekly challenge
 const currentWeeklyKey = ref(null);
 
 const refreshReferenceText = () => {
   textVersion.value++;
-  // Racing: a fresh text like any other, with the record's pace on it
-  raceGhost.value = configStore.ghostMode ? availableGhost.value : null;
+  // Racing: a fresh text like any other, with the rival's pace on it
+  const ghost = availableGhost.value;
+  race.value =
+    configStore.raceMode === "ghost" && ghost
+      ? { kind: "ghost", wpm: ghost.wpm, samples: ghost.samples }
+      : configStore.raceMode === "pacer"
+        ? { kind: "pacer", wpm: pacerTarget.value }
+        : null;
   if (configStore.type === "words") {
     configStore.setReferenceText(generateRandomWords(configStore.selectedWords));
     return;
@@ -1125,7 +1225,7 @@ watch(isCompleted, (completed) => {
         accuracy: configStore.accuracy,
         samples: configStore.progressSamples.map(([ms, length]) => [ms, length]),
       });
-      ghostOutcome.value = describeGhostOutcome(raceGhost.value, offered.saved);
+      ghostOutcome.value = describeRaceOutcome(race.value, offered.saved);
       weeklyOutcome.value =
         configStore.type === "weekly"
           ? {
@@ -1195,7 +1295,7 @@ const ghostIndex = ref(0);
 const ghostCaret = ref(null);
 
 const updateGhostCaret = () => {
-  if (!raceGhost.value || !typingContainer.value || !textContentEl.value) {
+  if (!race.value || !typingContainer.value || !textContentEl.value) {
     ghostCaret.value = null;
     return;
   }
@@ -1221,10 +1321,9 @@ const updateGhostCaret = () => {
 let ghostFrame = null;
 const tickGhost = () => {
   ghostFrame = null;
-  if (!raceGhost.value || isCompleted.value || !configStore.startTime) return;
+  if (!race.value || isCompleted.value || !configStore.startTime) return;
   if (!configStore.isPaused) {
-    const position = ghostPositionOnText(
-      raceGhost.value.samples,
+    const position = racePositionAt(
       Date.now() - configStore.startTime,
       referenceText.value.length
     );
@@ -1237,7 +1336,7 @@ const tickGhost = () => {
 };
 
 watch(
-  () => [raceGhost.value, Boolean(configStore.startTime), isCompleted.value],
+  () => [race.value, Boolean(configStore.startTime), isCompleted.value],
   ([ghost, started, completed]) => {
     if (ghostFrame) cancelAnimationFrame(ghostFrame);
     ghostFrame = null;
@@ -1259,15 +1358,40 @@ const ghostLeadNow = computed(() =>
 
 const ghostTooltip = computed(() => {
   if (!availableGhost.value) return "Todavía no hay récord de este tipo";
-  return configStore.ghostMode
+  return configStore.raceMode === "ghost"
     ? "Dejar de correr contra tu récord"
     : `Correr contra el ritmo de tu récord (${availableGhost.value.wpm} wpm)`;
 });
 
-const toggleGhost = () => {
-  configStore.toggleGhostMode();
+const pacerTooltip = computed(() =>
+  configStore.raceMode === "pacer"
+    ? `Marcapasos a ${pacerTarget.value} wpm`
+    : "Marcapasos: seguí un ritmo parejo"
+);
+
+const toggleRace = (mode) => {
+  configStore.toggleRaceMode(mode);
+  pacerMenuOpen.value = false;
   nextTick(focusInput);
 };
+
+// The pacer menu: picking a speed turns the pacer on at it
+const pacerMenuOpen = ref(false);
+const pacerMenuRoot = ref(null);
+
+const pickPacer = (wpm) => {
+  configStore.setPacerWpm(wpm);
+  pacerMenuOpen.value = false;
+  nextTick(focusInput);
+};
+
+const closePacerMenuOutside = (event) => {
+  if (pacerMenuOpen.value && !pacerMenuRoot.value?.contains(event.target)) {
+    pacerMenuOpen.value = false;
+  }
+};
+onMounted(() => document.addEventListener("pointerdown", closePacerMenuOutside));
+onUnmounted(() => document.removeEventListener("pointerdown", closePacerMenuOutside));
 
 // Where a weekly challenge run leaves the week: a new best, or the one to beat
 const weeklyOutcome = ref(null);
@@ -1278,10 +1402,11 @@ const ghostOutcome = ref(null);
 
 const formatSeconds = (ms) => (ms / 1000).toFixed(1).replace(".", ",");
 
-const describeGhostOutcome = (ghost, saved) => {
-  if (!ghost) {
+const describeRaceOutcome = (rival, saved) => {
+  if (!rival) {
     return saved
       ? {
+          kind: "ghost",
           racing: false,
           headline: "Nuevo fantasma guardado",
           detail: "· corré contra él con el botón del fantasma",
@@ -1290,15 +1415,14 @@ const describeGhostOutcome = (ghost, saved) => {
   }
 
   const wpm = configStore.wpm;
-  const won = wpm > ghost.wpm;
-  const tie = wpm === ghost.wpm;
+  const won = wpm > rival.wpm;
+  const tie = wpm === rival.wpm;
   // Runs with a fixed end can also be compared on the clock: how much
-  // sooner (or later) you reached it than the ghost's pace would have
+  // sooner (or later) you reached it than the rival's pace would have
   const diffMs =
-    configStore.type === "time"
+    configStore.type === "time" || configStore.type === "zen"
       ? null
-      : ghostFinishOnText(ghost.samples, referenceText.value.length) -
-        configStore.elapsedMs;
+      : raceFinishOn(referenceText.value.length) - configStore.elapsedMs;
   const clock =
     diffMs === null
       ? ""
@@ -1308,7 +1432,27 @@ const describeGhostOutcome = (ghost, saved) => {
           ? ` · ${formatSeconds(-diffMs)} s más lento`
           : "";
 
+  if (rival.kind === "pacer") {
+    // Keeping up is the goal, so matching it counts; and how evenly you
+    // got there is what the pacer is for
+    const kept = wpm >= rival.wpm;
+    const steadiness =
+      sessionConsistency.value === null
+        ? ""
+        : ` · ${sessionConsistency.value}% consistencia`;
+    return {
+      kind: "pacer",
+      racing: true,
+      won: kept,
+      headline: kept
+        ? `¡Mantuviste el ritmo de ${rival.wpm} wpm!`
+        : `Te quedaste a ${rival.wpm - wpm} wpm del marcapasos`,
+      detail: `${wpm} vs ${rival.wpm} wpm${clock}${steadiness}${saved ? " · nuevo fantasma" : ""}`,
+    };
+  }
+
   return {
+    kind: "ghost",
     racing: true,
     won,
     headline: won
@@ -1316,7 +1460,7 @@ const describeGhostOutcome = (ghost, saved) => {
       : tie
         ? "Empate con tu fantasma"
         : "Tu fantasma ganó esta vez",
-    detail: `${wpm} vs ${ghost.wpm} wpm${clock}${saved ? " · es tu nuevo fantasma" : ""}`,
+    detail: `${wpm} vs ${rival.wpm} wpm${clock}${saved ? " · es tu nuevo fantasma" : ""}`,
   };
 };
 
@@ -1351,7 +1495,8 @@ watch(
     configStore.selectedWords,
     configStore.selectedCodeLanguage,
     configStore.drillKeys,
-    configStore.ghostMode,
+    configStore.raceMode,
+    configStore.pacerWpm,
   ],
   () => {
     refreshReferenceText();
@@ -1372,7 +1517,8 @@ watch(
     configStore.selectedCodeLanguage,
     configStore.selectedContentTypes,
     configStore.drillKeys,
-    configStore.ghostMode,
+    configStore.raceMode,
+    configStore.pacerWpm,
   ],
   () => {
     if (window.matchMedia?.("(pointer: fine)").matches) {

@@ -22,6 +22,7 @@ describe("loadConfig", () => {
       selectedCodeLanguage: null,
       drillKeys: [],
       showKeyboard: null,
+      pacerWpm: null,
     });
   });
 
@@ -40,6 +41,7 @@ describe("loadConfig", () => {
       selectedCodeLanguage: null,
       drillKeys: [],
       showKeyboard: null,
+      pacerWpm: null,
     });
   });
 });
@@ -54,6 +56,7 @@ describe("sanitizeConfig", () => {
       selectedCodeLanguage: "Python",
       drillKeys: ["r", "t"],
       showKeyboard: true,
+      pacerWpm: 60,
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });
@@ -112,5 +115,11 @@ describe("sanitizeConfig", () => {
     expect(sanitizeConfig({ showKeyboard: false }, options).showKeyboard).toBe(false);
     expect(sanitizeConfig({ showKeyboard: "yes" }, options).showKeyboard).toBeNull();
     expect(sanitizeConfig({}, options).showKeyboard).toBeNull();
+  });
+
+  it("keeps a sensible pacer speed and falls back to Auto otherwise", () => {
+    expect(sanitizeConfig({ pacerWpm: 70 }, options).pacerWpm).toBe(70);
+    expect(sanitizeConfig({ pacerWpm: 9000 }, options).pacerWpm).toBeNull();
+    expect(sanitizeConfig({ pacerWpm: "60" }, options).pacerWpm).toBeNull();
   });
 });

@@ -72,3 +72,27 @@ export const ghostFinishOnText = (samples, textLength) => {
 
 // Ahead (positive) or behind (negative) the ghost, in characters
 export const ghostLead = (inputLength, ghostPosition) => inputLength - ghostPosition;
+
+// The pacer: a ghost with no run behind it, just a steady speed. Where it
+// is after `ms` of active typing at `wpm` (five characters to a word), and
+// when it reaches the end of a text. No steps and no pauses -- evenness is
+// the whole point of racing it.
+const charsPerMs = (wpm) => (wpm * 5) / 60000;
+
+export const pacerPositionOnText = (wpm, ms, textLength) =>
+  Math.min(textLength, Math.floor(ms * charsPerMs(wpm)));
+
+export const pacerFinishOnText = (wpm, textLength) =>
+  wpm > 0 ? Math.round(textLength / charsPerMs(wpm)) : 0;
+
+// "Auto" pace: a notch above your recent average in this mode, so it pulls
+// you along without running away. Rounded to 5 so it reads as a target.
+export const PACER_OPTIONS = [40, 50, 60, 70, 80, 90, 100];
+const AUTO_PACER_FALLBACK = 40;
+const AUTO_PACER_STEP_UP = 5;
+
+export const autoPacerWpm = (recentWpms) => {
+  if (!recentWpms.length) return AUTO_PACER_FALLBACK;
+  const average = recentWpms.reduce((sum, wpm) => sum + wpm, 0) / recentWpms.length;
+  return Math.max(20, Math.round((average + AUTO_PACER_STEP_UP) / 5) * 5);
+};
