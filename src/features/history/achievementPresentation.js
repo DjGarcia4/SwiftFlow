@@ -18,6 +18,8 @@ import {
   HashtagIcon,
   FlagIcon,
   ChevronDoubleUpIcon,
+  AcademicCapIcon,
+  ShieldCheckIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -42,6 +44,8 @@ export const ACHIEVEMENT_ICONS = {
   hashtag: HashtagIcon,
   flag: FlagIcon,
   "level-up": ChevronDoubleUpIcon,
+  "academic-cap": AcademicCapIcon,
+  shield: ShieldCheckIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {
@@ -77,8 +81,11 @@ export const achievementTintStyle = (achievement) => {
 
 // Punchier solid version for the unlock toast, which needs to pop against
 // the page rather than blend into a grid of cards.
+// A toast can bring its own color (a level up wears its rank's) instead of
+// its category's.
 export const achievementSolidStyle = (achievement) => {
-  const [r, g, b] = ACHIEVEMENT_CATEGORY_RGB[achievement.category] ?? FALLBACK_RGB;
+  const [r, g, b] =
+    achievement.rgb ?? ACHIEVEMENT_CATEGORY_RGB[achievement.category] ?? FALLBACK_RGB;
   const darken = (channel) => Math.round(channel * 0.75);
   return {
     backgroundColor: `rgb(${r} ${g} ${b})`,

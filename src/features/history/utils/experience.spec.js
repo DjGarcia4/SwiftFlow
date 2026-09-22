@@ -5,6 +5,10 @@ import {
   levelFromXp,
   levelTitle,
   xpToNextLevel,
+  totalXpForLevel,
+  computeLevelRoadmap,
+  LEVEL_TIERS,
+  MAX_LEVEL,
   SESSION_XP,
   PERFECT_ROUND_XP,
   CHALLENGE_XP,
@@ -45,9 +49,10 @@ describe("computeHistoryXp", () => {
 
 describe("levelFromXp", () => {
   it("starts at level 1", () => {
-    expect(levelFromXp(0)).toEqual({
+    expect(levelFromXp(0)).toMatchObject({
       level: 1,
       title: "Novato",
+      isMax: false,
       xpIntoLevel: 0,
       xpForNextLevel: xpToNextLevel(1),
       fraction: 0,
@@ -68,6 +73,60 @@ describe("levelTitle", () => {
   it("changes name every few levels", () => {
     expect(levelTitle(4)).toBe("Novato");
     expect(levelTitle(5)).toBe("Aprendiz");
-    expect(levelTitle(99)).toBe("Leyenda");
+    expect(levelTitle(49)).toBe("Leyenda");
+    expect(levelTitle(50)).toBe("Dios del teclado");
+  });
+});
+
+describe("the top level", () => {
+  it("stops at level 50 and keeps counting the experience past it", () => {
+    const top = totalXpForLevel(MAX_LEVEL);
+    expect(levelFromXp(top - 1)).toMatchObject({ level: MAX_LEVEL - 1, isMax: false });
+    expect(levelFromXp(top + 500)).toMatchObject({
+      level: MAX_LEVEL,
+      isMax: true,
+      title: "Dios del teclado",
+      xpIntoLevel: 500,
+      xpForNextLevel: null,
+      fraction: 1,
+    });
+  });
+});
+
+describe("LEVEL_TIERS", () => {
+  it("covers every level from 1 to the top, with no gaps", () => {
+    expect(LEVEL_TIERS[0].from).toBe(1);
+    expect(LEVEL_TIERS[LEVEL_TIERS.length - 1].to).toBe(MAX_LEVEL);
+    for (let i = 1; i < LEVEL_TIERS.length; i++) {
+      expect(LEVEL_TIERS[i].from).toBe(LEVEL_TIERS[i - 1].to + 1);
+    }
+  });
+});
+
+describe("computeLevelRoadmap", () => {
+  it("marks the ranks passed, the current one and the ones ahead", () => {
+    // Halfway through Ágil (levels 10-14)
+    const start = totalXpForLevel(10);
+    const xp = start + (totalXpForLevel(15) - start) / 2;
+    const roadmap = computeLevelRoadmap(xp);
+
+    expect(roadmap.map((tier) => tier.state)).toEqual([
+      "done",
+      "done",
+      "current",
+      "locked",
+      "locked",
+      "locked",
+      "locked",
+      "locked",
+    ]);
+    expect(roadmap[2].fraction).toBeCloseTo(0.5);
+    expect(roadmap[2].xpToReach).toBe(start);
+  });
+
+  it("fills the last rank once the top level is reached", () => {
+    const roadmap = computeLevelRoadmap(totalXpForLevel(MAX_LEVEL));
+    expect(roadmap.every((tier) => tier.state !== "locked")).toBe(true);
+    expect(roadmap[roadmap.length - 1]).toMatchObject({ state: "current", fraction: 1 });
   });
 });

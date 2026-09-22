@@ -38,38 +38,91 @@ export const computeHistoryXp = (results, challengeStats) =>
   challengeStats.fullDays * FULL_DAY_XP;
 
 // Each level costs a bit more than the one before: level 2 is a handful of
-// sessions away, level 10 a couple of weeks of steady practice.
+// sessions away, level 10 a couple of weeks of steady practice, and the top
+// one -- some 34,000 XP -- the better part of a year of it.
 const BASE_LEVEL_XP = 100;
 const LEVEL_XP_STEP = 25;
+export const MAX_LEVEL = 50;
 
 export const xpToNextLevel = (level) => BASE_LEVEL_XP + LEVEL_XP_STEP * (level - 1);
 
-const TITLES = [
-  { from: 1, title: "Novato" },
-  { from: 5, title: "Aprendiz" },
-  { from: 10, title: "Ágil" },
-  { from: 15, title: "Veloz" },
-  { from: 20, title: "Experto" },
-  { from: 30, title: "Maestro" },
-  { from: 40, title: "Leyenda" },
+// Total experience it takes to reach a level from nothing
+export const totalXpForLevel = (level) => {
+  let total = 0;
+  for (let n = 1; n < level; n++) total += xpToNextLevel(n);
+  return total;
+};
+
+// The ranks the levels are grouped into, each with its own look. Pure data:
+// `icon` is a string key and `rgb` a color the views turn into styles, the
+// same split the achievements use. The ranks get longer as the levels get
+// more expensive, and the last one is the top level alone.
+export const LEVEL_TIERS = [
+  { from: 1, to: 4, title: "Novato", icon: "sparkles", rgb: [100, 116, 139] },
+  { from: 5, to: 9, title: "Aprendiz", icon: "academic-cap", rgb: [22, 163, 74] },
+  { from: 10, to: 14, title: "Ágil", icon: "bolt", rgb: [8, 145, 178] },
+  { from: 15, to: 19, title: "Veloz", icon: "rocket", rgb: [37, 99, 235] },
+  { from: 20, to: 29, title: "Experto", icon: "shield", rgb: [124, 58, 237] },
+  { from: 30, to: 39, title: "Maestro", icon: "trophy", rgb: [219, 39, 119] },
+  { from: 40, to: 49, title: "Leyenda", icon: "fire", rgb: [234, 88, 12] },
+  {
+    from: MAX_LEVEL,
+    to: MAX_LEVEL,
+    title: "Dios del teclado",
+    icon: "star",
+    rgb: [202, 138, 4],
+  },
 ];
 
-export const levelTitle = (level) =>
-  [...TITLES].reverse().find((tier) => level >= tier.from).title;
+export const levelTier = (level) =>
+  LEVEL_TIERS.find((tier) => level >= tier.from && level <= tier.to) ??
+  LEVEL_TIERS[LEVEL_TIERS.length - 1];
 
+export const levelTitle = (level) => levelTier(level).title;
+
+// Past the top level the experience keeps adding up, it just has nowhere
+// left to go: xpForNextLevel is null and the bar stays full.
 export const levelFromXp = (xp) => {
   let level = 1;
   let remaining = Math.max(0, Math.floor(xp));
-  while (remaining >= xpToNextLevel(level)) {
+  while (level < MAX_LEVEL && remaining >= xpToNextLevel(level)) {
     remaining -= xpToNextLevel(level);
     level++;
   }
-  const needed = xpToNextLevel(level);
+  const tier = levelTier(level);
+  const isMax = level === MAX_LEVEL;
+  const needed = isMax ? null : xpToNextLevel(level);
   return {
     level,
-    title: levelTitle(level),
+    title: tier.title,
+    tier,
+    isMax,
     xpIntoLevel: remaining,
     xpForNextLevel: needed,
-    fraction: remaining / needed,
+    fraction: isMax ? 1 : remaining / needed,
   };
+};
+
+// Every rank with where the given experience stands against it: already
+// passed, the one you're in (and how far through it), or still ahead.
+export const computeLevelRoadmap = (xp) => {
+  const { level } = levelFromXp(xp);
+  return LEVEL_TIERS.map((tier) => {
+    const xpToReach = totalXpForLevel(tier.from);
+    const xpToFinish = tier.to === MAX_LEVEL ? xpToReach : totalXpForLevel(tier.to + 1);
+    const state = level > tier.to ? "done" : level >= tier.from ? "current" : "locked";
+    return {
+      ...tier,
+      xpToReach,
+      state,
+      fraction:
+        state === "done"
+          ? 1
+          : state === "locked"
+            ? 0
+            : xpToFinish === xpToReach
+              ? 1
+              : (xp - xpToReach) / (xpToFinish - xpToReach),
+    };
+  });
 };

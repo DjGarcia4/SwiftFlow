@@ -179,7 +179,8 @@ export const useHistoryStore = defineStore("history", () => {
             {
               id: `level:${level.value.level}`,
               category: "level",
-              icon: "level-up",
+              icon: level.value.tier.icon,
+              rgb: level.value.tier.rgb,
               title: `Nivel ${level.value.level} · ${level.value.title}`,
               kicker: "¡Subiste de nivel!",
             },

@@ -8,7 +8,7 @@
     <div
       class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl font-display text-lg font-extrabold text-white"
       :class="{ 'animate-key-pop': leveledUp }"
-      :style="{ backgroundColor: GOLD }"
+      :style="{ backgroundColor: color }"
     >
       {{ level.level }}
     </div>
@@ -19,16 +19,17 @@
           <span class="font-bold text-pencil-gray">· {{ level.title }}</span>
         </span>
         <span class="text-xs font-bold tabular-nums text-pencil-gray">
-          <span v-if="gained" class="font-extrabold" :style="{ color: GOLD }"
+          <span v-if="gained" class="font-extrabold" :style="{ color }"
             >+{{ gained }} XP ·
           </span>
-          {{ level.xpIntoLevel }}/{{ level.xpForNextLevel }}
+          <template v-if="level.isMax">nivel máximo</template>
+          <template v-else>{{ level.xpIntoLevel }}/{{ level.xpForNextLevel }}</template>
         </span>
       </div>
       <div class="h-2.5 rounded-full bg-faded-gray/40 overflow-hidden">
         <div
           class="h-full rounded-full transition-[width] duration-1000 ease-smooth"
-          :style="{ width: `${shownFraction * 100}%`, backgroundColor: GOLD }"
+          :style="{ width: `${shownFraction * 100}%`, backgroundColor: color }"
         ></div>
       </div>
     </div>
@@ -45,10 +46,10 @@ const props = defineProps({
   gained: { type: Number, default: 0 },
 });
 
-const GOLD = "rgb(202 138 4)";
-
 const historyStore = useHistoryStore();
 const level = computed(() => historyStore.level);
+// Each rank has its own color, and everything about the level wears it
+const color = computed(() => `rgb(${level.value.tier.rgb.join(" ")})`);
 const leveledUp = computed(
   () =>
     props.gained > 0 &&

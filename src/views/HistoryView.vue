@@ -25,6 +25,30 @@
         class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray mb-6 animate-rise"
       >
         <XpProgress />
+
+        <div class="text-center mt-3">
+          <button
+            type="button"
+            class="text-xs font-bold text-primary hover:text-primary-dark"
+            :aria-expanded="showLevels"
+            @click="showLevels = !showLevels"
+          >
+            {{ showLevels ? "Ocultar niveles" : "Ver todos los niveles" }}
+          </button>
+        </div>
+        <Transition
+          enter-active-class="transition-[opacity,translate] duration-300 ease-smooth"
+          enter-from-class="opacity-0 -translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition-opacity duration-150 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <!-- pt makes room for the "Estás acá" tag sticking out the top -->
+          <div v-if="showLevels" class="pt-5">
+            <LevelRoadmap />
+          </div>
+        </Transition>
       </div>
 
       <!-- Which mode the numbers below are about -->
@@ -503,6 +527,7 @@ import TimingBars from "@/features/history/components/TimingBars.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
 import DailyChallengesList from "@/features/history/components/DailyChallengesList.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
+import LevelRoadmap from "@/features/history/components/LevelRoadmap.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {
   buildBackup,
@@ -611,6 +636,8 @@ const extraStats = computed(() => {
 const formatThousands = (value) => value.toLocaleString("es");
 
 const hasCurrent = computed(() => filteredCurrent.value.length > 0);
+
+const showLevels = ref(false);
 
 const filteredPerfectRounds = computed(() =>
   selectedMode.value
