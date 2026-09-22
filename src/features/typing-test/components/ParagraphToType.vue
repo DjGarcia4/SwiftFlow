@@ -218,6 +218,17 @@
             >
             <span class="text-pencil-gray font-bold">×{{ topMissedKey.misses }}</span>
           </div>
+          <!-- The session word by word, colored by how long each one took -->
+          <button
+            v-if="configStore.progressSamples.length"
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-xl border-2 border-primary/40 bg-primary-tint/40 px-3 py-1.5 font-bold text-primary transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-tint active:scale-95 animate-pop-in"
+            :style="staggerStyle(4, { step: 70, base: 400 })"
+            @click="openReplay"
+          >
+            <MagnifyingGlassIcon class="w-4 h-4" />
+            ¿Dónde te frenaste?
+          </button>
         </div>
       </Transition>
 
@@ -721,6 +732,13 @@
         />
       </div>
 
+      <ReplayModal
+        v-if="replay"
+        :open="replayOpen"
+        :replay="replay"
+        @close="closeReplay"
+      />
+
       <ShareResultModal
         :open="shareModalOpen"
         :image-url="shareImageUrl"
@@ -744,6 +762,8 @@ import WpmChart from "./WpmChart.vue";
 import ShareResultModal from "./ShareResultModal.vue";
 import ComboMeter from "./ComboMeter.vue";
 import CoachCard from "./CoachCard.vue";
+import ReplayModal from "./ReplayModal.vue";
+import { computeReplay } from "@/features/typing-test/utils/replay";
 import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import DrillSummary from "@/features/history/components/DrillSummary.vue";
@@ -756,6 +776,7 @@ import {
   TrophyIcon,
   StopIcon,
   SparklesIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/features/typing-test/content/paragraphs";
 import { generateRandomWords } from "@/features/typing-test/content/words";
@@ -888,6 +909,8 @@ const handleEscapeKeydown = (event) => {
 
 // Global keydown listener for space key when completed
 const handleGlobalKeydown = (event) => {
+  // Space belongs to whatever dialog is open, not to "play again"
+  if (replayOpen.value || shareModalOpen.value) return;
   if (event.key === " " && isCompleted.value) {
     event.preventDefault();
     restart();
@@ -1047,6 +1070,24 @@ const isCompleted = computed(() => configStore.isCompleted);
 
 // Per-keystroke results: how many mistakes got fixed, and the key missed
 // most this session.
+
+// "¿Dónde te frenaste?": worked out when asked for, from the session that
+// is still on screen -- its text, what was typed and its timeline
+const replayOpen = ref(false);
+const replay = ref(null);
+
+const openReplay = () => {
+  replay.value = computeReplay({
+    text: configStore.referenceText,
+    input: configStore.userInput,
+    samples: configStore.progressSamples,
+  });
+  replayOpen.value = true;
+};
+
+const closeReplay = () => {
+  replayOpen.value = false;
+};
 
 // How steady this session's pace was; null when too short to say
 const sessionConsistency = computed(() =>
@@ -1621,6 +1662,8 @@ const getCharacterClass = (index) => {
 };
 
 const restart = () => {
+  replayOpen.value = false;
+  replay.value = null;
   justBrokeRecord.value = false;
   perfectRound.value = null;
   xpGained.value = 0;
