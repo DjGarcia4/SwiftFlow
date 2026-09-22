@@ -42,16 +42,21 @@ describe("ToolBar", () => {
     store.handleType("drill");
     const wrapper = mount(ToolBar);
 
-    // Every letter at once would swamp a toolbar that has to stay one line,
-    // so nothing shows until the picker is opened
-    const collapsed = wrapper.findAll("button").length;
-
-    await wrapper
+    // Every letter at once would swamp the bar, so nothing shows until the
+    // picker is opened -- from the sheet's row on a phone...
+    const row = wrapper.find("[data-drill-row]");
+    const collapsed = row.findAll("button").length;
+    await row
       .findAll("button")
       .find((b) => b.text() === "Cambiar")
       .trigger("click");
+    expect(row.findAll("button").length - collapsed).toBe(27);
 
-    expect(wrapper.findAll("button").length - collapsed).toBe(27);
+    // ...and from the chip on a desktop, as a popover
+    const chip = wrapper.find("[data-drill-chip]");
+    expect(chip.findAll("button")).toHaveLength(1);
+    await chip.find("button").trigger("click");
+    expect(chip.findAll("button")).toHaveLength(1 + 27);
   });
 
   it("shows the keys it is aiming at once some are picked", () => {
@@ -60,7 +65,24 @@ describe("ToolBar", () => {
     store.handleDrillKeys(["r", "t"]);
 
     const wrapper = mount(ToolBar);
-    expect(wrapper.text()).toContain("Entrenando:");
-    expect(wrapper.findAll("kbd").map((k) => k.text())).toEqual(["r", "t"]);
+    const row = wrapper.find("[data-drill-row]");
+    expect(row.text()).toContain("Entrenando:");
+    expect(row.findAll("kbd").map((k) => k.text())).toEqual(["r", "t"]);
+    expect(
+      wrapper
+        .find("[data-drill-chip]")
+        .findAll("kbd")
+        .map((k) => k.text())
+    ).toEqual(["r", "t"]);
+  });
+
+  it("keeps the desktop bar to one line: mode, setting and targets side by side", () => {
+    const store = useConfigStore();
+    store.handleType("drill");
+    const wrapper = mount(ToolBar);
+
+    // The mode and its setting are one strip each, not a button per option
+    expect(wrapper.findAll("[role=radiogroup]")).toHaveLength(2);
+    expect(wrapper.find("[role=radio][aria-checked=true]").text()).toBe("Entrenar");
   });
 });

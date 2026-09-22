@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* A screen with room to spare vertically -- most desktops, not most
+   laptops. The typing screen spreads out on these instead of sitting in a
+   tight block in the middle of empty space. */
+@custom-variant tall (@media (min-height: 860px));
+
 @theme {
   /* Breakpoints */
   --breakpoint-xs: 30rem;

@@ -1,534 +1,564 @@
 <template>
+  <!--
+    Phones: a box dead-centered on screen (and re-centered over the visible
+    area when the on-screen keyboard opens, see viewportStyle).
+
+    Desktop: a full-height column with a flexible spacer above and below.
+    The spacers grow equally, which keeps the content exactly centered in
+    the window -- but the top one never gets shorter than the nav plus the
+    settings bar, so when the content is tall (the on-screen keyboard is up)
+    it moves down just enough to clear the bar instead of sliding under it.
+    The results hide the bar, so there the spacer only clears the nav.
+  -->
   <div
-    class="fixed top-1/2 left-1/2 z-0 w-full max-w-4xl lg:max-w-5xl -translate-x-1/2 -translate-y-1/2 px-4 sm:px-6 max-h-[min(85vh,calc(100vh-9rem))] overflow-y-auto"
-    :class="isCompleted ? 'space-y-4' : 'space-y-6'"
+    class="fixed top-1/2 left-1/2 z-0 w-full -translate-x-1/2 -translate-y-1/2 max-h-[min(85vh,calc(100vh-9rem))] overflow-y-auto sm:top-0 sm:right-0 sm:bottom-0 sm:left-0 sm:translate-x-0 sm:translate-y-0 sm:max-h-none sm:flex sm:flex-col"
     :style="viewportStyle"
   >
-    <!-- Author attribution for quote mode -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth"
-      enter-from-class="opacity-0 translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-    >
-      <p
-        v-if="isCompleted && configStore.type === 'quote' && currentQuoteAuthor"
-        class="text-center text-sm sm:text-base font-bold text-pencil-gray"
-      >
-        — {{ currentQuoteAuthor }}
-      </p>
-      <p
-        v-else-if="isCompleted && configStore.type === 'code' && currentCodeLanguage"
-        class="text-center text-sm sm:text-base font-bold text-pencil-gray"
-      >
-        {{ currentCodeLanguage }}
-      </p>
-    </Transition>
-
-    <!-- New-record banner: the "pompous" version of the results screen -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth"
-      enter-from-class="opacity-0 -translate-y-2 scale-95"
-      enter-to-class="opacity-100 translate-y-0 scale-100"
-    >
-      <div v-if="isCompleted && configStore.endedEarly" class="text-center">
-        <div
-          class="inline-flex items-center gap-2 bg-faded-gray/30 text-pencil-gray rounded-xl px-5 py-2.5 text-sm font-bold"
-        >
-          <StopIcon class="w-5 h-5" />
-          Partida terminada antes de tiempo · no cuenta para el historial
-        </div>
-      </div>
-      <div v-else-if="isCompleted && justBrokeRecord" class="text-center">
-        <div
-          class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-danger text-white rounded-xl px-5 py-2.5 text-sm font-extrabold shadow-lg shadow-primary/30 animate-key-pop"
-        >
-          <TrophyIcon class="w-5 h-5 animate-badge-glow" />
-          ¡Nuevo récord personal!
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Perfect round: its own line, since it can land alongside a record -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth delay-150"
-      enter-from-class="opacity-0 -translate-y-2 scale-95"
-      enter-to-class="opacity-100 translate-y-0 scale-100"
-    >
-      <div v-if="isCompleted && perfectRound" class="text-center">
-        <div
-          class="inline-flex items-center gap-2 bg-success-tint text-success-dark border-2 border-success/40 rounded-xl px-5 py-2.5 text-sm font-extrabold animate-key-pop"
-        >
-          <SparklesIcon class="w-5 h-5 animate-badge-glow" />
-          ¡Ronda perfecta!
-          <span class="font-bold opacity-80">
-            {{
-              perfectRound.count === 1
-                ? `La primera en ${perfectRound.label}`
-                : `#${perfectRound.count} en ${perfectRound.label}`
-            }}
-          </span>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Main result cards: rise in one after another, numbers count up -->
     <div
-      v-if="isCompleted"
-      class="grid gap-4 sm:gap-6 text-center grid-cols-2 sm:grid-cols-4"
+      class="hidden sm:block flex-1"
+      :class="isCompleted ? 'min-h-[5.5rem]' : 'min-h-[9.25rem]'"
+      aria-hidden="true"
+    ></div>
+
+    <div
+      class="w-full max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 flex-shrink-0"
+      :class="isCompleted ? 'space-y-4' : 'space-y-6'"
     >
-      <div
-        v-for="(card, index) in resultCards"
-        :key="card.label"
-        class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray animate-rise"
-        :style="staggerStyle(index, { step: 80, base: 80 })"
+      <!-- Author attribution for quote mode -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
       >
-        <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
-          <AnimatedNumber :value="card.value" :decimals="card.decimals" />{{
-            card.suffix
-          }}
-        </div>
-        <div
-          class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+        <p
+          v-if="isCompleted && configStore.type === 'quote' && currentQuoteAuthor"
+          class="text-center text-sm sm:text-base font-bold text-pencil-gray"
         >
-          {{ card.label }}
-        </div>
-      </div>
-    </div>
+          — {{ currentQuoteAuthor }}
+        </p>
+        <p
+          v-else-if="isCompleted && configStore.type === 'code' && currentCodeLanguage"
+          class="text-center text-sm sm:text-base font-bold text-pencil-gray"
+        >
+          {{ currentCodeLanguage }}
+        </p>
+      </Transition>
 
-    <!-- Secondary per-keystroke stats -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth delay-150"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-    >
-      <div
-        v-if="isCompleted && configStore.keystrokes > 0"
-        class="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm"
+      <!-- New-record banner: the "pompous" version of the results screen -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth"
+        enter-from-class="opacity-0 -translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
       >
-        <div
-          class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
-          :style="staggerStyle(0, { step: 70, base: 400 })"
-        >
-          <FireIcon class="w-4 h-4 text-primary" />
-          <span class="font-extrabold text-charcoal">{{ configStore.maxStreak }}</span>
-          <span class="text-pencil-gray font-bold">combo máx.</span>
-        </div>
-        <div
-          class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
-          :style="staggerStyle(1, { step: 70, base: 400 })"
-        >
-          <span class="font-extrabold text-charcoal">{{ configStore.rawWpm }}</span>
-          <span class="text-pencil-gray font-bold">wpm bruto</span>
-        </div>
-        <div
-          class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
-          :style="staggerStyle(2, { step: 70, base: 400 })"
-        >
-          <span class="font-extrabold text-charcoal">{{ correctedErrors }}</span>
-          <span class="text-pencil-gray font-bold">errores corregidos</span>
-        </div>
-        <div
-          v-if="topMissedKey"
-          class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
-          :style="staggerStyle(3, { step: 70, base: 400 })"
-        >
-          <span class="text-pencil-gray font-bold">más fallada:</span>
-          <kbd
-            class="px-2 py-0.5 bg-danger-tint text-danger rounded-md font-mono font-extrabold border-2 border-danger/30"
-            >{{ formatKeyLabel(topMissedKey.key) }}</kbd
-          >
-          <span class="text-pencil-gray font-bold">×{{ topMissedKey.misses }}</span>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- Experience earned and what to practice next, side by side on a
-         wide screen so the results still fit without scrolling -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth delay-150"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-    >
-      <div
-        v-if="isCompleted && (xpGained || resultsCoach)"
-        class="flex flex-col sm:flex-row gap-3 sm:gap-4"
-      >
-        <div
-          v-if="xpGained"
-          class="flex-1 min-w-0 flex items-center bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray"
-        >
-          <XpProgress class="w-full" :gained="xpGained" />
-        </div>
-        <CoachCard
-          v-if="resultsCoach"
-          class="flex-1 min-w-0"
-          :coach="resultsCoach"
-          @train="trainNow"
-        />
-      </div>
-    </Transition>
-
-    <!-- Results chart: WPM over time, with error markers -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth delay-100"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-    >
-      <div
-        v-if="isCompleted && configStore.wpmHistory.length >= 2"
-        class="bg-paper-white rounded-card p-4 sm:px-6 sm:py-4 border-2 border-faded-gray"
-      >
-        <WpmChart :history="configStore.wpmHistory" />
-      </div>
-    </Transition>
-
-    <!-- Completion Message -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth delay-200"
-      enter-from-class="opacity-0 translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-2"
-    >
-      <div v-if="isCompleted" class="text-center">
-        <div
-          class="inline-flex items-center gap-2 bg-success-tint rounded-xl px-5 py-2.5 text-sm text-success-dark font-bold"
-        >
-          Presiona
-          <kbd
-            class="px-2 py-0.5 bg-paper-white text-charcoal rounded-md font-mono text-xs border-2 border-faded-gray"
-            >ESPACIO</kbd
-          >
-          para empezar de nuevo
-        </div>
-      </div>
-    </Transition>
-
-    <div v-if="!isCompleted" class="relative animate-fade-in">
-      <!-- Header row: WPM (left), combo bar stretched across the middle,
-           record/counter (right). Always in normal flow, above the scrolling
-           text, so it can never end up overlapping it once the paragraph
-           scrolls. -->
-      <div class="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
-        <!-- Wide enough for three digits, so the bar doesn't twitch as the
-             wpm changes length -->
-        <div
-          class="flex-shrink-0 min-w-[4.25rem] sm:min-w-[5.5rem] min-h-[1.75rem] sm:min-h-[2.25rem] flex items-center"
-        >
-          <Transition
-            enter-active-class="transition-all duration-200 ease-out"
-            enter-from-class="opacity-0 -translate-y-1"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 -translate-y-1"
-          >
-            <div
-              v-if="configStore.userInput.length > 0 && !isCompleted"
-              class="flex items-baseline gap-1.5"
-            >
-              <span
-                class="font-display text-2xl sm:text-3xl font-extrabold tabular-nums transition-colors duration-200"
-                :class="configStore.isBeatingBest ? 'text-success' : 'text-charcoal'"
-                >{{ configStore.wpm }}</span
-              >
-              <span class="text-xs text-pencil-gray font-bold uppercase">wpm</span>
-            </div>
-            <!-- Before typing starts, show which language this snippet is -->
-            <div
-              v-else-if="configStore.type === 'code' && currentCodeLanguage"
-              class="inline-flex items-center rounded-lg bg-primary-tint px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-primary"
-            >
-              {{ currentCodeLanguage }}
-            </div>
-          </Transition>
-        </div>
-
-        <!-- Live combo: fills toward the next milestone -->
-        <ComboMeter v-if="configStore.userInput.length > 0" class="flex-1 min-w-0" />
-
-        <div
-          v-if="configStore.userInput.length > 0"
-          class="flex flex-shrink-0 items-center gap-2"
-        >
-          <!-- New record badge: a bit more "solid"/celebratory than the
-               streak badge below, since breaking your best is the bigger
-               deal — same success-green family, just filled instead of
-               tinted, so the whole "beating best" language (this badge,
-               the wpm number, the progress bar) stays visually consistent. -->
-          <Transition
-            enter-active-class="transition-all duration-300 ease-out"
-            enter-from-class="opacity-0 scale-75"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-75"
-          >
-            <div
-              v-if="configStore.isBeatingBest"
-              class="inline-flex items-center gap-1 bg-success border-2 border-success-dark rounded-xl px-2.5 py-1.5 shadow-sm shadow-success/40 animate-key-pop"
-            >
-              <TrophyIcon class="w-3.5 h-3.5 text-white animate-badge-glow" />
-              <span class="text-xs font-extrabold text-white">Récord</span>
-            </div>
-          </Transition>
-
+        <div v-if="isCompleted && configStore.endedEarly" class="text-center">
           <div
-            class="inline-flex items-center gap-2 sm:gap-3 bg-paper-white rounded-xl px-4 py-2 sm:px-5 sm:py-2.5 border-2 border-faded-gray min-w-0"
+            class="inline-flex items-center gap-2 bg-faded-gray/30 text-pencil-gray rounded-xl px-5 py-2.5 text-sm font-bold"
           >
-            <!-- Time Counter -->
-            <div v-if="configStore.type === 'time'" class="flex items-center gap-2">
-              <ClockIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-              <div class="flex items-baseline gap-1">
-                <span class="text-base sm:text-lg font-extrabold text-charcoal"
-                  >{{ configStore.timeElapsed }}s</span
-                >
-                <span class="text-xs sm:text-sm text-pencil-gray"
-                  >/ {{ configStore.selectedTime }}s</span
-                >
-              </div>
-            </div>
-
-            <!-- Words Counter -->
-            <div
-              v-if="configStore.type === 'words' || configStore.type === 'numbers'"
-              class="flex items-center gap-2"
-            >
-              <HashtagIcon
-                v-if="configStore.type === 'numbers'"
-                class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0"
-              />
-              <DocumentTextIcon
-                v-else
-                class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0"
-              />
-              <div class="flex items-baseline gap-1">
-                <span class="text-base sm:text-lg font-extrabold text-charcoal">{{
-                  configStore.typedWords
-                }}</span>
-                <span class="text-xs sm:text-sm text-pencil-gray"
-                  >/ {{ configStore.selectedWords }}</span
-                >
-              </div>
-            </div>
-
-            <!-- Zen Counter: no limit, just elapsed time -->
-            <div v-if="configStore.type === 'zen'" class="flex items-center gap-2">
-              <ClockIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-              <span class="text-base sm:text-lg font-extrabold text-charcoal"
-                >{{ configStore.timeElapsed }}s</span
-              >
-            </div>
-
-            <!-- Characters Counter (default) -->
-            <div
-              v-if="
-                configStore.type !== 'time' &&
-                configStore.type !== 'words' &&
-                configStore.type !== 'numbers' &&
-                configStore.type !== 'zen'
-              "
-              class="flex items-center gap-2"
-            >
-              <HashtagIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
-              <div class="flex items-baseline gap-1">
-                <span class="text-base sm:text-lg font-extrabold text-charcoal">{{
-                  configStore.userInput.length
-                }}</span>
-                <span class="text-xs sm:text-sm text-pencil-gray"
-                  >/ {{ referenceText.length }}</span
-                >
-              </div>
-            </div>
+            <StopIcon class="w-5 h-5" />
+            Partida terminada antes de tiempo · no cuenta para el historial
           </div>
         </div>
-      </div>
-
-      <!-- A textarea (not a single-line input) so "code" mode can capture
-           real Enter/newline keystrokes. -->
-      <textarea
-        ref="typingInput"
-        v-model="configStore.userInput"
-        class="absolute inset-0 w-full h-full resize-none opacity-0 cursor-default"
-        :disabled="isCompleted"
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false"
-        @input="handleTyping"
-        @keydown="handleKeydown"
-      ></textarea>
-
-      <!-- Pause Overlay: frosted fade over the text, card springs in -->
-      <Transition
-        enter-active-class="transition-[opacity,backdrop-filter] duration-300 ease-smooth"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition-[opacity,backdrop-filter] duration-200 ease-in"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          v-if="configStore.isPaused"
-          class="absolute inset-0 bg-paper-white/80 backdrop-blur-sm flex items-center justify-center z-10 pointer-events-none"
-        >
-          <div class="text-center animate-pop-in">
-            <PauseIcon class="w-10 h-10 mx-auto text-primary mb-3" />
-            <div class="text-lg font-display font-extrabold text-charcoal mb-1">
-              Pausado
-            </div>
-            <div class="text-sm text-pencil-gray">Escribe para continuar</div>
-            <div class="hidden sm:block mt-2 text-xs text-pencil-gray">
-              <kbd
-                class="px-1.5 py-0.5 bg-paper-white text-charcoal rounded-md font-mono border-2 border-faded-gray"
-                >ESC</kbd
-              >
-              para terminar la partida
-            </div>
+        <div v-else-if="isCompleted && justBrokeRecord" class="text-center">
+          <div
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-danger text-white rounded-xl px-5 py-2.5 text-sm font-extrabold shadow-lg shadow-primary/30 animate-key-pop"
+          >
+            <TrophyIcon class="w-5 h-5 animate-badge-glow" />
+            ¡Nuevo récord personal!
           </div>
         </div>
       </Transition>
 
+      <!-- Perfect round: its own line, since it can land alongside a record -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-150"
+        enter-from-class="opacity-0 -translate-y-2 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+      >
+        <div v-if="isCompleted && perfectRound" class="text-center">
+          <div
+            class="inline-flex items-center gap-2 bg-success-tint text-success-dark border-2 border-success/40 rounded-xl px-5 py-2.5 text-sm font-extrabold animate-key-pop"
+          >
+            <SparklesIcon class="w-5 h-5 animate-badge-glow" />
+            ¡Ronda perfecta!
+            <span class="font-bold opacity-80">
+              {{
+                perfectRound.count === 1
+                  ? `La primera en ${perfectRound.label}`
+                  : `#${perfectRound.count} en ${perfectRound.label}`
+              }}
+            </span>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Main result cards: rise in one after another, numbers count up -->
       <div
-        ref="typingContainer"
-        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container overflow-hidden h-[210px] xs:h-[230px] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)]"
-        :class="configStore.keyboardVisible ? 'sm:h-[230px]' : 'sm:h-[340px]'"
-        @click="focusInput"
+        v-if="isCompleted"
+        class="grid gap-4 sm:gap-6 text-center grid-cols-2 sm:grid-cols-4"
       >
         <div
-          class="absolute -top-3 left-0 h-1 transition-[width,background-color] duration-300 ease-out rounded-full"
-          :class="configStore.isBeatingBest ? 'bg-success' : 'bg-primary'"
-          :style="{ width: `${configStore.progressPercentage}%` }"
-        ></div>
-
-        <div class="relative text-left max-w-4xl lg:max-w-5xl mx-auto px-2 sm:px-0">
+          v-for="(card, index) in resultCards"
+          :key="card.label"
+          class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray animate-rise"
+          :style="staggerStyle(index, { step: 80, base: 80 })"
+        >
+          <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
+            <AnimatedNumber :value="card.value" :decimals="card.decimals" />{{
+              card.suffix
+            }}
+          </div>
           <div
-            ref="textContentEl"
-            :key="`text-${textVersion}`"
-            class="animate-fade-in relative font-mono text-2xl sm:text-3xl leading-[1.9] tracking-wide whitespace-pre-wrap"
+            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
           >
-            <!-- Smooth animated caret -->
-            <div
-              v-show="!isCompleted && !configStore.isPaused"
-              class="absolute w-1 rounded-full bg-primary transition-[top,left,height] duration-100 ease-out pointer-events-none"
-              :class="{ 'animate-caret-idle': configStore.userInput.length === 0 }"
-              :style="{
-                top: `${caretPosition.top}px`,
-                left: `${caretPosition.left}px`,
-                height: `${caretPosition.height}px`,
-              }"
-            ></div>
-
-            <span v-for="(group, groupIndex) in wordGroups" :key="groupIndex">
-              <span
-                v-if="group.type === 'word'"
-                class="inline-block break-words max-w-full"
-              >
-                <span
-                  v-for="c in group.chars"
-                  :key="c.index"
-                  :data-char-index="c.index"
-                  :class="getCharacterClass(c.index)"
-                  >{{ c.char }}</span
-                >
-              </span>
-              <span
-                v-else
-                :data-char-index="group.index"
-                :class="getCharacterClass(group.index)"
-                >{{ group.char }}</span
-              >
-            </span>
+            {{ card.label }}
           </div>
         </div>
       </div>
 
-      <!-- On-screen keyboard (desktop only: a phone already shows one). The
+      <!-- Secondary per-keystroke stats -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-150"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+      >
+        <div
+          v-if="isCompleted && configStore.keystrokes > 0"
+          class="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm"
+        >
+          <div
+            class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
+            :style="staggerStyle(0, { step: 70, base: 400 })"
+          >
+            <FireIcon class="w-4 h-4 text-primary" />
+            <span class="font-extrabold text-charcoal">{{ configStore.maxStreak }}</span>
+            <span class="text-pencil-gray font-bold">combo máx.</span>
+          </div>
+          <div
+            class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
+            :style="staggerStyle(1, { step: 70, base: 400 })"
+          >
+            <span class="font-extrabold text-charcoal">{{ configStore.rawWpm }}</span>
+            <span class="text-pencil-gray font-bold">wpm bruto</span>
+          </div>
+          <div
+            class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
+            :style="staggerStyle(2, { step: 70, base: 400 })"
+          >
+            <span class="font-extrabold text-charcoal">{{ correctedErrors }}</span>
+            <span class="text-pencil-gray font-bold">errores corregidos</span>
+          </div>
+          <div
+            v-if="topMissedKey"
+            class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
+            :style="staggerStyle(3, { step: 70, base: 400 })"
+          >
+            <span class="text-pencil-gray font-bold">más fallada:</span>
+            <kbd
+              class="px-2 py-0.5 bg-danger-tint text-danger rounded-md font-mono font-extrabold border-2 border-danger/30"
+              >{{ formatKeyLabel(topMissedKey.key) }}</kbd
+            >
+            <span class="text-pencil-gray font-bold">×{{ topMissedKey.misses }}</span>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Experience earned and what to practice next, side by side on a
+         wide screen so the results still fit without scrolling -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-150"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+      >
+        <div
+          v-if="isCompleted && (xpGained || resultsCoach)"
+          class="flex flex-col sm:flex-row gap-3 sm:gap-4"
+        >
+          <div
+            v-if="xpGained"
+            class="flex-1 min-w-0 flex items-center bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray"
+          >
+            <XpProgress class="w-full" :gained="xpGained" />
+          </div>
+          <CoachCard
+            v-if="resultsCoach"
+            class="flex-1 min-w-0"
+            :coach="resultsCoach"
+            @train="trainNow"
+          />
+        </div>
+      </Transition>
+
+      <!-- Results chart: WPM over time, with error markers -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-100"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+      >
+        <div
+          v-if="isCompleted && configStore.wpmHistory.length >= 2"
+          class="bg-paper-white rounded-card p-4 sm:px-6 sm:py-4 border-2 border-faded-gray"
+        >
+          <WpmChart :history="configStore.wpmHistory" />
+        </div>
+      </Transition>
+
+      <!-- Completion Message -->
+      <Transition
+        enter-active-class="transition-all duration-700 ease-smooth delay-200"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div v-if="isCompleted" class="text-center">
+          <div
+            class="inline-flex items-center gap-2 bg-success-tint rounded-xl px-5 py-2.5 text-sm text-success-dark font-bold"
+          >
+            Presiona
+            <kbd
+              class="px-2 py-0.5 bg-paper-white text-charcoal rounded-md font-mono text-xs border-2 border-faded-gray"
+              >ESPACIO</kbd
+            >
+            para empezar de nuevo
+          </div>
+        </div>
+      </Transition>
+
+      <div v-if="!isCompleted" class="relative animate-fade-in">
+        <!-- Header row: WPM (left), combo bar stretched across the middle,
+           record/counter (right). Always in normal flow, above the scrolling
+           text, so it can never end up overlapping it once the paragraph
+           scrolls. -->
+        <div class="flex items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <!-- Wide enough for three digits, so the bar doesn't twitch as the
+             wpm changes length -->
+          <div
+            class="flex-shrink-0 min-w-[4.25rem] sm:min-w-[5.5rem] min-h-[1.75rem] sm:min-h-[2.25rem] flex items-center"
+          >
+            <Transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="opacity-0 -translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 -translate-y-1"
+            >
+              <div
+                v-if="configStore.userInput.length > 0 && !isCompleted"
+                class="flex items-baseline gap-1.5"
+              >
+                <span
+                  class="font-display text-2xl sm:text-3xl font-extrabold tabular-nums transition-colors duration-200"
+                  :class="configStore.isBeatingBest ? 'text-success' : 'text-charcoal'"
+                  >{{ configStore.wpm }}</span
+                >
+                <span class="text-xs text-pencil-gray font-bold uppercase">wpm</span>
+              </div>
+              <!-- Before typing starts, show which language this snippet is -->
+              <div
+                v-else-if="configStore.type === 'code' && currentCodeLanguage"
+                class="inline-flex items-center rounded-lg bg-primary-tint px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-primary"
+              >
+                {{ currentCodeLanguage }}
+              </div>
+            </Transition>
+          </div>
+
+          <!-- Live combo: fills toward the next milestone -->
+          <ComboMeter v-if="configStore.userInput.length > 0" class="flex-1 min-w-0" />
+
+          <div
+            v-if="configStore.userInput.length > 0"
+            class="flex flex-shrink-0 items-center gap-2"
+          >
+            <!-- New record badge: a bit more "solid"/celebratory than the
+               streak badge below, since breaking your best is the bigger
+               deal — same success-green family, just filled instead of
+               tinted, so the whole "beating best" language (this badge,
+               the wpm number, the progress bar) stays visually consistent. -->
+            <Transition
+              enter-active-class="transition-all duration-300 ease-out"
+              enter-from-class="opacity-0 scale-75"
+              enter-to-class="opacity-100 scale-100"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 scale-100"
+              leave-to-class="opacity-0 scale-75"
+            >
+              <div
+                v-if="configStore.isBeatingBest"
+                class="inline-flex items-center gap-1 bg-success border-2 border-success-dark rounded-xl px-2.5 py-1.5 shadow-sm shadow-success/40 animate-key-pop"
+              >
+                <TrophyIcon class="w-3.5 h-3.5 text-white animate-badge-glow" />
+                <span class="text-xs font-extrabold text-white">Récord</span>
+              </div>
+            </Transition>
+
+            <div
+              class="inline-flex items-center gap-2 sm:gap-3 bg-paper-white rounded-xl px-4 py-2 sm:px-5 sm:py-2.5 border-2 border-faded-gray min-w-0"
+            >
+              <!-- Time Counter -->
+              <div v-if="configStore.type === 'time'" class="flex items-center gap-2">
+                <ClockIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base sm:text-lg font-extrabold text-charcoal"
+                    >{{ configStore.timeElapsed }}s</span
+                  >
+                  <span class="text-xs sm:text-sm text-pencil-gray"
+                    >/ {{ configStore.selectedTime }}s</span
+                  >
+                </div>
+              </div>
+
+              <!-- Words Counter -->
+              <div
+                v-if="configStore.type === 'words' || configStore.type === 'numbers'"
+                class="flex items-center gap-2"
+              >
+                <HashtagIcon
+                  v-if="configStore.type === 'numbers'"
+                  class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0"
+                />
+                <DocumentTextIcon
+                  v-else
+                  class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0"
+                />
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base sm:text-lg font-extrabold text-charcoal">{{
+                    configStore.typedWords
+                  }}</span>
+                  <span class="text-xs sm:text-sm text-pencil-gray"
+                    >/ {{ configStore.selectedWords }}</span
+                  >
+                </div>
+              </div>
+
+              <!-- Zen Counter: no limit, just elapsed time -->
+              <div v-if="configStore.type === 'zen'" class="flex items-center gap-2">
+                <ClockIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+                <span class="text-base sm:text-lg font-extrabold text-charcoal"
+                  >{{ configStore.timeElapsed }}s</span
+                >
+              </div>
+
+              <!-- Characters Counter (default) -->
+              <div
+                v-if="
+                  configStore.type !== 'time' &&
+                  configStore.type !== 'words' &&
+                  configStore.type !== 'numbers' &&
+                  configStore.type !== 'zen'
+                "
+                class="flex items-center gap-2"
+              >
+                <HashtagIcon class="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base sm:text-lg font-extrabold text-charcoal">{{
+                    configStore.userInput.length
+                  }}</span>
+                  <span class="text-xs sm:text-sm text-pencil-gray"
+                    >/ {{ referenceText.length }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- A textarea (not a single-line input) so "code" mode can capture
+           real Enter/newline keystrokes. -->
+        <textarea
+          ref="typingInput"
+          v-model="configStore.userInput"
+          class="absolute inset-0 w-full h-full resize-none opacity-0 cursor-default"
+          :disabled="isCompleted"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          @input="handleTyping"
+          @keydown="handleKeydown"
+        ></textarea>
+
+        <!-- Pause Overlay: frosted fade over the text, card springs in -->
+        <Transition
+          enter-active-class="transition-[opacity,backdrop-filter] duration-300 ease-smooth"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition-[opacity,backdrop-filter] duration-200 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="configStore.isPaused"
+            class="absolute inset-0 bg-paper-white/80 backdrop-blur-sm flex items-center justify-center z-10 pointer-events-none"
+          >
+            <div class="text-center animate-pop-in">
+              <PauseIcon class="w-10 h-10 mx-auto text-primary mb-3" />
+              <div class="text-lg font-display font-extrabold text-charcoal mb-1">
+                Pausado
+              </div>
+              <div class="text-sm text-pencil-gray">Escribe para continuar</div>
+              <div class="hidden sm:block mt-2 text-xs text-pencil-gray">
+                <kbd
+                  class="px-1.5 py-0.5 bg-paper-white text-charcoal rounded-md font-mono border-2 border-faded-gray"
+                  >ESC</kbd
+                >
+                para terminar la partida
+              </div>
+            </div>
+          </div>
+        </Transition>
+
+        <div
+          ref="typingContainer"
+          class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container overflow-hidden h-[210px] xs:h-[230px] [mask-image:linear-gradient(to_bottom,transparent_0,black_10%,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_10%,black_80%,transparent_100%)]"
+          :class="
+            configStore.keyboardVisible
+              ? 'sm:h-[240px] tall:sm:h-[300px]'
+              : 'sm:h-[340px]'
+          "
+          @click="focusInput"
+        >
+          <div
+            class="absolute -top-3 left-0 h-1 transition-[width,background-color] duration-300 ease-out rounded-full"
+            :class="configStore.isBeatingBest ? 'bg-success' : 'bg-primary'"
+            :style="{ width: `${configStore.progressPercentage}%` }"
+          ></div>
+
+          <div class="relative text-left max-w-4xl lg:max-w-5xl mx-auto px-2 sm:px-0">
+            <div
+              ref="textContentEl"
+              :key="`text-${textVersion}`"
+              class="animate-fade-in relative font-mono text-2xl sm:text-3xl leading-[1.9] tracking-wide whitespace-pre-wrap"
+            >
+              <!-- Smooth animated caret -->
+              <div
+                v-show="!isCompleted && !configStore.isPaused"
+                class="absolute w-1 rounded-full bg-primary transition-[top,left,height] duration-100 ease-out pointer-events-none"
+                :class="{ 'animate-caret-idle': configStore.userInput.length === 0 }"
+                :style="{
+                  top: `${caretPosition.top}px`,
+                  left: `${caretPosition.left}px`,
+                  height: `${caretPosition.height}px`,
+                }"
+              ></div>
+
+              <span v-for="(group, groupIndex) in wordGroups" :key="groupIndex">
+                <span
+                  v-if="group.type === 'word'"
+                  class="inline-block break-words max-w-full"
+                >
+                  <span
+                    v-for="c in group.chars"
+                    :key="c.index"
+                    :data-char-index="c.index"
+                    :class="getCharacterClass(c.index)"
+                    >{{ c.char }}</span
+                  >
+                </span>
+                <span
+                  v-else
+                  :data-char-index="group.index"
+                  :class="getCharacterClass(group.index)"
+                  >{{ group.char }}</span
+                >
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- On-screen keyboard (desktop only: a phone already shows one). The
            text box above gets shorter while it's up, so the whole thing
            still fits on screen. -->
-      <LiveKeyboard v-if="configStore.keyboardVisible" class="hidden sm:flex mt-4" />
-    </div>
-
-    <div
-      class="text-center flex gap-2 sm:gap-3 justify-center transition-[opacity,translate] duration-500 ease-smooth"
-      :class="[
-        isCompleted ? 'mt-4' : 'mt-6 sm:mt-12',
-        isTypingActive
-          ? 'opacity-0 translate-y-3 pointer-events-none select-none duration-300'
-          : 'opacity-100 translate-y-0',
-      ]"
-      :aria-hidden="isTypingActive"
-    >
-      <IconButton
-        icon="restart"
-        variant="secondary"
-        size="lg"
-        tooltip="Reiniciar"
-        @click="restart"
-      />
-
-      <div v-if="!isCompleted" class="hidden sm:block">
-        <IconButton
-          icon="keyboard"
-          :variant="configStore.keyboardVisible ? 'primary' : 'secondary'"
-          size="lg"
-          :tooltip="configStore.keyboardVisible ? 'Ocultar teclado' : 'Mostrar teclado'"
-          @click="toggleKeyboard"
+        <LiveKeyboard
+          v-if="configStore.keyboardVisible"
+          class="hidden sm:flex mt-6 tall:mt-10"
         />
       </div>
 
-      <!-- Pausing only makes sense once there's an actual session going -->
-      <template v-if="configStore.userInput.length > 0">
-        <!-- Show pause button when not paused -->
+      <div
+        class="text-center flex gap-2 sm:gap-3 justify-center transition-[opacity,translate] duration-500 ease-smooth"
+        :class="[
+          isCompleted ? 'mt-4' : 'mt-6 sm:mt-12',
+          isTypingActive
+            ? 'opacity-0 translate-y-3 pointer-events-none select-none duration-300'
+            : 'opacity-100 translate-y-0',
+        ]"
+        :aria-hidden="isTypingActive"
+      >
         <IconButton
-          v-if="!isCompleted && !configStore.isPaused"
-          icon="pause"
-          variant="primary"
+          icon="restart"
+          variant="secondary"
           size="lg"
-          tooltip="Pausar"
-          @click="pause"
+          tooltip="Reiniciar"
+          @click="restart"
         />
 
-        <!-- Show play button when paused -->
+        <div v-if="!isCompleted" class="hidden sm:block">
+          <IconButton
+            icon="keyboard"
+            :variant="configStore.keyboardVisible ? 'primary' : 'secondary'"
+            size="lg"
+            :tooltip="configStore.keyboardVisible ? 'Ocultar teclado' : 'Mostrar teclado'"
+            @click="toggleKeyboard"
+          />
+        </div>
+
+        <!-- Pausing only makes sense once there's an actual session going -->
+        <template v-if="configStore.userInput.length > 0">
+          <!-- Show pause button when not paused -->
+          <IconButton
+            v-if="!isCompleted && !configStore.isPaused"
+            icon="pause"
+            variant="primary"
+            size="lg"
+            tooltip="Pausar"
+            @click="pause"
+          />
+
+          <!-- Show play button when paused -->
+          <IconButton
+            v-if="!isCompleted && configStore.isPaused"
+            icon="play"
+            variant="primary"
+            size="lg"
+            tooltip="Continuar"
+            @click="play"
+          />
+        </template>
+
+        <!-- Zen mode has no limit, so the only way to end it is manually -->
         <IconButton
-          v-if="!isCompleted && configStore.isPaused"
-          icon="play"
+          v-if="configStore.type === 'zen' && !isCompleted"
+          icon="check"
           variant="primary"
           size="lg"
-          tooltip="Continuar"
-          @click="play"
+          tooltip="Terminar"
+          @click="finishZen"
         />
-      </template>
 
-      <!-- Zen mode has no limit, so the only way to end it is manually -->
-      <IconButton
-        v-if="configStore.type === 'zen' && !isCompleted"
-        icon="check"
-        variant="primary"
-        size="lg"
-        tooltip="Terminar"
-        @click="finishZen"
-      />
+        <IconButton
+          v-if="isCompleted"
+          icon="share"
+          variant="primary"
+          size="lg"
+          tooltip="Compartir resultado"
+          @click="handleShare"
+        />
+      </div>
 
-      <IconButton
-        v-if="isCompleted"
-        icon="share"
-        variant="primary"
-        size="lg"
-        tooltip="Compartir resultado"
-        @click="handleShare"
+      <ShareResultModal
+        :open="shareModalOpen"
+        :image-url="shareImageUrl"
+        :can-native-share="canNativeShare"
+        @close="closeShareModal"
+        @download="confirmDownload"
+        @share="confirmNativeShare"
       />
     </div>
 
-    <ShareResultModal
-      :open="shareModalOpen"
-      :image-url="shareImageUrl"
-      :can-native-share="canNativeShare"
-      @close="closeShareModal"
-      @download="confirmDownload"
-      @share="confirmNativeShare"
-    />
+    <div class="hidden sm:block flex-1 min-h-4" aria-hidden="true"></div>
   </div>
 </template>
 

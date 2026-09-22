@@ -4,11 +4,12 @@
     like comes from keyClass/keyStyle, so the history's error heatmap and the
     live keyboard while typing share one drawing.
   -->
-  <div class="flex flex-col items-center gap-1.5">
+  <div class="flex flex-col items-center" :class="compact ? 'gap-1' : 'gap-1.5'">
     <div
       v-for="(row, rowIndex) in rows"
       :key="rowIndex"
-      class="flex gap-1.5"
+      class="flex"
+      :class="compact ? 'gap-1' : 'gap-1.5'"
       :style="{ paddingLeft: `${rowIndent(rowIndex)}rem` }"
     >
       <div
@@ -22,7 +23,13 @@
       </div>
     </div>
     <div
-      :class="[KEY_BASE, sizeClass, 'w-64 font-sans normal-case text-xs', keyClass(' ')]"
+      :class="[
+        KEY_BASE,
+        sizeClass,
+        compact ? 'w-52' : 'w-64',
+        'font-sans normal-case text-xs',
+        keyClass(' '),
+      ]"
       :style="keyStyle(' ', rows.length, 4)"
     >
       espacio
@@ -46,11 +53,13 @@ const props = defineProps({
   keyStyle: { type: Function, default: () => ({}) },
   // Draws the Shift keys and the accent key too
   withModifiers: { type: Boolean, default: false },
+  // Smaller keys, for sitting under the text without competing with it
+  compact: { type: Boolean, default: false },
 });
 
 const KEY_BASE =
-  "group relative flex items-center justify-center rounded-lg border-2 font-mono text-sm font-bold uppercase";
-const sizeClass = "h-9";
+  "group relative flex items-center justify-center rounded-lg border-2 font-mono font-bold uppercase";
+const sizeClass = computed(() => (props.compact ? "h-8 text-xs" : "h-9 text-sm"));
 
 const rows = computed(() => {
   if (!props.withModifiers) return KEYBOARD_ROWS;
@@ -64,9 +73,13 @@ const rows = computed(() => {
 // The staggered look of a real keyboard. With the Shift keys drawn, the
 // left one fills the bottom row's indent instead.
 const rowIndent = (rowIndex) =>
-  props.withModifiers && rowIndex === 3 ? 0 : rowIndex * 0.75;
+  props.withModifiers && rowIndex === 3 ? 0 : rowIndex * (props.compact ? 0.6 : 0.75);
 
-const widthClass = (key) => (key === SHIFT_KEY ? "w-14 font-sans text-xs" : "w-9");
+const widthClass = (key) => {
+  if (key === SHIFT_KEY)
+    return props.compact ? "w-12 font-sans" : "w-14 font-sans text-xs";
+  return props.compact ? "w-8" : "w-9";
+};
 
 const labelOf = (key) => (key === SHIFT_KEY ? "⇧" : key);
 </script>

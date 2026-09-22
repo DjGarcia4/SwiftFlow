@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-paper-white rounded-card p-3 sm:p-4 lg:p-5 border-2 border-faded-gray">
+  <div class="bg-paper-white rounded-card p-3 sm:px-3 sm:py-2 border-2 border-faded-gray">
     <!-- Mobile Layout (stacked) -->
     <div class="flex flex-col gap-3 sm:hidden">
       <!-- Content type selection (code is always typed as-is) -->
@@ -105,117 +105,120 @@
       </template>
     </div>
 
-    <!-- Desktop Layout (horizontal, always a single line — scrolls sideways
-         on narrow windows instead of wrapping to a second row) -->
-    <div
-      class="hidden sm:flex flex-nowrap items-center justify-center gap-1.5 lg:gap-3 overflow-x-auto"
-    >
-      <!-- Type content (code is always typed as-is) -->
-      <template v-if="configStore.type !== 'code'">
-        <div class="flex items-center gap-1.5 flex-shrink-0">
-          <IconButton
-            v-for="type in configStore.contentTypes"
-            :key="type"
-            :value="type"
-            :icon="type === 'punctuation' ? 'punctuation' : 'number'"
-            :variant="configStore.selectedContentTypes === type ? 'primary' : 'secondary'"
-            size="xs"
-            :text="`${type == 'punctuation' ? 'Puntuación' : 'Números'}`"
-            @click="configStore.handleContentTypes(type)"
-          />
-        </div>
+    <!-- Desktop: one line, always. Every setting is one strip, so the bar
+         stays a single row however many modes there are, and the drill's
+         keys open in a popover instead of growing a second row. -->
+    <div class="hidden sm:flex flex-nowrap items-center justify-center gap-2 lg:gap-3">
+      <!-- Content type (code is always typed as-is) -->
+      <button
+        v-if="configStore.type !== 'code'"
+        type="button"
+        :aria-pressed="configStore.selectedContentTypes === 'punctuation'"
+        title="Puntuación y mayúsculas"
+        class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
+        :class="
+          configStore.selectedContentTypes === 'punctuation'
+            ? 'border-primary/50 bg-primary-tint text-primary'
+            : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
+        "
+        @click="configStore.handleContentTypes('punctuation')"
+      >
+        <AtSymbolIcon class="w-4 h-4" />
+        <span class="hidden lg:inline">Puntuación</span>
+      </button>
 
-        <!-- Divisor -->
-        <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
-      </template>
-      <!-- Type selection -->
-      <div class="flex items-center gap-1.5 flex-shrink-0">
-        <IconButton
-          v-for="type in configStore.types"
-          :key="type"
-          :value="type"
-          :icon="typeMeta[type].icon"
-          :variant="configStore.type === type ? 'primary' : 'secondary'"
-          size="xs"
-          :text="typeMeta[type].label"
-          @click="configStore.handleType(type)"
+      <SegmentedControl
+        label="Modo"
+        compact-labels
+        :options="modeOptions"
+        :model-value="configStore.type"
+        @select="configStore.handleType"
+      />
+
+      <!-- The mode's own setting: length, word count or language. Only
+           this part scrolls if a long list (code languages) runs out of
+           room, so the popover beside it is never clipped. -->
+      <div
+        v-if="valueOptions"
+        :key="configStore.type"
+        class="min-w-0 overflow-x-auto animate-rise [animation-duration:400ms]"
+      >
+        <SegmentedControl
+          :label="valueOptions.label"
+          :options="valueOptions.options"
+          :model-value="valueOptions.selected"
+          @select="valueOptions.select"
         />
       </div>
 
-      <!-- Value selection (no limit to pick in zen mode) -->
-      <template
-        v-if="
-          configStore.type === 'time' ||
-          configStore.type === 'words' ||
-          configStore.type === 'numbers' ||
-          configStore.type === 'code' ||
-          configStore.type === 'drill'
-        "
+      <!-- Drill targets: a chip showing them, opening the picker -->
+      <div
+        v-if="configStore.type === 'drill'"
+        ref="drillChipRoot"
+        data-drill-chip
+        class="relative"
       >
-        <!-- Divisor -->
-        <div class="h-4 w-px bg-faded-gray flex-shrink-0"></div>
-
-        <div
-          :key="configStore.type"
-          class="flex items-center gap-1.5 flex-shrink-0 animate-rise [animation-duration:400ms]"
+        <button
+          type="button"
+          class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2 py-1 text-xs font-extrabold transition-[background-color,border-color,color] duration-200"
+          :class="
+            pickerOpen
+              ? 'border-primary bg-primary-tint text-primary'
+              : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
+          "
+          :aria-expanded="pickerOpen"
+          :title="targetKeys.length ? 'Cambiar las teclas a entrenar' : 'Elegir teclas'"
+          @click="pickerOpen = !pickerOpen"
         >
-          <template v-if="configStore.type === 'time'">
-            <IconButton
-              v-for="time in configStore.times"
-              :key="time"
-              :value="time"
-              :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
-              size="xs"
-              :text="`${time}s`"
-              @click="configStore.handleTime(time)"
-            />
+          <ViewfinderCircleIcon class="w-4 h-4" />
+          <template v-if="targetKeys.length">
+            <kbd
+              v-for="key in targetKeys"
+              :key="key"
+              class="rounded-md bg-primary-tint px-1.5 font-mono text-xs font-extrabold uppercase text-primary"
+              >{{ key }}</kbd
+            >
           </template>
-          <template
-            v-if="
-              configStore.type === 'words' ||
-              configStore.type === 'numbers' ||
-              configStore.type === 'drill'
-            "
+          <span v-else>Elegir teclas</span>
+          <ChevronDownIcon
+            class="w-3.5 h-3.5 transition-transform duration-200"
+            :class="{ 'rotate-180': pickerOpen }"
+          />
+        </button>
+
+        <Transition
+          enter-active-class="transition-[opacity,translate] duration-200 ease-out"
+          enter-from-class="opacity-0 -translate-y-1"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition-opacity duration-150 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="pickerOpen"
+            class="absolute right-0 top-full z-40 mt-3 w-max rounded-card border-2 border-faded-gray bg-paper-white p-4 shadow-xl"
           >
-            <IconButton
-              v-for="word in configStore.words"
-              :key="word"
-              :value="word"
-              :variant="configStore.selectedWords === word ? 'primary' : 'secondary'"
-              size="xs"
-              :text="`${word} `"
-              @click="configStore.handleWords(word)"
-            />
-          </template>
-          <template v-if="configStore.type === 'code'">
-            <IconButton
-              :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
-              size="xs"
-              text="Todos"
-              @click="configStore.handleCodeLanguage(null)"
-            />
-            <IconButton
-              v-for="language in configStore.languages"
-              :key="language"
-              :value="language"
-              :variant="
-                configStore.selectedCodeLanguage === language ? 'primary' : 'secondary'
-              "
-              size="xs"
-              :text="language"
-              @click="configStore.handleCodeLanguage(language)"
-            />
-          </template>
-        </div>
-      </template>
+            <p class="mb-3 text-center text-xs font-bold text-pencil-gray">
+              {{
+                configStore.drillKeys.length
+                  ? "Elegí hasta 5 teclas"
+                  : targetKeys.length
+                    ? "Según tu historial. Elegí otras si querés:"
+                    : "Todavía no sé qué te cuesta: elegí teclas"
+              }}
+            </p>
+            <DrillKeysPicker />
+          </div>
+        </Transition>
+      </div>
     </div>
 
-    <!-- The drill's target keys get a row of their own under the mode bar:
-         a whole alphabet has no business inside a single-line toolbar, and
-         most of the time there's nothing to choose anyway. -->
+    <!-- Mobile: the drill's target keys get a row of their own in the sheet,
+         where there's room for it. -->
     <div
       v-if="configStore.type === 'drill'"
-      class="mt-3 pt-3 border-t-2 border-faded-gray flex flex-col items-center gap-2"
+      data-drill-row
+      class="sm:hidden mt-3 pt-3 border-t-2 border-faded-gray flex flex-col items-center gap-2"
     >
       <div class="flex flex-wrap items-center justify-center gap-1.5">
         <span class="text-xs font-bold text-pencil-gray">
@@ -240,34 +243,26 @@
         />
       </div>
 
-      <div v-if="editingKeys" class="flex flex-col items-center gap-1 animate-rise">
-        <div v-for="(row, rowIndex) in DRILL_ROWS" :key="rowIndex" class="flex gap-1">
-          <IconButton
-            v-for="key in row"
-            :key="key"
-            :value="key"
-            :variant="configStore.drillKeys.includes(key) ? 'primary' : 'secondary'"
-            size="xs"
-            :text="key.toUpperCase()"
-            @click="toggleDrillKey(key)"
-          />
-        </div>
-        <button
-          v-if="configStore.drillKeys.length"
-          type="button"
-          class="mt-1 text-xs font-bold text-pencil-gray underline underline-offset-2 transition-colors duration-200 hover:text-primary"
-          @click="configStore.handleDrillKeys([])"
-        >
-          Volver a mis teclas más flojas
-        </button>
-      </div>
+      <DrillKeysPicker v-if="editingKeys" class="animate-rise" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import {
+  AtSymbolIcon,
+  ClockIcon,
+  HashtagIcon,
+  ChatBubbleBottomCenterTextIcon,
+  CodeBracketIcon,
+  SparklesIcon,
+  ViewfinderCircleIcon,
+  ChevronDownIcon,
+} from "@heroicons/vue/24/outline";
 import IconButton from "@/shared/components/IconButton.vue";
+import SegmentedControl from "@/shared/components/SegmentedControl.vue";
+import DrillKeysPicker from "./DrillKeysPicker.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import { useHistoryStore } from "@/features/history/store";
 import { resolveDrillKeys } from "@/features/typing-test/utils/drillTargets";
@@ -275,24 +270,68 @@ import { resolveDrillKeys } from "@/features/typing-test/utils/drillTargets";
 const configStore = useConfigStore();
 const historyStore = useHistoryStore();
 
-// Icon + label for each typing mode
+// Icon + label for each typing mode (the mobile buttons take IconButton's
+// icon names, the desktop strip takes the components themselves)
 const typeMeta = {
-  time: { icon: "clock", label: "Tiempo" },
-  words: { icon: "letter", label: "Palabras" },
-  numbers: { icon: "number", label: "Números" },
-  quote: { icon: "quote", label: "Cita" },
-  code: { icon: "code", label: "Código" },
-  zen: { icon: "zen", label: "Zen" },
-  drill: { icon: "target", label: "Entrenar" },
+  time: { icon: "clock", component: ClockIcon, label: "Tiempo" },
+  words: { icon: "letter", component: "A", label: "Palabras" },
+  numbers: { icon: "number", component: HashtagIcon, label: "Números" },
+  quote: { icon: "quote", component: ChatBubbleBottomCenterTextIcon, label: "Cita" },
+  code: { icon: "code", component: CodeBracketIcon, label: "Código" },
+  zen: { icon: "zen", component: SparklesIcon, label: "Zen" },
+  drill: { icon: "target", component: ViewfinderCircleIcon, label: "Entrenar" },
 };
 
-// Laid out the way the keyboard is, so picking a key is a glance and not a
-// hunt through a 27-letter run-on
-const DRILL_ROWS = ["qwertyuiop", "asdfghjklñ", "zxcvbnm"].map((row) => [...row]);
+const modeOptions = computed(() =>
+  configStore.types.map((type) => ({
+    value: type,
+    label: typeMeta[type].label,
+    icon: typeMeta[type].component,
+  }))
+);
+
+// The one setting that belongs to the current mode, or null for the modes
+// that have none (quote, zen)
+const valueOptions = computed(() => {
+  const type = configStore.type;
+  if (type === "time") {
+    return {
+      label: "Duración",
+      options: configStore.times.map((time) => ({ value: time, label: `${time}s` })),
+      selected: configStore.selectedTime,
+      select: configStore.handleTime,
+    };
+  }
+  if (type === "words" || type === "numbers" || type === "drill") {
+    return {
+      label: "Cantidad",
+      options: configStore.words.map((count) => ({ value: count, label: `${count}` })),
+      selected: configStore.selectedWords,
+      select: configStore.handleWords,
+    };
+  }
+  if (type === "code") {
+    return {
+      label: "Lenguaje",
+      options: [
+        { value: null, label: "Todos" },
+        ...configStore.languages.map((language) => ({
+          value: language,
+          label: language,
+        })),
+      ],
+      selected: configStore.selectedCodeLanguage,
+      select: configStore.handleCodeLanguage,
+    };
+  }
+  return null;
+});
 
 // The picker stays shut until asked for: the default targets are usually
-// the right ones.
+// the right ones. The desktop popover and the mobile sheet's row each keep
+// their own, since they're separate copies of the bar.
 const editingKeys = ref(false);
+const pickerOpen = ref(false);
 
 // What the drill is actually aiming at right now -- hand-picked if there is
 // a pick, otherwise whatever the history says is worth practicing.
@@ -300,14 +339,34 @@ const targetKeys = computed(() =>
   resolveDrillKeys(configStore.drillKeys, historyStore.results)
 );
 
-// An empty list means "work them out from my history" -- the same keys the
-// history panel suggests practicing.
-const toggleDrillKey = (key) => {
-  const current = configStore.drillKeys;
-  configStore.handleDrillKeys(
-    current.includes(key) ? current.filter((k) => k !== key) : [...current, key]
-  );
+// The desktop popover closes on a click outside it, on Esc, and whenever
+// the mode changes away from the drill.
+const drillChipRoot = ref(null);
+const handlePointerDown = (event) => {
+  if (!pickerOpen.value || !drillChipRoot.value) return;
+  if (!drillChipRoot.value.contains(event.target)) pickerOpen.value = false;
 };
+const handleKeydown = (event) => {
+  if (event.key === "Escape") pickerOpen.value = false;
+};
+
+watch(
+  () => configStore.type,
+  () => {
+    editingKeys.value = false;
+    pickerOpen.value = false;
+  }
+);
+
+onMounted(() => {
+  document.addEventListener("pointerdown", handlePointerDown);
+  document.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("pointerdown", handlePointerDown);
+  document.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <style scoped></style>

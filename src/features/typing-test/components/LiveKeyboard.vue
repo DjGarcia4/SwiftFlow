@@ -4,7 +4,7 @@
     key when it needs them), keys tinting red as this session misses them,
     and a mistake flashing both the key that was wanted and the one hit.
   -->
-  <KeyboardLayout with-modifiers :key-class="keyClass" :key-style="keyStyle" />
+  <KeyboardLayout with-modifiers compact :key-class="keyClass" :key-style="keyStyle" />
 </template>
 
 <script setup>
@@ -88,7 +88,8 @@ const keyClass = (key) => {
       ? `${base} border-primary-dark bg-primary text-white scale-105 shadow-md shadow-primary/40`
       : `${base} border-primary bg-primary-tint text-primary`;
   }
-  return `${base} border-faded-gray text-pencil-gray`;
+  // At rest the keys stay in the background; the text is what's being read
+  return `${base} border-faded-gray/50 text-pencil-gray/60`;
 };
 
 const keyStyle = (key) => {
