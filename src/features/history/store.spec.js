@@ -438,4 +438,46 @@ describe("useHistoryStore", () => {
     expect(store.experience).toBe(0);
     expect(store.level.level).toBe(1);
   });
+
+  it("writes down a week the first time it reaches the goal, and pays once", () => {
+    const store = useHistoryStore();
+    store.setWeeklyGoal(30);
+    const session = {
+      mode: "zen",
+      wpm: 40,
+      accuracy: 95,
+      errors: 0,
+      timeElapsed: 20 * 60,
+      keystrokes: 100,
+      errorKeystrokes: 5,
+    };
+
+    store.recordResult(session);
+    expect(store.weeksCompleted).toBe(0);
+
+    const { xpGained } = store.recordResult(session);
+    expect(store.weekProgress.completed).toBe(true);
+    expect(store.weeksCompleted).toBe(1);
+    expect(xpGained).toBeGreaterThanOrEqual(150);
+    expect(store.newlyUnlocked.map((t) => t.kicker)).toContain("¡Meta semanal cumplida!");
+    expect(store.achievements.find((a) => a.id === "week_goal_1").unlocked).toBe(true);
+
+    store.recordResult(session);
+    expect(store.weeksCompleted).toBe(1);
+
+    // The goal and the weeks met survive a reload
+    setActivePinia(createPinia());
+    const reloaded = useHistoryStore();
+    expect(reloaded.weeklyGoal).toBe(30);
+    expect(reloaded.weeklyGoalIsAuto).toBe(false);
+    expect(reloaded.weeksCompleted).toBe(1);
+  });
+
+  it("goes back to the suggested goal on Auto", () => {
+    const store = useHistoryStore();
+    store.setWeeklyGoal(120);
+    store.setWeeklyGoal(null);
+    expect(store.weeklyGoalIsAuto).toBe(true);
+    expect(store.weeklyGoal).toBe(store.suggestedWeeklyGoal);
+  });
 });

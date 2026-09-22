@@ -18,6 +18,8 @@ import {
   INSIGHTS_VERSION,
 } from "@/features/history/utils/historyStats";
 import { computeAchievements } from "@/features/history/achievements";
+import { suggestWeeklyGoal, computeWeekProgress } from "@/features/history/weeklyGoal";
+import { loadWeeklyGoal, saveWeeklyGoal } from "@/features/history/weeklyGoalRepository";
 import {
   buildDailyChallenges,
   computeChallengeStats,
@@ -44,6 +46,7 @@ import {
   levelFromXp,
   CHALLENGE_XP,
   FULL_DAY_XP,
+  WEEKLY_GOAL_XP,
 } from "@/features/history/utils/experience";
 
 export const useHistoryStore = defineStore("history", () => {
@@ -61,7 +64,15 @@ export const useHistoryStore = defineStore("history", () => {
   const averageAccuracy = computed(() => computeAverageAccuracy(currentResults.value));
   const personalBests = computed(() => computePersonalBests(currentResults.value));
   const dailyStreak = computed(() => computeDailyStreak(results.value));
-  const achievements = computed(() => computeAchievements(results.value));
+
+  // Weekly goal: the chosen minutes (null = "Auto") and the weeks met
+  const weeklyGoalState = ref(loadWeeklyGoal());
+
+  const achievements = computed(() =>
+    computeAchievements(results.value, {
+      weeksCompleted: weeklyGoalState.value.completedWeeks.length,
+    })
+  );
   const unlockedAchievementsCount = computed(
     () => achievements.value.filter((a) => a.unlocked).length
   );
@@ -91,6 +102,25 @@ export const useHistoryStore = defineStore("history", () => {
     if (now.toDateString() !== challengeDay.value.toDateString()) {
       challengeDay.value = now;
     }
+  };
+
+  // "Auto" follows your recent weeks; it reads the same day the challenges
+  // do, so both turn over together at midnight.
+  const suggestedWeeklyGoal = computed(() =>
+    suggestWeeklyGoal(results.value, challengeDay.value)
+  );
+  const weeklyGoal = computed(
+    () => weeklyGoalState.value.goal ?? suggestedWeeklyGoal.value
+  );
+  const weeklyGoalIsAuto = computed(() => weeklyGoalState.value.goal === null);
+  const weekProgress = computed(() =>
+    computeWeekProgress(results.value, weeklyGoal.value, challengeDay.value)
+  );
+  const weeksCompleted = computed(() => weeklyGoalState.value.completedWeeks.length);
+
+  const setWeeklyGoal = (minutes) => {
+    weeklyGoalState.value = { ...weeklyGoalState.value, goal: minutes };
+    saveWeeklyGoal(weeklyGoalState.value);
   };
 
   // Running experience total, seeded from the history the first time and
@@ -157,6 +187,30 @@ export const useHistoryStore = defineStore("history", () => {
         title: c.title,
         kicker: "¡Reto cumplido!",
       }));
+    // A week is written down the first time it reaches the goal, and never
+    // again -- more sessions that week don't pay out twice.
+    const week = weekProgress.value;
+    const completedWeek =
+      week.completed && !weeklyGoalState.value.completedWeeks.includes(week.key);
+    if (completedWeek) {
+      weeklyGoalState.value = {
+        ...weeklyGoalState.value,
+        completedWeeks: [...weeklyGoalState.value.completedWeeks, week.key],
+      };
+      saveWeeklyGoal(weeklyGoalState.value);
+    }
+    const weekToasts = completedWeek
+      ? [
+          {
+            id: `week:${week.key}`,
+            category: "time",
+            icon: "calendar",
+            title: `${week.goal} minutos esta semana`,
+            kicker: "¡Meta semanal cumplida!",
+          },
+        ]
+      : [];
+
     const justUnlocked = achievements.value.filter(
       (a) => a.unlocked && !unlockedBefore.has(a.id)
     );
@@ -167,7 +221,8 @@ export const useHistoryStore = defineStore("history", () => {
     const xpGained =
       sessionXp(fullEntry) +
       justCompleted.length * CHALLENGE_XP +
-      (completedFullDay ? FULL_DAY_XP : 0);
+      (completedFullDay ? FULL_DAY_XP : 0) +
+      (completedWeek ? WEEKLY_GOAL_XP : 0);
     experience.value += xpGained;
     saveExperience(experience.value);
 
@@ -187,7 +242,7 @@ export const useHistoryStore = defineStore("history", () => {
           ]
         : [];
 
-    const toasts = [...justCompleted, ...levelUps, ...justUnlocked];
+    const toasts = [...justCompleted, ...weekToasts, ...levelUps, ...justUnlocked];
     if (toasts.length) newlyUnlocked.value = [...newlyUnlocked.value, ...toasts];
 
     return {
@@ -225,6 +280,10 @@ export const useHistoryStore = defineStore("history", () => {
     clearResults();
     clearPerfectRounds();
     clearExperience();
+    // The goal itself is a preference and stays; the weeks met go with the
+    // history they came from.
+    weeklyGoalState.value = { ...weeklyGoalState.value, completedWeeks: [] };
+    saveWeeklyGoal(weeklyGoalState.value);
     results.value = [];
     perfectRounds.value = {};
     experience.value = 0;
@@ -244,6 +303,12 @@ export const useHistoryStore = defineStore("history", () => {
     newlyUnlocked,
     experience,
     level,
+    weeklyGoal,
+    weeklyGoalIsAuto,
+    suggestedWeeklyGoal,
+    weekProgress,
+    weeksCompleted,
+    setWeeklyGoal,
     perfectRoundsList,
     perfectRoundsTotal,
     dailyChallenges,

@@ -379,6 +379,32 @@ export const ACHIEVEMENTS = [
     check: (ctx) => ctx.totalTimeElapsed >= 24 * 60 * 60,
   },
 
+  // Weekly goal — weeks that reached it, whatever the goal was then
+  {
+    id: "week_goal_1",
+    category: "time",
+    icon: "calendar",
+    title: "Semana cumplida",
+    description: "Cumplí tu meta semanal de práctica",
+    check: (ctx) => ctx.weeksCompleted >= 1,
+  },
+  {
+    id: "week_goal_4",
+    category: "time",
+    icon: "calendar",
+    title: "Un mes de metas",
+    description: "Cumplí tu meta semanal 4 veces",
+    check: (ctx) => ctx.weeksCompleted >= 4,
+  },
+  {
+    id: "week_goal_12",
+    category: "time",
+    icon: "calendar",
+    title: "Tres meses de metas",
+    description: "Cumplí tu meta semanal 12 veces",
+    check: (ctx) => ctx.weeksCompleted >= 12,
+  },
+
   // Zen — a single long, uninterrupted session, or just showing up for it
   {
     id: "zen_marathon",
@@ -554,7 +580,9 @@ const maxSessionsPerDay = (results) => {
 
 const hourOf = (isoDate) => new Date(isoDate).getHours();
 
-export const computeAchievements = (results) => {
+// extras: stats kept outside the history (see the weekly goal), which the
+// results alone can't tell.
+export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
   const codeResults = results.filter((r) => r.mode === "code");
   const timeResults = results.filter((r) => r.mode === "time");
   const wordsResults = results.filter((r) => r.mode === "words");
@@ -565,6 +593,7 @@ export const computeAchievements = (results) => {
     sessionsCount: results.length,
     completedChallenges: challengeStats.completed,
     fullChallengeDays: challengeStats.fullDays,
+    weeksCompleted,
     bestWpm: computeBestWpm(results),
     averageAccuracy: computeAverageAccuracy(results),
     bestStreak: computeBestStreak(results),

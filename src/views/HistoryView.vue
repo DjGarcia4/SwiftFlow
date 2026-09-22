@@ -178,6 +178,27 @@
         <DailyChallengesList :challenges="historyStore.dailyChallenges" />
       </div>
 
+      <!-- Weekly goal, with the picker for it -->
+      <div
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:240ms]"
+      >
+        <div class="flex items-baseline justify-between gap-3 mb-3">
+          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+            Meta semanal
+          </div>
+          <div
+            v-if="historyStore.weeksCompleted"
+            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+          >
+            {{ historyStore.weeksCompleted }}
+            {{
+              historyStore.weeksCompleted === 1 ? "semana cumplida" : "semanas cumplidas"
+            }}
+          </div>
+        </div>
+        <WeeklyGoal editable />
+      </div>
+
       <!-- Totals / per-keystroke stats -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div
@@ -527,6 +548,7 @@ import TimingBars from "@/features/history/components/TimingBars.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
 import DailyChallengesList from "@/features/history/components/DailyChallengesList.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
+import WeeklyGoal from "@/features/history/components/WeeklyGoal.vue";
 import LevelRoadmap from "@/features/history/components/LevelRoadmap.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {

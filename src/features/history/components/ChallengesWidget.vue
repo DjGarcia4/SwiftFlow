@@ -38,6 +38,10 @@
         <p v-if="allDone" class="mt-3 text-center text-xs font-bold text-success-dark">
           ¡Día redondo! Mañana hay retos nuevos.
         </p>
+
+        <div class="mt-4 pt-4 border-t-2 border-faded-gray">
+          <WeeklyGoal compact />
+        </div>
       </div>
     </Transition>
 
@@ -64,6 +68,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { FlagIcon } from "@heroicons/vue/24/outline";
 import DailyChallengesList from "./DailyChallengesList.vue";
+import WeeklyGoal from "./WeeklyGoal.vue";
 import { useHistoryStore } from "@/features/history/store";
 import { useConfigStore } from "@/features/typing-test/store";
 import { msUntilNextDay } from "@/features/history/dailyChallenges";

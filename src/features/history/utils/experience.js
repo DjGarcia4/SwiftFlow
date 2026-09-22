@@ -13,6 +13,7 @@ export const PERFECT_ROUND_XP = 25;
 export const CHALLENGE_XP = 30;
 // On top of the three challenges' own XP
 export const FULL_DAY_XP = 100;
+export const WEEKLY_GOAL_XP = 150;
 
 // What a single session earns by itself. Challenges are counted apart,
 // since whether one got completed depends on the rest of the day.
