@@ -1,0 +1,93 @@
+<template>
+  <div>
+    <div class="flex items-center gap-2 mb-1">
+      <ClockIcon class="w-4 h-4 text-primary" />
+      <span class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+        Tu mejor momento
+      </span>
+    </div>
+    <p class="text-sm font-extrabold text-charcoal">{{ headline }}</p>
+    <p v-if="footnote" class="text-xs font-bold text-pencil-gray">{{ footnote }}</p>
+
+    <!-- One column per part of the day: above the line is faster than your
+         usual in those modes, below it slower -->
+    <div class="mt-4 grid grid-cols-4 gap-2">
+      <div v-for="part in data.parts" :key="part.id" class="flex flex-col items-center">
+        <div class="relative h-20 w-full max-w-16">
+          <div class="absolute inset-x-0 top-1/2 h-px bg-faded-gray"></div>
+          <div
+            v-if="part.enough"
+            class="absolute inset-x-2 rounded-md transition-[height] duration-700 ease-smooth"
+            :class="barClass(part)"
+            :style="barStyle(part)"
+          ></div>
+        </div>
+        <div
+          class="mt-1 text-xs font-extrabold tabular-nums"
+          :class="part.enough ? deltaClass(part) : 'text-pencil-gray/50'"
+        >
+          {{ part.enough ? delta(part.relative) : "—" }}
+        </div>
+        <div class="text-[11px] font-bold capitalize text-pencil-gray">
+          {{ part.label }}
+        </div>
+        <div class="text-[10px] font-bold text-pencil-gray/70">
+          {{ part.sessions }} {{ part.sessions === 1 ? "sesión" : "sesiones" }}
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed } from "vue";
+import { ClockIcon } from "@heroicons/vue/24/outline";
+
+const props = defineProps({
+  // computeTimeOfDay, with enoughData
+  data: { type: Object, required: true },
+});
+
+const percent = (relative) => Math.round(Math.abs(relative - 1) * 100);
+const delta = (relative) => {
+  const value = percent(relative);
+  if (!value) return "±0%";
+  return relative > 1 ? `+${value}%` : `−${value}%`;
+};
+
+const headline = computed(() => {
+  const { best } = props.data;
+  return best
+    ? `Escribís un ${percent(best.relative)}% más rápido a la ${best.label}`
+    : "Rendís parejo a cualquier hora";
+});
+
+const footnote = computed(() => {
+  const { best, worst } = props.data;
+  if (!worst || worst === best) return "";
+  return `A la ${worst.label} bajás un ${percent(worst.relative)}% · comparado con tu promedio en cada modo`;
+});
+
+// ±20% fills half the column
+const SCALE = 0.2;
+const barStyle = (part) => {
+  const height = Math.min(50, (Math.abs(part.relative - 1) / SCALE) * 50);
+  return part.relative >= 1
+    ? { bottom: "50%", height: `${Math.max(2, height)}%` }
+    : { top: "50%", height: `${Math.max(2, height)}%` };
+};
+
+const barClass = (part) =>
+  part === props.data.best
+    ? "bg-success"
+    : part === props.data.worst
+      ? "bg-danger/70"
+      : "bg-primary/60";
+
+const deltaClass = (part) =>
+  part === props.data.best
+    ? "text-success"
+    : part === props.data.worst
+      ? "text-danger"
+      : "text-charcoal";
+</script>

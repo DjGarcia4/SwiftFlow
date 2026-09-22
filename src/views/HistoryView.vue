@@ -267,6 +267,14 @@
         <TrendSparkline :values="trendValues" />
       </div>
 
+      <!-- When in the day you type best, once there's enough to say -->
+      <div
+        v-if="timeOfDay.enoughData"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:470ms]"
+      >
+        <TimeOfDayCard :data="timeOfDay" />
+      </div>
+
       <!-- Most-missed keys -->
       <div
         v-if="keyErrorStats.length"
@@ -593,6 +601,8 @@ import DailyChallengesList from "@/features/history/components/DailyChallengesLi
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import WeeklyGoal from "@/features/history/components/WeeklyGoal.vue";
 import WeeklyChallengeCard from "@/features/history/components/WeeklyChallengeCard.vue";
+import TimeOfDayCard from "@/features/history/components/TimeOfDayCard.vue";
+import { computeTimeOfDay } from "@/features/history/utils/timeOfDay";
 import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
 import ReviewToday from "@/features/history/components/ReviewToday.vue";
 import ReviewKeysList from "@/features/history/components/ReviewKeysList.vue";
@@ -714,6 +724,8 @@ const formatThousands = (value) => value.toLocaleString("es");
 const hasCurrent = computed(() => filteredCurrent.value.length > 0);
 
 const showLevels = ref(false);
+
+const timeOfDay = computed(() => computeTimeOfDay(filteredResults.value));
 
 // This week has its own card; the list is for the ones before it
 const pastWeeklyChallenges = computed(() => {
