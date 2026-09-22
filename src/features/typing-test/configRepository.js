@@ -18,6 +18,7 @@ const DEFAULTS = {
   showKeyboard: null, // null = only while drilling
   pacerWpm: null, // null = Auto
   blindMode: false,
+  selectedCustomTextId: null,
 };
 
 export const loadConfig = () => {
@@ -62,4 +63,8 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
       ? config.pacerWpm
       : null,
   blindMode: config.blindMode === true,
+  // Checked against the saved texts where they're loaded; a stale id just
+  // falls back to the first one there
+  selectedCustomTextId:
+    typeof config.selectedCustomTextId === "string" ? config.selectedCustomTextId : null,
 });

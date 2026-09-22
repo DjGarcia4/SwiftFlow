@@ -84,6 +84,8 @@
     <LiveCoach />
 
     <ChallengesWidget />
+
+    <CustomTextEditor v-if="configStore.customEditor" />
   </div>
 </template>
 
@@ -95,6 +97,7 @@ import ToolBar from "@/features/typing-test/components/ToolBar.vue";
 import ComboToast from "@/features/typing-test/components/ComboToast.vue";
 import LiveCoach from "@/features/typing-test/components/LiveCoach.vue";
 import ChallengesWidget from "@/features/history/components/ChallengesWidget.vue";
+import CustomTextEditor from "@/features/typing-test/components/CustomTextEditor.vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 

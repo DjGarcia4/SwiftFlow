@@ -24,6 +24,7 @@ describe("loadConfig", () => {
       showKeyboard: null,
       pacerWpm: null,
       blindMode: false,
+      selectedCustomTextId: null,
     });
   });
 
@@ -44,6 +45,7 @@ describe("loadConfig", () => {
       showKeyboard: null,
       pacerWpm: null,
       blindMode: false,
+      selectedCustomTextId: null,
     });
   });
 });
@@ -60,6 +62,7 @@ describe("sanitizeConfig", () => {
       showKeyboard: true,
       pacerWpm: 60,
       blindMode: true,
+      selectedCustomTextId: "abc",
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });

@@ -3,6 +3,14 @@ import { ref, computed, watch } from "vue";
 import { codeLanguages } from "@/features/typing-test/content/code";
 import { normalizeDrillKeys } from "@/features/typing-test/content/drill";
 import {
+  loadCustomTexts,
+  saveCustomTexts,
+  normalizeCustomText,
+  validateCustomText,
+  MAX_CUSTOM_TEXTS,
+  MAX_CUSTOM_NAME_LENGTH,
+} from "@/features/typing-test/content/customTexts";
+import {
   computeWpm,
   computeRawWpm,
   computeAccuracy,
@@ -40,6 +48,7 @@ export const useConfigStore = defineStore("config", () => {
     "code",
     "zen",
     "drill",
+    "custom",
     "weekly",
   ]);
   const contentTypes = ref(["punctuation"]);
@@ -75,6 +84,18 @@ export const useConfigStore = defineStore("config", () => {
   // "Sin red": nothing on screen gives a mistake away until the results
   const blindMode = ref(savedConfig.blindMode);
 
+  // "Mi texto": your own saved texts, the one picked, and the editor for
+  // them (null when closed, { id } -- null id for a new one -- when open)
+  const customTexts = ref(loadCustomTexts());
+  const selectedCustomTextId = ref(savedConfig.selectedCustomTextId);
+  const selectedCustomText = computed(
+    () =>
+      customTexts.value.find((entry) => entry.id === selectedCustomTextId.value) ??
+      customTexts.value[0] ??
+      null
+  );
+  const customEditor = ref(null);
+
   const persistConfig = () => {
     saveConfig({
       type: type.value,
@@ -86,6 +107,7 @@ export const useConfigStore = defineStore("config", () => {
       showKeyboard: showKeyboard.value,
       pacerWpm: pacerWpm.value,
       blindMode: blindMode.value,
+      selectedCustomTextId: selectedCustomTextId.value,
     });
   };
 
@@ -93,6 +115,57 @@ export const useConfigStore = defineStore("config", () => {
   // once would be noise, not a race. Picking the one that's on turns it off.
   const toggleRaceMode = (mode) => {
     raceMode.value = raceMode.value === mode ? null : mode;
+  };
+
+  const openCustomEditor = (id = null) => {
+    customEditor.value = { id };
+  };
+
+  const closeCustomEditor = () => {
+    customEditor.value = null;
+  };
+
+  const selectCustomText = (id) => {
+    selectedCustomTextId.value = id;
+    persistConfig();
+    resetTypingSession();
+  };
+
+  // Saves a new text (no id) or changes one; returns what's wrong, in words
+  // for the form, or null once it's saved and picked.
+  const saveCustomText = ({ id = null, name, text }) => {
+    const problem = validateCustomText({ name, text });
+    if (problem) return problem;
+    if (!id && customTexts.value.length >= MAX_CUSTOM_TEXTS) {
+      return `Ya tenés ${MAX_CUSTOM_TEXTS} textos: borrá alguno para agregar otro.`;
+    }
+
+    const entry = {
+      id: id ?? crypto.randomUUID(),
+      name: name.trim().slice(0, MAX_CUSTOM_NAME_LENGTH),
+      text: normalizeCustomText(text),
+    };
+    const next = id
+      ? customTexts.value.map((existing) => (existing.id === id ? entry : existing))
+      : [...customTexts.value, entry];
+    if (!saveCustomTexts(next)) {
+      return "No hay espacio para guardarlo en este navegador.";
+    }
+    customTexts.value = next;
+    selectedCustomTextId.value = entry.id;
+    persistConfig();
+    customEditor.value = null;
+    return null;
+  };
+
+  const deleteCustomText = (id) => {
+    const next = customTexts.value.filter((entry) => entry.id !== id);
+    saveCustomTexts(next);
+    customTexts.value = next;
+    if (selectedCustomTextId.value === id)
+      selectedCustomTextId.value = next[0]?.id ?? null;
+    persistConfig();
+    customEditor.value = null;
   };
 
   const toggleBlindMode = () => {
@@ -185,6 +258,8 @@ export const useConfigStore = defineStore("config", () => {
     if (selectedType === "drill" && type.value !== "drill")
       previousType.value = type.value;
     type.value = selectedType;
+    // Nothing to practice yet: go straight to adding a text
+    if (selectedType === "custom" && !customTexts.value.length) openCustomEditor();
     persistConfig();
     resetTypingSession();
   };
@@ -642,6 +717,7 @@ export const useConfigStore = defineStore("config", () => {
       type.value === "code" ||
       type.value === "drill" ||
       type.value === "weekly" ||
+      type.value === "custom" ||
       selectedContentTypes.value === "punctuation"
     ) {
       referenceText.value = text; // Show original when selected
@@ -719,6 +795,14 @@ export const useConfigStore = defineStore("config", () => {
     setPacerWpm,
     blindMode,
     toggleBlindMode,
+    customTexts,
+    selectedCustomText,
+    customEditor,
+    openCustomEditor,
+    closeCustomEditor,
+    selectCustomText,
+    saveCustomText,
+    deleteCustomText,
 
     // Computed properties
     wpm,

@@ -502,7 +502,7 @@
           ref="typingInput"
           v-model="configStore.userInput"
           class="absolute inset-0 w-full h-full resize-none opacity-0 cursor-default"
-          :disabled="isCompleted"
+          :disabled="isCompleted || !referenceText"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
@@ -540,6 +540,28 @@
             </div>
           </div>
         </Transition>
+
+        <!-- "Mi texto" with nothing saved yet: say so, and offer to add one -->
+        <div
+          v-if="configStore.type === 'custom' && !configStore.selectedCustomText"
+          class="absolute inset-0 z-20 flex items-center justify-center"
+        >
+          <div class="text-center animate-pop-in">
+            <PencilSquareIcon class="mx-auto mb-3 h-10 w-10 text-primary" />
+            <div class="mb-1 font-display text-lg font-extrabold text-charcoal">
+              Todavía no tenés textos propios
+            </div>
+            <div class="mb-4 text-sm text-pencil-gray">
+              Pegá algo que escribas seguido y practicalo tal cual.
+            </div>
+            <ButtonCustom
+              text="Agregar un texto"
+              variant="primary"
+              size="sm"
+              @click="configStore.openCustomEditor()"
+            />
+          </div>
+        </div>
 
         <div
           ref="typingContainer"
@@ -791,6 +813,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import IconButton from "@/shared/components/IconButton.vue";
+import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
 import WpmChart from "./WpmChart.vue";
@@ -813,6 +836,7 @@ import {
   SparklesIcon,
   MagnifyingGlassIcon,
   EyeSlashIcon,
+  PencilSquareIcon,
 } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/features/typing-test/content/paragraphs";
 import { generateRandomWords } from "@/features/typing-test/content/words";
@@ -1009,7 +1033,9 @@ const raceKey = computed(() => {
           ? configStore.selectedCodeLanguage
           : type === "weekly"
             ? weeklyKey()
-            : null;
+            : type === "custom"
+              ? (configStore.selectedCustomText?.id ?? null)
+              : null;
   return ghostKey({
     mode: type,
     modeValue,
@@ -1075,6 +1101,12 @@ const refreshReferenceText = () => {
     );
     return;
   }
+  if (configStore.type === "custom") {
+    // Empty until there's a text: the typing area says so and waits
+    configStore.setReferenceText(configStore.selectedCustomText?.text ?? "");
+    return;
+  }
+
   if (configStore.type === "weekly") {
     currentWeeklyKey.value = weeklyKey();
     configStore.setReferenceText(generateWeeklyText(currentWeeklyKey.value));
@@ -1218,8 +1250,17 @@ const currentModeValue = () => {
   }
   if (configStore.type === "code") return currentCodeLanguage.value;
   if (configStore.type === "weekly") return currentWeeklyKey.value;
+  // By name, which is what the history and the personal bests show
+  if (configStore.type === "custom") return configStore.selectedCustomText?.name ?? null;
   return null;
 };
+
+// What a ghost is filed under: the same as currentModeValue, except for
+// your own texts, which go by id -- a renamed text is still the same text
+const ghostModeValue = () =>
+  configStore.type === "custom"
+    ? (configStore.selectedCustomText?.id ?? null)
+    : currentModeValue();
 
 // Watch for completion
 watch(isCompleted, (completed) => {
@@ -1307,7 +1348,7 @@ watch(isCompleted, (completed) => {
       const offered = historyStore.offerGhost({
         key: ghostKey({
           mode: configStore.type,
-          modeValue: currentModeValue(),
+          modeValue: ghostModeValue(),
           punctuation: configStore.selectedContentTypes === "punctuation",
         }),
         mode: configStore.type,
@@ -1596,6 +1637,8 @@ watch(
     configStore.drillKeys,
     configStore.raceMode,
     configStore.pacerWpm,
+    configStore.selectedCustomText?.id,
+    configStore.selectedCustomText?.text,
   ],
   () => {
     refreshReferenceText();
@@ -1618,6 +1661,8 @@ watch(
     configStore.drillKeys,
     configStore.raceMode,
     configStore.pacerWpm,
+    configStore.selectedCustomText?.id,
+    configStore.selectedCustomText?.text,
   ],
   () => {
     if (window.matchMedia?.("(pointer: fine)").matches) {
@@ -1632,7 +1677,7 @@ watch(
 // makes the browser deliver that same keystroke to the textarea, so the
 // character isn't lost (and a focused button doesn't get "clicked" by space).
 const handleTypeAnywhereKeydown = (event) => {
-  if (isCompleted.value || shareModalOpen.value) return;
+  if (isCompleted.value || shareModalOpen.value || configStore.customEditor) return;
   if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) return;
 
   const active = document.activeElement;

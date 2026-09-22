@@ -5,7 +5,15 @@
 
 // Modes a ghost makes sense for: ones with an end to race to, on text of a
 // comparable kind. Zen has no end; the drill's letters change day to day.
-const GHOST_MODES = new Set(["time", "words", "numbers", "quote", "code", "weekly"]);
+const GHOST_MODES = new Set([
+  "time",
+  "words",
+  "numbers",
+  "quote",
+  "code",
+  "weekly",
+  "custom",
+]);
 
 // One ghost per kind of session -- the same split as the personal bests,
 // plus whether punctuation was on, since that changes the text itself.
@@ -15,7 +23,8 @@ export const ghostKey = ({ mode, modeValue, punctuation }) => {
   if (!GHOST_MODES.has(mode)) return null;
   if (mode === "code" && !modeValue) return null;
   // Code and the weekly text are typed as they come, whatever the setting
-  const punct = mode === "code" || mode === "weekly" || punctuation ? "p" : "-";
+  const punct =
+    mode === "code" || mode === "weekly" || mode === "custom" || punctuation ? "p" : "-";
   return `${mode}:${modeValue ?? ""}:${punct}`;
 };
 

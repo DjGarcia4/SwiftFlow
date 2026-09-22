@@ -61,6 +61,7 @@ const MODE_LABELS = {
   // Sessions saved before the drill reported its word count have no value
   drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
   weekly: (value) => (value ? `Semanal · ${weeklyLabel(value)}` : "Semanal"),
+  custom: (value) => (value ? `Mi texto · ${value}` : "Mi texto"),
 };
 
 // The mode on its own, without the value formatModeLabel tacks on --
@@ -74,6 +75,7 @@ const MODE_NAMES = {
   zen: "Zen",
   drill: "Entrenar",
   weekly: "Semanal",
+  custom: "Mi texto",
 };
 
 export const formatModeName = (mode) => MODE_NAMES[mode] ?? mode;

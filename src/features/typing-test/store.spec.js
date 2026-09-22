@@ -614,4 +614,57 @@ describe("useConfigStore", () => {
     setActivePinia(createPinia());
     expect(useConfigStore().blindMode).toBe(true);
   });
+
+  describe("Mi texto", () => {
+    it("opens the editor when there's nothing to practice yet", () => {
+      const store = useConfigStore();
+      store.handleType("custom");
+      expect(store.customEditor).toEqual({ id: null });
+    });
+
+    it("saves a text cleaned up, picks it, and remembers both", () => {
+      const store = useConfigStore();
+      expect(
+        store.saveCustomText({
+          name: " Mail ",
+          text: "Estimado equipo,\r\n\tles escribo  ",
+        })
+      ).toBeNull();
+      expect(store.selectedCustomText).toMatchObject({
+        name: "Mail",
+        text: "Estimado equipo,\n  les escribo",
+      });
+      expect(store.customEditor).toBeNull();
+
+      setActivePinia(createPinia());
+      expect(useConfigStore().selectedCustomText.name).toBe("Mail");
+    });
+
+    it("says what's wrong instead of saving", () => {
+      const store = useConfigStore();
+      expect(store.saveCustomText({ name: "", text: "un texto bastante largo" })).toBe(
+        "Ponele un nombre."
+      );
+      expect(store.customTexts).toEqual([]);
+    });
+
+    it("edits a text in place and deletes it", () => {
+      const store = useConfigStore();
+      store.saveCustomText({ name: "Uno", text: "primer texto de prueba" });
+      store.saveCustomText({ name: "Dos", text: "segundo texto de prueba" });
+      const [first, second] = store.customTexts;
+
+      store.saveCustomText({
+        id: first.id,
+        name: "Uno bis",
+        text: "primer texto cambiado",
+      });
+      expect(store.customTexts.map((t) => t.name)).toEqual(["Uno bis", "Dos"]);
+      expect(store.selectedCustomText.id).toBe(first.id);
+
+      store.deleteCustomText(first.id);
+      expect(store.customTexts.map((t) => t.name)).toEqual(["Dos"]);
+      expect(store.selectedCustomText.id).toBe(second.id);
+    });
+  });
 });
