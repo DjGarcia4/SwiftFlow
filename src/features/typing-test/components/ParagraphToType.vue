@@ -1,6 +1,7 @@
 <template>
   <div
-    class="fixed top-1/2 left-1/2 z-0 w-full max-w-4xl lg:max-w-5xl -translate-x-1/2 -translate-y-1/2 space-y-6 px-4 sm:px-6 max-h-[min(85vh,calc(100vh-9rem))] overflow-y-auto"
+    class="fixed top-1/2 left-1/2 z-0 w-full max-w-4xl lg:max-w-5xl -translate-x-1/2 -translate-y-1/2 px-4 sm:px-6 max-h-[min(85vh,calc(100vh-9rem))] overflow-y-auto"
+    :class="isCompleted ? 'space-y-4' : 'space-y-6'"
     :style="viewportStyle"
   >
     <!-- Author attribution for quote mode -->
@@ -78,7 +79,7 @@
       <div
         v-for="(card, index) in resultCards"
         :key="card.label"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray animate-rise"
+        class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray animate-rise"
         :style="staggerStyle(index, { step: 80, base: 80 })"
       >
         <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
@@ -141,28 +142,29 @@
       </div>
     </Transition>
 
-    <!-- Experience earned, filling the level bar from where it was -->
+    <!-- Experience earned and what to practice next, side by side on a
+         wide screen so the results still fit without scrolling -->
     <Transition
       enter-active-class="transition-all duration-700 ease-smooth delay-150"
       enter-from-class="opacity-0 translate-y-4"
       enter-to-class="opacity-100 translate-y-0"
     >
       <div
-        v-if="isCompleted && xpGained"
-        class="max-w-xl mx-auto bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray"
+        v-if="isCompleted && (xpGained || resultsCoach)"
+        class="flex flex-col sm:flex-row gap-3 sm:gap-4"
       >
-        <XpProgress :gained="xpGained" />
-      </div>
-    </Transition>
-
-    <!-- What to practice after this one, one click away -->
-    <Transition
-      enter-active-class="transition-all duration-700 ease-smooth delay-200"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-    >
-      <div v-if="isCompleted && resultsCoach" class="max-w-xl mx-auto">
-        <CoachCard :coach="resultsCoach" @train="trainNow" />
+        <div
+          v-if="xpGained"
+          class="flex-1 min-w-0 flex items-center bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray"
+        >
+          <XpProgress class="w-full" :gained="xpGained" />
+        </div>
+        <CoachCard
+          v-if="resultsCoach"
+          class="flex-1 min-w-0"
+          :coach="resultsCoach"
+          @train="trainNow"
+        />
       </div>
     </Transition>
 
@@ -174,7 +176,7 @@
     >
       <div
         v-if="isCompleted && configStore.wpmHistory.length >= 2"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray"
+        class="bg-paper-white rounded-card p-4 sm:px-6 sm:py-4 border-2 border-faded-gray"
       >
         <WpmChart :history="configStore.wpmHistory" />
       </div>
@@ -189,7 +191,7 @@
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 translate-y-2"
     >
-      <div v-if="isCompleted" class="text-center mb-6">
+      <div v-if="isCompleted" class="text-center">
         <div
           class="inline-flex items-center gap-2 bg-success-tint rounded-xl px-5 py-2.5 text-sm text-success-dark font-bold"
         >
@@ -443,12 +445,13 @@
     </div>
 
     <div
-      class="mt-6 sm:mt-12 text-center flex gap-2 sm:gap-3 justify-center transition-[opacity,translate] duration-500 ease-smooth"
-      :class="
+      class="text-center flex gap-2 sm:gap-3 justify-center transition-[opacity,translate] duration-500 ease-smooth"
+      :class="[
+        isCompleted ? 'mt-4' : 'mt-6 sm:mt-12',
         isTypingActive
           ? 'opacity-0 translate-y-3 pointer-events-none select-none duration-300'
-          : 'opacity-100 translate-y-0'
-      "
+          : 'opacity-100 translate-y-0',
+      ]"
       :aria-hidden="isTypingActive"
     >
       <IconButton

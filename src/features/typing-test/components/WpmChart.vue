@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div ref="rootRef" class="w-full">
     <div class="flex items-center justify-between mb-2">
       <span class="text-xs font-bold uppercase tracking-wide text-pencil-gray"
         >WPM por segundo</span
@@ -37,7 +37,7 @@
             text-anchor="end"
             dominant-baseline="middle"
             class="fill-pencil-gray"
-            font-size="10"
+            font-size="12"
           >
             {{ tick.value }}
           </text>
@@ -53,7 +53,7 @@
           :y="height - padding.bottom + 16"
           text-anchor="middle"
           class="fill-pencil-gray"
-          font-size="10"
+          font-size="12"
         >
           {{ tick.time }}s
         </text>
@@ -104,7 +104,7 @@
         :y="Math.max(yScale(lastPoint.wpm) - 8, padding.top + 10)"
         text-anchor="end"
         class="fill-charcoal animate-fade-in [animation-delay:1200ms]"
-        font-size="12"
+        font-size="14"
         font-weight="800"
       >
         {{ lastPoint.wpm }}
@@ -129,11 +129,11 @@
           stroke-width="2"
         />
         <g :transform="`translate(${tooltipX}, ${padding.top + 4})`">
-          <rect width="86" height="34" rx="8" fill="var(--color-night-ink)" />
-          <text x="8" y="14" font-size="11" font-weight="800" fill="white">
+          <rect :width="TOOLTIP_WIDTH" height="40" rx="8" fill="var(--color-night-ink)" />
+          <text x="10" y="17" font-size="13" font-weight="800" fill="white">
             {{ hoverPoint.wpm }} wpm
           </text>
-          <text x="8" y="27" font-size="10" fill="var(--color-faded-gray)">
+          <text x="10" y="32" font-size="11" fill="var(--color-faded-gray)">
             seg {{ hoverPoint.time }}
           </text>
         </g>
@@ -143,7 +143,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
   history: {
@@ -152,9 +152,33 @@ const props = defineProps({
   },
 });
 
-const width = 600;
-const height = 200;
-const padding = { top: 12, right: 8, bottom: 24, left: 32 };
+// The drawing is sized to the box it sits in, one unit to a pixel, so it
+// keeps the same height and the same text size at any width -- scaling a
+// fixed drawing up made it tower over the results on a wide screen.
+const FALLBACK_WIDTH = 600;
+const MIN_WIDTH = 280;
+const height = 170;
+const padding = { top: 12, right: 8, bottom: 26, left: 34 };
+const TOOLTIP_WIDTH = 96;
+
+const rootRef = ref(null);
+const width = ref(FALLBACK_WIDTH);
+let resizeObserver = null;
+
+const measure = () => {
+  const measured = rootRef.value?.clientWidth;
+  if (measured) width.value = Math.max(MIN_WIDTH, Math.round(measured));
+};
+
+onMounted(() => {
+  measure();
+  if (typeof ResizeObserver !== "undefined" && rootRef.value) {
+    resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(rootRef.value);
+  }
+});
+
+onUnmounted(() => resizeObserver?.disconnect());
 
 const svgRef = ref(null);
 const hoverIndex = ref(null);
@@ -179,7 +203,7 @@ const maxWpm = computed(() => {
 });
 
 const xScale = (time) =>
-  padding.left + (time / maxTime.value) * (width - padding.left - padding.right);
+  padding.left + (time / maxTime.value) * (width.value - padding.left - padding.right);
 
 const yScale = (wpm) =>
   height -
@@ -238,16 +262,17 @@ const hoverPoint = computed(() =>
 const tooltipX = computed(() => {
   if (hoverPoint.value === null) return 0;
   const x = xScale(hoverPoint.value.time) + 10;
-  return Math.min(x, width - 94);
+  return Math.min(x, width.value - TOOLTIP_WIDTH - 8);
 });
 
 const handleMove = (event) => {
   if (!svgRef.value || !points.value.length) return;
 
   const rect = svgRef.value.getBoundingClientRect();
-  const relativeX = ((event.clientX - rect.left) / rect.width) * width;
+  const relativeX = ((event.clientX - rect.left) / rect.width) * width.value;
   const time =
-    ((relativeX - padding.left) / (width - padding.left - padding.right)) * maxTime.value;
+    ((relativeX - padding.left) / (width.value - padding.left - padding.right)) *
+    maxTime.value;
 
   let closestIndex = 0;
   let closestDistance = Infinity;
