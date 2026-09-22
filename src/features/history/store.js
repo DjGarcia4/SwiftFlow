@@ -172,7 +172,7 @@ export const useHistoryStore = defineStore("history", () => {
   const ghosts = ref(loadGhosts());
   const ghostFor = (key) => (key ? (ghosts.value[key] ?? null) : null);
 
-  // run: { key, mode, modeValue, wpm, accuracy, text, samples, meta }. Kept
+  // run: { key, mode, modeValue, wpm, accuracy, samples }. Kept
   // if it's the first of its kind or faster than the one there; returns
   // whether it was, and the ghost it was measured against.
   const offerGhost = (run) => {

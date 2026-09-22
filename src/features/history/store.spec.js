@@ -551,12 +551,10 @@ describe("useHistoryStore", () => {
       modeValue: 30,
       wpm,
       accuracy: 97,
-      text: "hola mundo",
       samples: [
         [0, 1],
         [400, 4],
       ],
-      meta: {},
     });
 
     it("keeps the first run of a kind and only a faster one after it", () => {

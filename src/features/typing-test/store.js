@@ -593,16 +593,9 @@ export const useConfigStore = defineStore("config", () => {
     clearInactivityTimer();
   };
 
-  // raw: use the text exactly as given, already formatted -- a ghost's
-  // text is replayed as it was raced, whatever the settings would make of it
-  const setReferenceText = (text, { raw = false } = {}) => {
+  const setReferenceText = (text) => {
     // Always store the original text
     originalReferenceText.value = text;
-    if (raw) {
-      referenceText.value = text;
-      resetTypingSession();
-      return;
-    }
 
     // Code is case- and symbol-sensitive — stripping punctuation or
     // lowercasing it would break the syntax, so it always stays as-is.

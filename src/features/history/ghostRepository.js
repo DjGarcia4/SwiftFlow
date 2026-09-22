@@ -1,5 +1,5 @@
-// The best run at each kind of session, kept whole -- its text and its
-// timeline -- so it can be raced. One per kind, replaced only by a faster
+// The best run at each kind of session, kept as its timeline -- how far in
+// it was at each moment -- so its pace can be raced. One per kind, replaced only by a faster
 // run, so this stays a handful of entries.
 const STORAGE_KEY = "swiftflow_ghosts";
 

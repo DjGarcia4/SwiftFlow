@@ -3,7 +3,8 @@ import {
   ghostKey,
   ghostPositionAt,
   ghostFinishMs,
-  buildGhostRun,
+  ghostPositionOnText,
+  ghostFinishOnText,
   ghostLead,
 } from "./ghost";
 
@@ -61,19 +62,29 @@ describe("ghostPositionAt", () => {
   });
 });
 
-describe("buildGhostRun", () => {
-  const text = "a".repeat(500);
+describe("the ghost on a fresh text", () => {
+  // 100 characters in 10 seconds: 10 a second
   const samples = [
     [0, 1],
-    [100, 50],
+    [5000, 50],
+    [10000, 100],
   ];
 
-  it("keeps a timed run's text only as far as it got, plus a margin", () => {
-    expect(buildGhostRun({ mode: "time", text, samples }).text).toHaveLength(150);
+  it("follows its own run while it lasts", () => {
+    expect(ghostPositionOnText(samples, 5000, 300)).toBe(50);
   });
 
-  it("keeps the whole text of a run with a fixed one", () => {
-    expect(buildGhostRun({ mode: "words", text, samples }).text).toHaveLength(500);
+  it("keeps its average pace past the end of its own run", () => {
+    expect(ghostPositionOnText(samples, 12000, 300)).toBe(120);
+  });
+
+  it("stops at the end of a shorter text", () => {
+    expect(ghostPositionOnText(samples, 10000, 80)).toBe(80);
+  });
+
+  it("finishes a text when its run reaches that length, or its pace would", () => {
+    expect(ghostFinishOnText(samples, 50)).toBe(5000);
+    expect(ghostFinishOnText(samples, 150)).toBe(15000);
   });
 });
 

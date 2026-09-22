@@ -35,7 +35,9 @@
 
 <script setup>
 import { computed, watch, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
 import { useHistoryStore } from "@/features/history/store";
+import { useConfigStore } from "@/features/typing-test/store";
 import {
   ACHIEVEMENT_ICONS,
   achievementSolidStyle,
@@ -45,19 +47,42 @@ import { playCelebrationSound } from "@/shared/utils/sound";
 
 const historyStore = useHistoryStore();
 const soundStore = useSoundStore();
-const achievement = computed(() => historyStore.newlyUnlocked[0] ?? null);
+const configStore = useConfigStore();
+const route = useRoute();
+
+// Nothing pops up over the text while you're typing it: a toast earned by
+// the last session waits (queued, not dismissed) until this one is over or
+// on hold, then shows as usual.
+const typing = computed(
+  () =>
+    route.name === "home" &&
+    configStore.userInput.length > 0 &&
+    !configStore.isCompleted &&
+    !configStore.isPaused
+);
+
+const achievement = computed(() =>
+  typing.value ? null : (historyStore.newlyUnlocked[0] ?? null)
+);
 
 const DISPLAY_MS = 4000;
 let dismissTimeout = null;
+let lastCelebrated = null;
 
 watch(
   achievement,
   (current) => {
     clearTimeout(dismissTimeout);
     if (current) {
-      if (soundStore.soundEnabled && soundStore.celebrationSound) {
+      // Once per toast: one held back during typing comes back quietly
+      if (
+        current.id !== lastCelebrated &&
+        soundStore.soundEnabled &&
+        soundStore.celebrationSound
+      ) {
         playCelebrationSound();
       }
+      lastCelebrated = current.id;
       dismissTimeout = setTimeout(() => {
         historyStore.dismissNewlyUnlocked();
       }, DISPLAY_MS);

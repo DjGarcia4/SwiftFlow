@@ -1,16 +1,11 @@
-// The ghost: your best run at a kind of session, replayed. A run is kept as
-// the exact text it was on plus a timeline of how far into it you were at
-// each moment of active typing, so racing it means the same text and a
-// second caret that moves the way you did.
+// The ghost: your best run at a kind of session, replayed as a pace. A run
+// is kept as a timeline of how many characters in you were at each moment
+// of active typing; racing it, on a fresh text each time, a second caret
+// moves through that text the way you moved through yours.
 
-// Modes a ghost makes sense for: a fixed text to race on and an end to
-// race to. Zen has no end; the drill's letters change from day to day.
+// Modes a ghost makes sense for: ones with an end to race to, on text of a
+// comparable kind. Zen has no end; the drill's letters change day to day.
 const GHOST_MODES = new Set(["time", "words", "numbers", "quote", "code"]);
-
-// How much text past the ghost's last position a timed run keeps. Racing
-// it, you get the same text for as far as the ghost went and a little
-// beyond; after that it tops up with fresh text like any timed session.
-const TIMED_TEXT_MARGIN = 100;
 
 // One ghost per kind of session -- the same split as the personal bests,
 // plus whether punctuation was on, since that changes the text itself.
@@ -46,14 +41,32 @@ export const ghostPositionAt = (samples, ms) => {
 export const ghostFinishMs = (samples) =>
   samples.length ? samples[samples.length - 1][0] : 0;
 
-// What gets stored for a run: the text it raced on (a timed run's only as
-// far as it got, plus a margin) and its timeline.
-export const buildGhostRun = ({ mode, text, samples }) => {
-  const reached = samples.reduce((max, [, length]) => Math.max(max, length), 0);
-  return {
-    text: mode === "time" ? text.slice(0, reached + TIMED_TEXT_MARGIN) : text,
-    samples,
-  };
+// Its average speed over the whole run, in characters per millisecond
+const ghostPace = (samples) => {
+  const finish = ghostFinishMs(samples);
+  return finish > 0 ? samples[samples.length - 1][1] / finish : 0;
+};
+
+// Where the ghost is on a text `textLength` long. Its own run may have been
+// shorter: past its last keystroke it keeps going at its average pace, so a
+// longer text doesn't leave it parked halfway. It stops at the end.
+export const ghostPositionOnText = (samples, ms, textLength) => {
+  const finish = ghostFinishMs(samples);
+  const position =
+    ms <= finish
+      ? ghostPositionAt(samples, ms)
+      : samples[samples.length - 1][1] + (ms - finish) * ghostPace(samples);
+  return Math.min(textLength, Math.floor(position));
+};
+
+// When the ghost reaches the end of a text `textLength` long
+export const ghostFinishOnText = (samples, textLength) => {
+  if (!samples.length) return 0;
+  const hit = samples.find(([, length]) => length >= textLength);
+  if (hit) return hit[0];
+  const [lastMs, lastLength] = samples[samples.length - 1];
+  const pace = ghostPace(samples);
+  return pace > 0 ? Math.round(lastMs + (textLength - lastLength) / pace) : lastMs;
 };
 
 // Ahead (positive) or behind (negative) the ghost, in characters

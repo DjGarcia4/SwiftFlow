@@ -687,9 +687,8 @@ import { computeLiveCoach } from "@/features/typing-test/utils/liveCoach";
 import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
 import {
   ghostKey,
-  ghostPositionAt,
-  ghostFinishMs,
-  buildGhostRun,
+  ghostPositionOnText,
+  ghostFinishOnText,
   ghostLead,
 } from "@/features/typing-test/utils/ghost";
 import GhostIcon from "@/shared/components/icons/GhostIcon";
@@ -846,17 +845,8 @@ const raceGhost = ref(null);
 
 const refreshReferenceText = () => {
   textVersion.value++;
-  raceGhost.value = null;
-
-  // Racing: the record's own text, exactly as it was typed
-  if (configStore.ghostMode && availableGhost.value) {
-    const ghost = availableGhost.value;
-    raceGhost.value = ghost;
-    if (ghost.meta?.author) currentQuoteAuthor.value = ghost.meta.author;
-    if (ghost.meta?.language) currentCodeLanguage.value = ghost.meta.language;
-    configStore.setReferenceText(ghost.text, { raw: true });
-    return;
-  }
+  // Racing: a fresh text like any other, with the record's pace on it
+  raceGhost.value = configStore.ghostMode ? availableGhost.value : null;
   if (configStore.type === "words") {
     configStore.setReferenceText(generateRandomWords(configStore.selectedWords));
     return;
@@ -1072,15 +1062,7 @@ watch(isCompleted, (completed) => {
         modeValue: currentModeValue(),
         wpm: configStore.wpm,
         accuracy: configStore.accuracy,
-        ...buildGhostRun({
-          mode: configStore.type,
-          text: configStore.referenceText,
-          samples: configStore.progressSamples.map(([ms, length]) => [ms, length]),
-        }),
-        meta: {
-          author: configStore.type === "quote" ? currentQuoteAuthor.value : null,
-          language: configStore.type === "code" ? currentCodeLanguage.value : null,
-        },
+        samples: configStore.progressSamples.map(([ms, length]) => [ms, length]),
       });
       ghostOutcome.value = describeGhostOutcome(raceGhost.value, offered.saved);
     }
@@ -1172,9 +1154,10 @@ const tickGhost = () => {
   ghostFrame = null;
   if (!raceGhost.value || isCompleted.value || !configStore.startTime) return;
   if (!configStore.isPaused) {
-    const position = ghostPositionAt(
+    const position = ghostPositionOnText(
       raceGhost.value.samples,
-      Date.now() - configStore.startTime
+      Date.now() - configStore.startTime,
+      referenceText.value.length
     );
     if (position !== ghostIndex.value) {
       ghostIndex.value = position;
@@ -1209,7 +1192,7 @@ const ghostTooltip = computed(() => {
   if (!availableGhost.value) return "Todavía no hay récord de este tipo";
   return configStore.ghostMode
     ? "Dejar de correr contra tu récord"
-    : `Correr contra tu récord (${availableGhost.value.wpm} wpm)`;
+    : `Correr contra el ritmo de tu récord (${availableGhost.value.wpm} wpm)`;
 });
 
 const toggleGhost = () => {
@@ -1237,12 +1220,13 @@ const describeGhostOutcome = (ghost, saved) => {
   const wpm = configStore.wpm;
   const won = wpm > ghost.wpm;
   const tie = wpm === ghost.wpm;
-  // Runs with a fixed text can also be compared on the clock: how much
-  // sooner (or later) you reached the end than the ghost did
+  // Runs with a fixed end can also be compared on the clock: how much
+  // sooner (or later) you reached it than the ghost's pace would have
   const diffMs =
     configStore.type === "time"
       ? null
-      : ghostFinishMs(ghost.samples) - configStore.elapsedMs;
+      : ghostFinishOnText(ghost.samples, referenceText.value.length) -
+        configStore.elapsedMs;
   const clock =
     diffMs === null
       ? ""

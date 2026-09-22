@@ -584,7 +584,7 @@ describe("useConfigStore", () => {
       vi.setSystemTime(10_000);
       const store = useConfigStore();
       store.handleType("words");
-      store.setReferenceText("hola mundo", { raw: true });
+      store.setReferenceText("hola mundo");
 
       store.userInput = "h";
       store.handleTyping();
@@ -603,14 +603,6 @@ describe("useConfigStore", () => {
 
       store.resetTypingSession();
       expect(store.progressSamples).toEqual([]);
-    });
-
-    it("takes a ghost's text exactly as it was raced", () => {
-      const store = useConfigStore();
-      store.handleType("words");
-      store.handleContentTypes("punctuation"); // off: normal text gets lowercased
-      store.setReferenceText("Hola, Mundo.", { raw: true });
-      expect(store.referenceText).toBe("Hola, Mundo.");
     });
   });
 });
