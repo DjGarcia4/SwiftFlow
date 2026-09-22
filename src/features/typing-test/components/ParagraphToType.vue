@@ -392,7 +392,8 @@
 
       <div
         ref="typingContainer"
-        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container overflow-hidden h-[210px] xs:h-[230px] sm:h-[340px] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)]"
+        class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container overflow-hidden h-[210px] xs:h-[230px] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)]"
+        :class="configStore.keyboardVisible ? 'sm:h-[230px]' : 'sm:h-[340px]'"
         @click="focusInput"
       >
         <div
@@ -442,6 +443,11 @@
           </div>
         </div>
       </div>
+
+      <!-- On-screen keyboard (desktop only: a phone already shows one). The
+           text box above gets shorter while it's up, so the whole thing
+           still fits on screen. -->
+      <LiveKeyboard v-if="configStore.keyboardVisible" class="hidden sm:flex mt-4" />
     </div>
 
     <div
@@ -461,6 +467,16 @@
         tooltip="Reiniciar"
         @click="restart"
       />
+
+      <div v-if="!isCompleted" class="hidden sm:block">
+        <IconButton
+          icon="keyboard"
+          :variant="configStore.keyboardVisible ? 'primary' : 'secondary'"
+          size="lg"
+          :tooltip="configStore.keyboardVisible ? 'Ocultar teclado' : 'Mostrar teclado'"
+          @click="toggleKeyboard"
+        />
+      </div>
 
       <!-- Pausing only makes sense once there's an actual session going -->
       <template v-if="configStore.userInput.length > 0">
@@ -525,6 +541,7 @@ import WpmChart from "./WpmChart.vue";
 import ShareResultModal from "./ShareResultModal.vue";
 import ComboMeter from "./ComboMeter.vue";
 import CoachCard from "./CoachCard.vue";
+import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import {
   ClockIcon,
@@ -1081,6 +1098,15 @@ const play = () => {
   setTimeout(() => {
     typingInput.value?.focus();
   }, 100);
+};
+
+// The button keeps the focus after a click, so hand it back to the text
+const toggleKeyboard = () => {
+  configStore.toggleKeyboard();
+  nextTick(() => {
+    focusInput();
+    updateCaretPosition();
+  });
 };
 
 const finishZen = () => {

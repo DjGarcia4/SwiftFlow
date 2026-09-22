@@ -21,6 +21,7 @@ describe("loadConfig", () => {
       selectedContentTypes: "punctuation",
       selectedCodeLanguage: null,
       drillKeys: [],
+      showKeyboard: null,
     });
   });
 
@@ -38,6 +39,7 @@ describe("loadConfig", () => {
       selectedContentTypes: "punctuation",
       selectedCodeLanguage: null,
       drillKeys: [],
+      showKeyboard: null,
     });
   });
 });
@@ -51,6 +53,7 @@ describe("sanitizeConfig", () => {
       selectedContentTypes: null,
       selectedCodeLanguage: "Python",
       drillKeys: ["r", "t"],
+      showKeyboard: true,
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });
@@ -103,5 +106,11 @@ describe("sanitizeConfig", () => {
       selectedCodeLanguage: "Cobol",
     };
     expect(sanitizeConfig(config, options).selectedCodeLanguage).toBeNull();
+  });
+
+  it("keeps the keyboard choice only when one was made", () => {
+    expect(sanitizeConfig({ showKeyboard: false }, options).showKeyboard).toBe(false);
+    expect(sanitizeConfig({ showKeyboard: "yes" }, options).showKeyboard).toBeNull();
+    expect(sanitizeConfig({}, options).showKeyboard).toBeNull();
   });
 });

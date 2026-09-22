@@ -15,6 +15,7 @@ const DEFAULTS = {
   selectedContentTypes: "punctuation",
   selectedCodeLanguage: null,
   drillKeys: [],
+  showKeyboard: null, // null = only while drilling
 };
 
 export const loadConfig = () => {
@@ -53,4 +54,5 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
       ? config.selectedCodeLanguage
       : null,
   drillKeys: normalizeDrillKeys(config.drillKeys).slice(0, MAX_DRILL_KEYS),
+  showKeyboard: typeof config.showKeyboard === "boolean" ? config.showKeyboard : null,
 });

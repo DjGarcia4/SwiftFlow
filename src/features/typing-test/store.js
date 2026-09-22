@@ -52,6 +52,11 @@ export const useConfigStore = defineStore("config", () => {
   // Keys the training mode aims at. Empty means "work it out from my
   // history", which is what it does until the list is edited by hand.
   const drillKeys = ref(savedConfig.drillKeys);
+  // The on-screen keyboard: true/false once chosen, null until then, which
+  // shows it only in the drill -- the mode where looking at the keys is the
+  // point.
+  const showKeyboard = ref(savedConfig.showKeyboard);
+  const keyboardVisible = computed(() => showKeyboard.value ?? type.value === "drill");
 
   const persistConfig = () => {
     saveConfig({
@@ -61,7 +66,14 @@ export const useConfigStore = defineStore("config", () => {
       selectedContentTypes: selectedContentTypes.value,
       selectedCodeLanguage: selectedCodeLanguage.value,
       drillKeys: drillKeys.value,
+      showKeyboard: showKeyboard.value,
     });
+  };
+
+  // Doesn't touch the session: it's only about what's drawn on screen.
+  const toggleKeyboard = () => {
+    showKeyboard.value = !keyboardVisible.value;
+    persistConfig();
   };
 
   // Typing state
@@ -608,6 +620,9 @@ export const useConfigStore = defineStore("config", () => {
     selectedContentTypes,
     selectedCodeLanguage,
     drillKeys,
+    showKeyboard,
+    keyboardVisible,
+    toggleKeyboard,
     contentTypes,
     times,
     words,
