@@ -286,9 +286,9 @@ describe("useHistoryStore", () => {
       errorKeystrokes: 0,
     };
 
-    expect(store.recordResult(perfect)).toEqual({ perfect: true, perfectCount: 1 });
-    expect(store.recordResult(perfect)).toEqual({ perfect: true, perfectCount: 2 });
-    expect(store.recordResult({ ...perfect, errorKeystrokes: 1 })).toEqual({
+    expect(store.recordResult(perfect)).toMatchObject({ perfect: true, perfectCount: 1 });
+    expect(store.recordResult(perfect)).toMatchObject({ perfect: true, perfectCount: 2 });
+    expect(store.recordResult({ ...perfect, errorKeystrokes: 1 })).toMatchObject({
       perfect: false,
       perfectCount: 0,
     });
@@ -359,5 +359,83 @@ describe("useHistoryStore", () => {
     const toasts = store.newlyUnlocked.filter((a) => a.category === "challenge");
     expect(toasts.map((t) => t.title)).toContain(challenge.title);
     expect(new Set(toasts.map((t) => t.id)).size).toBe(toasts.length);
+  });
+
+  it("earns experience per session and keeps it across reloads", () => {
+    const store = useHistoryStore();
+    const { xpGained } = store.recordResult({
+      mode: "time",
+      modeValue: 30,
+      wpm: 50,
+      accuracy: 96,
+      errors: 1,
+      timeElapsed: 30,
+      keystrokes: 210,
+      errorKeystrokes: 10,
+    });
+
+    // 10 for the session + 20 for 200 correct keystrokes, plus whatever
+    // challenges it happened to complete
+    expect(xpGained).toBeGreaterThanOrEqual(30);
+    expect(store.experience).toBe(xpGained);
+
+    setActivePinia(createPinia());
+    expect(useHistoryStore().experience).toBe(xpGained);
+  });
+
+  it("announces a level up once, with the level reached", () => {
+    const store = useHistoryStore();
+    let leveledUp = false;
+    for (let i = 0; i < 5 && !leveledUp; i++) {
+      ({ leveledUp } = store.recordResult({
+        mode: "zen",
+        wpm: 50,
+        accuracy: 99,
+        errors: 0,
+        timeElapsed: 120,
+        keystrokes: 600,
+        errorKeystrokes: 3,
+      }));
+    }
+
+    expect(leveledUp).toBe(true);
+    expect(store.level.level).toBeGreaterThanOrEqual(2);
+    const toasts = store.newlyUnlocked.filter((t) => t.category === "level");
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].title).toBe(`Nivel ${store.level.level} · ${store.level.title}`);
+  });
+
+  it("seeds experience from an existing history", () => {
+    localStorage.setItem(
+      "swiftflow_results",
+      JSON.stringify([
+        {
+          id: "a",
+          date: "2020-01-01T12:00:00.000Z",
+          mode: "time",
+          wpm: 50,
+          accuracy: 95,
+          keystrokes: 100,
+          errorKeystrokes: 5,
+        },
+      ])
+    );
+    expect(useHistoryStore().experience).toBeGreaterThan(0);
+  });
+
+  it("clearing the history resets experience", () => {
+    const store = useHistoryStore();
+    store.recordResult({
+      mode: "time",
+      wpm: 50,
+      accuracy: 95,
+      errors: 0,
+      timeElapsed: 15,
+      keystrokes: 100,
+      errorKeystrokes: 5,
+    });
+    store.clearHistory();
+    expect(store.experience).toBe(0);
+    expect(store.level.level).toBe(1);
   });
 });

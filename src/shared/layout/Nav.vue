@@ -15,6 +15,9 @@
       </router-link>
 
       <div class="flex items-center gap-2">
+        <!-- Level, once there's any experience to show -->
+        <LevelBadge v-if="historyStore.experience > 0" />
+
         <!-- Daily streak: a glanceable reminder even outside /historial,
              colored with the same flame ramp as the in-session badge. -->
         <Transition
@@ -80,6 +83,7 @@ import { useHistoryStore } from "@/features/history/store";
 import { getDailyStreakColorRgb } from "@/shared/utils/flameColor";
 import SoundSettingsMenu from "@/shared/components/SoundSettingsMenu.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
+import LevelBadge from "@/features/history/components/LevelBadge.vue";
 
 const themeStore = useThemeStore();
 const historyStore = useHistoryStore();

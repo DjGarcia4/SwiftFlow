@@ -21,6 +21,12 @@
     </div>
 
     <template v-else>
+      <div
+        class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray mb-6 animate-rise"
+      >
+        <XpProgress />
+      </div>
+
       <!-- Which mode the numbers below are about -->
       <div
         v-if="availableModes.length > 1"
@@ -496,6 +502,7 @@ import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
 import DailyChallengesList from "@/features/history/components/DailyChallengesList.vue";
+import XpProgress from "@/features/history/components/XpProgress.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {
   buildBackup,

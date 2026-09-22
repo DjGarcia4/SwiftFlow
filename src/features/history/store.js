@@ -33,6 +33,18 @@ import {
   tallyPerfectRounds,
   mergePerfectTallies,
 } from "@/features/history/utils/perfectRounds";
+import {
+  loadExperience,
+  saveExperience,
+  clearExperience,
+} from "@/features/history/experienceRepository";
+import {
+  sessionXp,
+  computeHistoryXp,
+  levelFromXp,
+  CHALLENGE_XP,
+  FULL_DAY_XP,
+} from "@/features/history/utils/experience";
 
 export const useHistoryStore = defineStore("history", () => {
   const results = ref(getResults());
@@ -81,6 +93,14 @@ export const useHistoryStore = defineStore("history", () => {
     }
   };
 
+  // Running experience total, seeded from the history the first time and
+  // kept on its own after that, like the perfect rounds.
+  const experience = ref(
+    loadExperience() ?? computeHistoryXp(results.value, challengeStats.value)
+  );
+  saveExperience(experience.value);
+  const level = computed(() => levelFromXp(experience.value));
+
   // Queue of achievements to celebrate with a toast — populated by
   // recordResult when a session crosses a new threshold. The toast
   // component shows newlyUnlocked[0] and calls dismissNewlyUnlocked to
@@ -89,9 +109,11 @@ export const useHistoryStore = defineStore("history", () => {
 
   // entry: { mode, wpm, accuracy, errors, timeElapsed, modeValue }
   // Returns what the results screen wants to know about the session it just
-  // saved: whether it was a perfect round, and which one of its kind.
+  // saved: whether it was a perfect round (and which one of its kind), and
+  // the experience it earned.
   const recordResult = (entry) => {
     refreshDay();
+    const levelBefore = level.value.level;
     const unlockedBefore = new Set(
       achievements.value.filter((a) => a.unlocked).map((a) => a.id)
     );
@@ -138,11 +160,41 @@ export const useHistoryStore = defineStore("history", () => {
     const justUnlocked = achievements.value.filter(
       (a) => a.unlocked && !unlockedBefore.has(a.id)
     );
-    if (justCompleted.length || justUnlocked.length) {
-      newlyUnlocked.value = [...newlyUnlocked.value, ...justCompleted, ...justUnlocked];
-    }
 
-    return { perfect: perfectCount > 0, perfectCount };
+    // The day turns "redondo" on the session that finishes its last challenge
+    const completedFullDay =
+      justCompleted.length > 0 && dailyChallenges.value.every((c) => c.completed);
+    const xpGained =
+      sessionXp(fullEntry) +
+      justCompleted.length * CHALLENGE_XP +
+      (completedFullDay ? FULL_DAY_XP : 0);
+    experience.value += xpGained;
+    saveExperience(experience.value);
+
+    // Only the level actually reached gets a toast, even when one session
+    // somehow jumps several.
+    const levelUps =
+      level.value.level > levelBefore
+        ? [
+            {
+              id: `level:${level.value.level}`,
+              category: "level",
+              icon: "level-up",
+              title: `Nivel ${level.value.level} · ${level.value.title}`,
+              kicker: "¡Subiste de nivel!",
+            },
+          ]
+        : [];
+
+    const toasts = [...justCompleted, ...levelUps, ...justUnlocked];
+    if (toasts.length) newlyUnlocked.value = [...newlyUnlocked.value, ...toasts];
+
+    return {
+      perfect: perfectCount > 0,
+      perfectCount,
+      xpGained,
+      leveledUp: levelUps.length > 0,
+    };
   };
 
   const dismissNewlyUnlocked = () => {
@@ -159,14 +211,22 @@ export const useHistoryStore = defineStore("history", () => {
       tallyPerfectRounds(results.value)
     );
     savePerfectRounds(perfectRounds.value);
+    // Whichever knows about more, same reasoning as the perfect rounds
+    experience.value = Math.max(
+      experience.value,
+      computeHistoryXp(results.value, challengeStats.value)
+    );
+    saveExperience(experience.value);
     return { added: results.value.length - before };
   };
 
   const clearHistory = () => {
     clearResults();
     clearPerfectRounds();
+    clearExperience();
     results.value = [];
     perfectRounds.value = {};
+    experience.value = 0;
   };
 
   return {
@@ -181,6 +241,8 @@ export const useHistoryStore = defineStore("history", () => {
     achievements,
     unlockedAchievementsCount,
     newlyUnlocked,
+    experience,
+    level,
     perfectRoundsList,
     perfectRoundsTotal,
     dailyChallenges,

@@ -141,6 +141,20 @@
       </div>
     </Transition>
 
+    <!-- Experience earned, filling the level bar from where it was -->
+    <Transition
+      enter-active-class="transition-all duration-700 ease-smooth delay-150"
+      enter-from-class="opacity-0 translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+    >
+      <div
+        v-if="isCompleted && xpGained"
+        class="max-w-xl mx-auto bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray"
+      >
+        <XpProgress :gained="xpGained" />
+      </div>
+    </Transition>
+
     <!-- What to practice after this one, one click away -->
     <Transition
       enter-active-class="transition-all duration-700 ease-smooth delay-200"
@@ -508,6 +522,7 @@ import WpmChart from "./WpmChart.vue";
 import ShareResultModal from "./ShareResultModal.vue";
 import ComboMeter from "./ComboMeter.vue";
 import CoachCard from "./CoachCard.vue";
+import XpProgress from "@/features/history/components/XpProgress.vue";
 import {
   ClockIcon,
   DocumentTextIcon,
@@ -572,6 +587,8 @@ const justBrokeRecord = ref(false);
 // { count, label } when the session just saved was a perfect round, frozen
 // the same way and for the same reason as justBrokeRecord.
 const perfectRound = ref(null);
+// Experience the session just saved earned; 0 when nothing was saved
+const xpGained = ref(0);
 
 // On mobile, `top-1/2` (and the "vh"-based max-height) is computed against
 // the full layout viewport, which most mobile browsers DON'T shrink when
@@ -796,6 +813,7 @@ watch(isCompleted, (completed) => {
     if (configStore.endedEarly) {
       justBrokeRecord.value = false;
       perfectRound.value = null;
+      xpGained.value = 0;
     } else {
       justBrokeRecord.value = configStore.isBeatingBest;
       if (
@@ -827,6 +845,7 @@ watch(isCompleted, (completed) => {
         keyTiming: copyTiming(configStore.keyTiming),
         bigramTiming: copyTiming(configStore.bigramTiming),
       });
+      xpGained.value = saved.xpGained;
       perfectRound.value = saved.perfect
         ? {
             count: saved.perfectCount,
@@ -1042,6 +1061,7 @@ const getCharacterClass = (index) => {
 const restart = () => {
   justBrokeRecord.value = false;
   perfectRound.value = null;
+  xpGained.value = 0;
   refreshReferenceText();
   nextTick(updateCaretPosition);
   setTimeout(() => {
