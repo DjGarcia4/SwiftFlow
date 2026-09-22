@@ -37,13 +37,15 @@
                 para ver cuánto tardaste.
               </p>
             </div>
-            <IconButton
-              icon="close"
-              variant="secondary"
-              size="xs"
-              tooltip="Cerrar"
+            <!-- No tooltip: this box scrolls, and would clip one above it -->
+            <button
+              type="button"
+              aria-label="Cerrar"
+              class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border-2 border-faded-gray text-pencil-gray transition-[color,background-color,scale] duration-200 ease-spring hover:bg-primary-tint/60 hover:text-primary active:scale-90"
               @click="emit('close')"
-            />
+            >
+              <XMarkIcon class="w-5 h-5" />
+            </button>
           </div>
 
           <!-- Legend -->
@@ -120,7 +122,7 @@
 
 <script setup>
 import { onMounted, onUnmounted } from "vue";
-import IconButton from "@/shared/components/IconButton.vue";
+import { XMarkIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
