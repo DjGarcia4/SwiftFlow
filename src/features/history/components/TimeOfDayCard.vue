@@ -16,7 +16,7 @@
         <div class="relative h-20 w-full max-w-16">
           <div class="absolute inset-x-0 top-1/2 h-px bg-faded-gray"></div>
           <div
-            v-if="part.enough"
+            v-if="part.enough && data.enoughData"
             class="absolute inset-x-2 rounded-md transition-[height] duration-700 ease-smooth"
             :class="barClass(part)"
             :style="barStyle(part)"
@@ -24,9 +24,12 @@
         </div>
         <div
           class="mt-1 text-xs font-extrabold tabular-nums"
-          :class="part.enough ? deltaClass(part) : 'text-pencil-gray/50'"
+          :class="
+            part.enough && data.enoughData ? deltaClass(part) : 'text-pencil-gray/50'
+          "
         >
-          {{ part.enough ? delta(part.relative) : "—" }}
+          <!-- A lone part can only be compared with itself -->
+          {{ part.enough && data.enoughData ? delta(part.relative) : "—" }}
         </div>
         <div class="text-[11px] font-bold capitalize text-pencil-gray">
           {{ part.label }}
@@ -42,11 +45,15 @@
 <script setup>
 import { computed } from "vue";
 import { ClockIcon } from "@heroicons/vue/24/outline";
+import { MIN_PART_SESSIONS } from "@/features/history/utils/timeOfDay";
 
 const props = defineProps({
-  // computeTimeOfDay, with enoughData
+  // computeTimeOfDay
   data: { type: Object, required: true },
 });
+
+// Enough in one part of the day, or none yet: which is still missing
+const played = computed(() => props.data.parts.filter((part) => part.enough));
 
 const percent = (relative) => Math.round(Math.abs(relative - 1) * 100);
 const delta = (relative) => {
@@ -56,14 +63,22 @@ const delta = (relative) => {
 };
 
 const headline = computed(() => {
-  const { best } = props.data;
+  const { best, enoughData } = props.data;
+  if (!enoughData) return "Todavía no sé a qué hora rendís más";
   return best
     ? `Escribís un ${percent(best.relative)}% más rápido a la ${best.label}`
     : "Rendís parejo a cualquier hora";
 });
 
 const footnote = computed(() => {
-  const { best, worst } = props.data;
+  const { best, worst, enoughData } = props.data;
+  if (!enoughData) {
+    // Say what there is and what's missing, in whole sessions
+    const [only] = played.value;
+    return only
+      ? `Ya tenés ${only.sessions} a la ${only.label}: jugá ${MIN_PART_SESSIONS} en otro momento del día para comparar.`
+      : `Necesito ${MIN_PART_SESSIONS} sesiones en al menos dos momentos del día para comparar.`;
+  }
   if (!worst || worst === best) return "";
   return `A la ${worst.label} bajás un ${percent(worst.relative)}% · comparado con tu promedio en cada modo`;
 });

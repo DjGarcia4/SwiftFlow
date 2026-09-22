@@ -267,9 +267,10 @@
         <TrendSparkline :values="trendValues" />
       </div>
 
-      <!-- When in the day you type best, once there's enough to say -->
+      <!-- When in the day you type best -- and until there's enough to
+           say, what's still missing, so the card isn't a secret -->
       <div
-        v-if="timeOfDay.enoughData"
+        v-if="timeOfDay.parts.some((part) => part.sessions > 0)"
         class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:470ms]"
       >
         <TimeOfDayCard :data="timeOfDay" />
