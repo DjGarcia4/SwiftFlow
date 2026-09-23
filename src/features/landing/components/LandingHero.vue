@@ -16,7 +16,32 @@
       class="mx-auto grid max-w-6xl items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:gap-16"
     >
       <div class="text-center lg:text-left">
+        <!-- Someone who's played: where they're at, instead of the pitch -->
+        <div
+          v-if="returning"
+          v-reveal
+          class="mb-6 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border-2 border-primary/30 bg-primary-tint/40 px-4 py-2.5 text-sm font-bold text-charcoal lg:justify-start"
+        >
+          <span class="font-extrabold text-primary">¡Hola de nuevo!</span>
+          <span>{{ historyStore.sessionsCount }} sesiones</span>
+          <span v-if="historyStore.dailyStreak" class="inline-flex items-center gap-1">
+            <FireIcon class="h-4 w-4 text-primary" />
+            racha de {{ historyStore.dailyStreak }}
+            {{ historyStore.dailyStreak === 1 ? "día" : "días" }}
+          </span>
+          <span
+            >nivel {{ historyStore.level.level }} · {{ historyStore.level.title }}</span
+          >
+          <span v-if="weakKey">
+            tu tecla a mejorar:
+            <kbd
+              class="rounded-md border-2 border-danger/30 bg-danger-tint px-1.5 font-mono font-extrabold uppercase text-danger"
+              >{{ weakKey }}</kbd
+            >
+          </span>
+        </div>
         <p
+          v-else
           v-reveal
           class="mb-5 inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary-tint/50 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary"
         >
@@ -45,9 +70,19 @@
             to="/"
             class="inline-flex items-center gap-2 rounded-xl border-b-4 border-primary-dark bg-primary px-6 py-3 font-extrabold text-white transition-[scale,background-color] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
           >
-            Empezar a escribir
+            {{ returning ? "Seguir practicando" : "Empezar a escribir" }}
             <ArrowRightIcon class="h-5 w-5" />
           </router-link>
+          <!-- Only where the browser offers it, and not once installed -->
+          <button
+            v-if="installPrompt && !isInstalled"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-xl border-2 border-primary/50 px-6 py-3 font-extrabold text-primary transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-tint active:scale-95"
+            @click="promptInstall"
+          >
+            <ArrowDownTrayIcon class="h-5 w-5" />
+            Instalar app
+          </button>
           <a
             href="#que-tiene"
             class="inline-flex items-center gap-2 rounded-xl border-2 border-faded-gray px-6 py-3 font-extrabold text-charcoal transition-[border-color,scale] duration-200 ease-spring hover:border-primary/50 active:scale-95"
@@ -101,7 +136,17 @@
 </template>
 
 <script setup>
-import { BoltIcon, ArrowRightIcon, ArrowDownIcon } from "@heroicons/vue/24/outline";
+import { computed } from "vue";
+import {
+  BoltIcon,
+  ArrowRightIcon,
+  ArrowDownIcon,
+  ArrowDownTrayIcon,
+} from "@heroicons/vue/24/outline";
+import { FireIcon } from "@heroicons/vue/24/solid";
+import { useHistoryStore } from "@/features/history/store";
+import { suggestedDrillKeys } from "@/features/typing-test/utils/drillTargets";
+import { installPrompt, isInstalled, promptInstall } from "@/shared/utils/pwaInstall";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
 import { useConfigStore } from "@/features/typing-test/store";
@@ -117,6 +162,11 @@ defineProps({
 });
 
 const emit = defineEmits(["explore"]);
+
+const historyStore = useHistoryStore();
+const returning = computed(() => historyStore.sessionsCount > 0);
+// The letter the history most wants practiced, once there's enough to say
+const weakKey = computed(() => suggestedDrillKeys(historyStore.results)[0] ?? null);
 
 // Counted from the app itself, so the page never falls behind it
 const STATS = [

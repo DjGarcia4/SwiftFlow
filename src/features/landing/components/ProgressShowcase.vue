@@ -55,30 +55,68 @@
             Los niveles desbloquean cosas
           </h3>
           <p class="mt-1 text-sm font-bold text-pencil-gray">
-            Colores para toda la app, estilos de cursor y sonidos de teclado.
+            Colores para toda la app, estilos de cursor y sonidos de teclado. Tocá un
+            color para probarlo en esta página.
           </p>
+          <!-- Trying a color on: the whole page takes it, for this visit only -->
           <div class="mt-5 flex flex-wrap gap-3">
-            <span
+            <button
               v-for="(reward, i) in accents"
               :key="reward.id"
-              class="swatch h-9 w-9 rounded-full border-4 border-paper-white shadow-md"
+              type="button"
+              class="swatch h-9 w-9 rounded-full border-4 shadow-md transition-[scale] duration-200 ease-spring hover:scale-110"
+              :class="
+                previewing?.id === reward.id ? 'border-charcoal' : 'border-paper-white'
+              "
               :style="{
                 backgroundColor: ACCENT_SWATCHES[reward.id],
                 animationDelay: `${i * 0.35}s`,
               }"
-              :title="reward.label"
-            ></span>
+              :aria-label="`Probar el color ${reward.label}`"
+              :aria-pressed="previewing?.id === reward.id"
+              @click="preview(reward)"
+            ></button>
           </div>
-          <div class="mt-4 flex flex-wrap gap-2 text-xs font-bold">
+          <p class="mt-2 h-5 text-xs font-bold text-pencil-gray">
+            <template v-if="previewing">
+              Probando <span class="text-primary">{{ previewing.label }}</span>
+              {{
+                previewing.level > 1
+                  ? `· se desbloquea en el nivel ${previewing.level}`
+                  : ""
+              }}
+              ·
+              <button
+                type="button"
+                class="underline underline-offset-2 hover:text-charcoal"
+                @click="restore"
+              >
+                volver a mi color
+              </button>
+            </template>
+          </p>
+          <div class="mt-3 flex flex-wrap gap-2 text-xs font-bold">
             <span
-              v-for="reward in carets.concat(sounds)"
+              v-for="reward in carets"
               :key="reward.id"
               class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal"
             >
-              {{ reward.kind === "caret" ? "Cursor" : "Sonido" }}
-              {{ reward.label.toLowerCase() }}
+              Cursor {{ reward.label.toLowerCase() }}
               <span class="text-pencil-gray">· nv {{ reward.level }}</span>
             </span>
+            <!-- Sounds can be heard right here -->
+            <button
+              v-for="reward in sounds"
+              :key="reward.id"
+              type="button"
+              class="inline-flex items-center gap-1 rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal transition-[border-color] duration-200 hover:border-primary/50"
+              :aria-label="`Escuchar el sonido ${reward.label}`"
+              @click="listen(reward.id)"
+            >
+              <PlayIcon class="h-3 w-3 text-primary" />
+              Sonido {{ reward.label.toLowerCase() }}
+              <span class="text-pencil-gray">· nv {{ reward.level }}</span>
+            </button>
           </div>
         </article>
 
@@ -206,7 +244,10 @@ import {
   TrophyIcon,
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
-import { FireIcon } from "@heroicons/vue/24/solid";
+import { FireIcon, PlayIcon } from "@heroicons/vue/24/solid";
+import { ref, onUnmounted } from "vue";
+import { useCustomizationStore } from "@/shared/stores/customization";
+import { playKeystrokeSound } from "@/shared/utils/sound";
 import { LEVEL_TIERS, MAX_LEVEL } from "@/features/history/utils/experience";
 import { rewardsOfKind, ACCENT_SWATCHES } from "@/features/history/utils/rewards";
 import { ACHIEVEMENTS } from "@/features/history/achievements";
@@ -259,6 +300,31 @@ const CHALLENGES = [
 const WEEK = [1.2, 0.6, 1, 0.9, 0.3, 0, 0];
 
 const thisWeek = weeklyLabel(weeklyKey());
+
+// Trying a color: set straight on the root, where the stylesheet reads it,
+// and put back to the visitor's own when they're done or they leave
+const customization = useCustomizationStore();
+const previewing = ref(null);
+const setAccent = (id) => {
+  if (id === "orange") delete document.documentElement.dataset.accent;
+  else document.documentElement.dataset.accent = id;
+};
+const preview = (reward) => {
+  previewing.value = reward;
+  setAccent(reward.id);
+};
+const restore = () => {
+  previewing.value = null;
+  setAccent(customization.accent);
+};
+onUnmounted(() => {
+  if (previewing.value) setAccent(customization.accent);
+});
+
+// A few keystrokes of a sound, the way it sounds while typing
+const listen = (id) => {
+  [0, 110, 200, 330].forEach((delay) => setTimeout(() => playKeystrokeSound(id), delay));
+};
 </script>
 
 <style scoped>
