@@ -1,5 +1,6 @@
 import { formatPairLabel } from "./historyStats";
 import { ERROR_RATE_BAR, SLOW_RATIO_BAR } from "./problemWords";
+import { FINGERS, fingerOfChar } from "@/features/typing-test/utils/keyboardMap";
 
 // Turns the per-key error stats into a short list of concrete, readable
 // "work on this" tips. Pure data in, pure data out (icons are string keys),
@@ -289,6 +290,47 @@ export const computeImprovementTips = (
           severity: worst.rate / best.rate / GROUP_GAP,
           title: `La fila ${worst.name} te cuesta más`,
           detail: `Fallás el ${percent(worst.rate)} ahí contra el ${percent(best.rate)} en la fila ${best.name}. Practicá llegar a esas teclas sin mirar.`,
+        },
+      });
+    }
+  }
+
+  // The finger: narrower than a hand or a row, so when one finger is the
+  // whole story it names the one to watch. Compared with your middle
+  // finger rather than your best, which is often a finger that barely
+  // types anything hard.
+  const fingers = new Map();
+  for (const stat of keyStats) {
+    const finger = fingerOfChar(stat.key);
+    if (!finger || finger === "thumb") continue;
+    const group = fingers.get(finger) ?? {
+      finger,
+      attempts: 0,
+      misses: 0,
+      keys: new Set(),
+    };
+    group.attempts += stat.attempts;
+    group.misses += stat.misses;
+    if (/^\p{L}$/u.test(stat.key)) group.keys.add(stat.key.toUpperCase());
+    fingers.set(finger, group);
+  }
+  const measuredFingers = [...fingers.values()]
+    .filter((group) => group.attempts >= MIN_GROUP_ATTEMPTS)
+    .map((group) => ({ ...group, rate: group.misses / group.attempts }));
+  if (measuredFingers.length >= 4) {
+    const sorted = [...measuredFingers].sort((a, b) => b.rate - a.rate);
+    const worst = sorted[0];
+    const middle = sorted[Math.floor(sorted.length / 2)];
+    if (middle.rate > 0 && worst.rate / middle.rate >= GROUP_GAP) {
+      const keys = [...worst.keys].sort((a, b) => a.localeCompare(b, "es")).slice(0, 6);
+      groupCandidates.push({
+        gap: worst.rate / middle.rate,
+        tip: {
+          id: "finger",
+          icon: "hand",
+          severity: worst.rate / middle.rate / GROUP_GAP,
+          title: `Tu ${FINGERS[worst.finger].name} falla más`,
+          detail: `Errás el ${percent(worst.rate)} de las teclas que le tocan (${joinKeys(keys)}) contra el ${percent(middle.rate)} de un dedo típico tuyo. Con los colores por dedo del teclado en pantalla vas a ver cuáles son.`,
         },
       });
     }

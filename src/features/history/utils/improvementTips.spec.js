@@ -362,4 +362,20 @@ describe("computeImprovementTips · speed patterns", () => {
       words: ["desarrollo", "exactamente"],
     });
   });
+
+  it("names the finger when one finger is the whole story", () => {
+    // Every key tried 100 times; the left ring finger's (W, S, X, 2) missed
+    // far more than the rest
+    const ring = new Set(["w", "s", "x"]);
+    const stats = [..."qwertyuiopasdfghjklzxcvbnm"].map((key) => ({
+      key,
+      attempts: 100,
+      misses: ring.has(key) ? 20 : 4,
+      rate: ring.has(key) ? 0.2 : 0.04,
+    }));
+    const { tips } = computeImprovementTips(stats);
+    const tip = tips.find((t) => t.id === "finger");
+    expect(tip.title).toBe("Tu anular izquierdo falla más");
+    expect(tip.detail).toContain("S, W y X");
+  });
 });

@@ -23,6 +23,7 @@ const DEFAULTS = {
   blindMode: false,
   selectedCustomTextId: null,
   drillWords: [], // non-empty: the drill is on these words, not letters
+  fingerColors: false,
 };
 
 export const loadConfig = () => {
@@ -72,4 +73,5 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
   selectedCustomTextId:
     typeof config.selectedCustomTextId === "string" ? config.selectedCustomTextId : null,
   drillWords: normalizeDrillWords(config.drillWords),
+  fingerColors: config.fingerColors === true,
 });

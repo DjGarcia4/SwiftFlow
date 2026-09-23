@@ -83,6 +83,8 @@ export const useConfigStore = defineStore("config", () => {
   // point.
   const showKeyboard = ref(savedConfig.showKeyboard);
   const keyboardVisible = computed(() => showKeyboard.value ?? type.value === "drill");
+  // The on-screen keyboard colored by which finger types each key
+  const fingerColors = ref(savedConfig.fingerColors);
   // The pacer's speed in wpm, or null for "Auto" (a notch above your
   // recent average)
   const pacerWpm = ref(savedConfig.pacerWpm);
@@ -111,6 +113,7 @@ export const useConfigStore = defineStore("config", () => {
       drillKeys: drillKeys.value,
       drillWords: drillWords.value,
       showKeyboard: showKeyboard.value,
+      fingerColors: fingerColors.value,
       pacerWpm: pacerWpm.value,
       blindMode: blindMode.value,
       selectedCustomTextId: selectedCustomTextId.value,
@@ -172,6 +175,11 @@ export const useConfigStore = defineStore("config", () => {
       selectedCustomTextId.value = next[0]?.id ?? null;
     persistConfig();
     customEditor.value = null;
+  };
+
+  const toggleFingerColors = () => {
+    fingerColors.value = !fingerColors.value;
+    persistConfig();
   };
 
   const toggleBlindMode = () => {
@@ -776,6 +784,8 @@ export const useConfigStore = defineStore("config", () => {
     showKeyboard,
     keyboardVisible,
     toggleKeyboard,
+    fingerColors,
+    toggleFingerColors,
     contentTypes,
     times,
     words,

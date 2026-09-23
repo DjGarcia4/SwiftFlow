@@ -4,11 +4,44 @@
     key when it needs them), keys tinting red as this session misses them,
     and a mistake flashing both the key that was wanted and the one hit.
   -->
-  <KeyboardLayout with-modifiers compact :key-class="keyClass" :key-style="keyStyle" />
+  <div class="flex-col items-center gap-3">
+    <KeyboardLayout with-modifiers compact :key-class="keyClass" :key-style="keyStyle" />
+
+    <!-- Above the invisible textarea that covers the typing area, or the
+         toggle couldn't be clicked -->
+    <div class="relative z-10 flex items-center gap-3 text-xs font-bold text-pencil-gray">
+      <!-- Which finger the next key is for -->
+      <span
+        v-if="configStore.fingerColors && nextFinger"
+        class="inline-flex items-center gap-1.5"
+      >
+        <span
+          class="inline-block h-2.5 w-2.5 rounded-full"
+          :style="{ backgroundColor: fingerColor(nextFinger) }"
+        ></span>
+        Próxima: {{ FINGERS[nextFinger].name }}
+      </span>
+      <button
+        type="button"
+        class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 transition-colors duration-200"
+        :class="
+          configStore.fingerColors
+            ? 'text-primary'
+            : 'text-pencil-gray/70 hover:text-charcoal'
+        "
+        :aria-pressed="configStore.fingerColors"
+        @click="toggleFingerColors"
+      >
+        <HandRaisedIcon class="w-3.5 h-3.5" />
+        Colores por dedo
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted } from "vue";
+import { ref, computed, watch, onUnmounted, nextTick } from "vue";
+import { HandRaisedIcon } from "@heroicons/vue/24/outline";
 import KeyboardLayout from "./KeyboardLayout.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import {
@@ -16,6 +49,8 @@ import {
   foldByKey,
   ACCENT_KEY,
   SHIFT_KEY,
+  FINGERS,
+  fingerOfKey,
 } from "@/features/typing-test/utils/keyboardMap";
 
 // A key needs a couple of misses before it's worth coloring
@@ -23,6 +58,28 @@ const MIN_TINT_MISSES = 2;
 const FLASH_MS = 450;
 
 const configStore = useConfigStore();
+
+// One color per kind of finger, the same on both hands
+const FINGER_RGB = {
+  pinky: [139, 92, 246], // violet
+  ring: [59, 130, 246], // blue
+  middle: [16, 185, 129], // emerald
+  index: [245, 158, 11], // amber
+  thumb: [100, 116, 139], // slate
+};
+const rgbOf = (finger) => FINGER_RGB[FINGERS[finger].kind];
+const fingerColor = (finger) => `rgb(${rgbOf(finger).join(" ")})`;
+
+// Shift belongs to whichever pinky isn't pressing the key; drawn as a pinky
+const fingerFor = (key) => (key === SHIFT_KEY ? "left-pinky" : fingerOfKey(key));
+
+const nextFinger = computed(() => (next.value ? fingerOfKey(next.value.key) : null));
+
+// The button keeps the focus after a click; hand it back to the text
+const toggleFingerColors = () => {
+  configStore.toggleFingerColors();
+  nextTick(() => document.querySelector("textarea")?.focus());
+};
 
 const next = computed(() =>
   keyboardTarget(configStore.referenceText[configStore.userInput.length])
@@ -90,13 +147,39 @@ const keyClass = (key) => {
       ? `${base} border-primary-dark bg-primary text-white scale-105 shadow-md shadow-primary/40`
       : `${base} border-primary bg-primary-tint text-primary`;
   }
+  // Finger colors come in through keyStyle
+  if (configStore.fingerColors) return base;
   // At rest the keys stay in the background; the text is what's being read
   return `${base} border-faded-gray/50 text-pencil-gray/60`;
 };
 
+const fingerStyle = (key) => {
+  const finger = fingerFor(key);
+  if (!finger) return {};
+  const [r, g, b] = rgbOf(finger);
+  // The key itself: solid in its finger's color, so the color is the cue
+  if (next.value && key === next.value.key) {
+    return {
+      backgroundColor: `rgb(${r} ${g} ${b})`,
+      borderColor: `rgb(${Math.round(r * 0.75)} ${Math.round(g * 0.75)} ${Math.round(b * 0.75)})`,
+      color: "white",
+      boxShadow: `0 4px 10px -2px rgba(${r}, ${g}, ${b}, 0.5)`,
+    };
+  }
+  // Held with it (Shift, the accent): outlined. At rest: a faint wash.
+  const held = isNext(key);
+  return {
+    backgroundColor: `rgba(${r}, ${g}, ${b}, ${held ? 0.2 : 0.1})`,
+    borderColor: `rgba(${r}, ${g}, ${b}, ${held ? 0.9 : 0.35})`,
+    color: `rgb(${r} ${g} ${b})`,
+  };
+};
+
 const keyStyle = (key) => {
+  // A mistake's flash is drawn by the classes, and wins over everything
+  if (flash.value?.wanted === key || flash.value?.pressed === key) return {};
   const tint = missTint.value[key];
-  if (!tint || isNext(key) || flash.value?.wanted === key) return {};
+  if (!tint || isNext(key)) return configStore.fingerColors ? fingerStyle(key) : {};
   // 12%..45% of the danger color: a hint, never louder than the next key
   const strength = Math.round(12 + tint * 33);
   return {

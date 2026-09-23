@@ -64,3 +64,50 @@ export const foldByKey = (counts) => {
   }
   return folded;
 };
+
+// Standard touch typing on a Spanish keyboard: which finger each key
+// belongs to. Fingers of a kind share a color on both hands, so "the same
+// finger on the other hand" shows at a glance.
+export const FINGERS = {
+  "left-pinky": { name: "meñique izquierdo", kind: "pinky", hand: "left" },
+  "left-ring": { name: "anular izquierdo", kind: "ring", hand: "left" },
+  "left-middle": { name: "medio izquierdo", kind: "middle", hand: "left" },
+  "left-index": { name: "índice izquierdo", kind: "index", hand: "left" },
+  "right-index": { name: "índice derecho", kind: "index", hand: "right" },
+  "right-middle": { name: "medio derecho", kind: "middle", hand: "right" },
+  "right-ring": { name: "anular derecho", kind: "ring", hand: "right" },
+  "right-pinky": { name: "meñique derecho", kind: "pinky", hand: "right" },
+  thumb: { name: "pulgar", kind: "thumb", hand: null },
+};
+
+// One column of the keyboard per finger, left to right; index fingers
+// take two columns each
+const COLUMN_FINGERS = [
+  "left-pinky",
+  "left-ring",
+  "left-middle",
+  "left-index",
+  "left-index",
+  "right-index",
+  "right-index",
+  "right-middle",
+  "right-ring",
+  "right-pinky",
+];
+
+const FINGER_OF = new Map([
+  [" ", "thumb"],
+  [ACCENT_KEY, "right-pinky"],
+]);
+for (const row of KEYBOARD_ROWS) {
+  row.forEach((key, column) => FINGER_OF.set(key, COLUMN_FINGERS[column]));
+}
+
+// The finger for a key on the drawn keyboard (Shift is either pinky, so
+// it has none of its own), or for any character, through the key that
+// makes it
+export const fingerOfKey = (key) => FINGER_OF.get(key) ?? null;
+export const fingerOfChar = (char) => {
+  const target = keyboardTarget(char);
+  return target ? fingerOfKey(target.key) : null;
+};

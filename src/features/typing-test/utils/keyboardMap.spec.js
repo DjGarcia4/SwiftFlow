@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { keyboardTarget, foldByKey } from "./keyboardMap";
+import { keyboardTarget, foldByKey, fingerOfKey, fingerOfChar } from "./keyboardMap";
 
 describe("keyboardTarget", () => {
   it("maps plain letters, digits and the space bar", () => {
@@ -33,5 +33,24 @@ describe("keyboardTarget", () => {
 describe("foldByKey", () => {
   it("adds every character up on the key that makes it", () => {
     expect(foldByKey({ a: 3, A: 1, á: 2, "¿": 5, ":": 1 })).toEqual({ a: 6, ".": 1 });
+  });
+});
+
+describe("fingers", () => {
+  it("follows standard touch typing", () => {
+    expect(fingerOfKey("a")).toBe("left-pinky");
+    expect(fingerOfKey("f")).toBe("left-index");
+    expect(fingerOfKey("g")).toBe("left-index");
+    expect(fingerOfKey("h")).toBe("right-index");
+    expect(fingerOfKey("ñ")).toBe("right-pinky");
+    expect(fingerOfKey(",")).toBe("right-middle");
+    expect(fingerOfKey("5")).toBe("left-index");
+    expect(fingerOfKey(" ")).toBe("thumb");
+  });
+
+  it("finds the finger for any character through its key", () => {
+    expect(fingerOfChar("É")).toBe("left-middle");
+    expect(fingerOfChar(":")).toBe("right-ring");
+    expect(fingerOfChar("¿")).toBeNull();
   });
 });

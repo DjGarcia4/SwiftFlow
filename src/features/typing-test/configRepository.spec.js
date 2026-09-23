@@ -26,6 +26,7 @@ describe("loadConfig", () => {
       blindMode: false,
       selectedCustomTextId: null,
       drillWords: [],
+      fingerColors: false,
     });
   });
 
@@ -48,6 +49,7 @@ describe("loadConfig", () => {
       blindMode: false,
       selectedCustomTextId: null,
       drillWords: [],
+      fingerColors: false,
     });
   });
 });
@@ -66,6 +68,7 @@ describe("sanitizeConfig", () => {
       blindMode: true,
       selectedCustomTextId: "abc",
       drillWords: ["desarrollo"],
+      fingerColors: true,
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });
