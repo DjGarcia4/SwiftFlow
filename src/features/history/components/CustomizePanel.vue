@@ -70,22 +70,11 @@ import {
   rewardsOfKind,
   isUnlocked,
   nextReward,
+  ACCENT_SWATCHES,
 } from "@/features/history/utils/rewards";
 import { playKeystrokeSound } from "@/shared/utils/sound";
 
 const customization = useCustomizationStore();
-
-// The light-mode 500 of each accent, for the swatch (style.css has the
-// full set for both modes)
-const ACCENT_SWATCHES = {
-  orange: "#f97316",
-  sky: "#0ea5e9",
-  violet: "#8b5cf6",
-  rose: "#f43f5e",
-  indigo: "#6366f1",
-  amber: "#f59e0b",
-  fuchsia: "#d946ef",
-};
 
 // A small version of each caret, placed on the preview's last letter
 const CARET_PREVIEW = {

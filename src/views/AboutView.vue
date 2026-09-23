@@ -1,73 +1,80 @@
 <template>
   <!--
-    The landing: what SwiftFlow is and everything it does. The typing test
-    stays at "/"; this is the page to send someone who hasn't seen it.
-    Sections fill in phase by phase (see the plan); each comes in with
-    v-reveal as it's scrolled to.
+    The landing: what SwiftFlow is and everything it does, for someone who
+    hasn't seen it. The typing test stays at "/". Sections come in with
+    v-reveal as they're scrolled to, and the app's own charts are mounted
+    when they arrive (InView), so they draw themselves in front of whoever
+    is looking.
   -->
-  <div class="px-4 sm:px-6">
-    <!-- Hero -->
-    <section
-      class="mx-auto flex min-h-[70vh] max-w-4xl flex-col items-center justify-center py-16 text-center"
-    >
-      <p
-        v-reveal
-        class="mb-4 inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary-tint/50 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary"
-      >
-        <BoltIcon class="h-4 w-4" />
-        Mecanografía en español
-      </p>
-      <h1
-        v-reveal="{ delay: 100 }"
-        class="font-display text-4xl font-black leading-tight text-charcoal sm:text-6xl"
-      >
-        Escribí más rápido.<br />
-        <span class="text-primary">Entendé por qué te equivocás.</span>
-      </h1>
-      <p
-        v-reveal="{ delay: 200 }"
-        class="mt-5 max-w-2xl text-base font-bold text-pencil-gray sm:text-lg"
-      >
-        SwiftFlow no solo te mide: te dice qué teclas, qué palabras y qué momentos te
-        frenan, y te arma la práctica para arreglarlo. Sin cuenta, todo en tu navegador.
-      </p>
-      <div v-reveal="{ delay: 300 }" class="mt-8 flex flex-wrap justify-center gap-3">
-        <router-link
-          to="/"
-          class="inline-flex items-center gap-2 rounded-xl border-b-4 border-primary-dark bg-primary px-6 py-3 font-extrabold text-white transition-[scale,background-color] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
-        >
-          Empezar a escribir
-          <ArrowRightIcon class="h-5 w-5" />
-        </router-link>
-      </div>
-      <p
-        v-reveal="{ variant: 'fade-in', delay: 500 }"
-        class="mt-4 hidden text-xs font-bold text-pencil-gray sm:block"
-      >
-        o apretá
-        <kbd
-          class="rounded-md border-2 border-faded-gray bg-paper-white px-1.5 py-0.5 font-mono text-charcoal"
-          >ESPACIO</kbd
-        >
-      </p>
-    </section>
+  <div ref="root" class="relative">
+    <!-- How far down the page you are, in the accent color -->
+    <div
+      class="fixed left-0 right-0 top-0 z-[60] h-1 origin-left bg-primary"
+      :style="{ transform: `scaleX(${progress})` }"
+      aria-hidden="true"
+    ></div>
+
+    <LandingHero :parallax="parallax" @explore="scrollToId('que-tiene')" />
+    <FeatureGrid />
+    <StatsShowcase />
+    <ProgressShowcase />
+    <LandingClosing @top="scrollToTop" />
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { BoltIcon, ArrowRightIcon } from "@heroicons/vue/24/outline";
+import { prefersReducedMotion } from "@/shared/utils/motion";
+import LandingHero from "@/features/landing/components/LandingHero.vue";
+import FeatureGrid from "@/features/landing/components/FeatureGrid.vue";
+import StatsShowcase from "@/features/landing/components/StatsShowcase.vue";
+import ProgressShowcase from "@/features/landing/components/ProgressShowcase.vue";
+import LandingClosing from "@/features/landing/components/LandingClosing.vue";
 
 const router = useRouter();
+const root = ref(null);
+
+// The app scrolls inside its own container, not the window
+let scroller = null;
+const progress = ref(0);
+const parallax = ref(0);
+let frame = null;
+
+const measure = () => {
+  frame = null;
+  if (!scroller) return;
+  const max = scroller.scrollHeight - scroller.clientHeight;
+  progress.value = max > 0 ? scroller.scrollTop / max : 0;
+  // The hero's background drifts a little slower than the page
+  parallax.value = prefersReducedMotion() ? 0 : Math.min(scroller.scrollTop, 800);
+};
+const onScroll = () => {
+  if (!frame) frame = requestAnimationFrame(measure);
+};
+
+const behavior = () => (prefersReducedMotion() ? "auto" : "smooth");
+const scrollToId = (id) => {
+  const target = document.getElementById(id);
+  if (!target || !scroller) return;
+  const top =
+    target.getBoundingClientRect().top -
+    scroller.getBoundingClientRect().top +
+    scroller.scrollTop;
+  scroller.scrollTo({ top: top - 16, behavior: behavior() });
+};
+const scrollToTop = () => scroller?.scrollTo({ top: 0, behavior: behavior() });
 
 // Space goes to typing from here, as it does from the history. Not in a
-// field, nor on a focused button, which space presses. A focused link is
-// fine: links take Enter, and arriving here from the nav leaves one focused.
+// field, nor on a focused button or question, which space presses. A
+// focused link is fine: links take Enter, and arriving here from the nav
+// leaves one focused.
 const handleKeydown = (event) => {
   if (event.key !== " " || event.repeat) return;
   if (
-    event.target?.closest?.("input, textarea, select, button, [contenteditable='true']")
+    event.target?.closest?.(
+      "input, textarea, select, button, summary, [contenteditable='true']"
+    )
   ) {
     return;
   }
@@ -75,6 +82,16 @@ const handleKeydown = (event) => {
   router.push("/");
 };
 
-onMounted(() => document.addEventListener("keydown", handleKeydown));
-onUnmounted(() => document.removeEventListener("keydown", handleKeydown));
+onMounted(() => {
+  document.addEventListener("keydown", handleKeydown);
+  scroller = root.value?.closest(".overflow-y-auto") ?? null;
+  scroller?.addEventListener("scroll", onScroll, { passive: true });
+  measure();
+});
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeydown);
+  scroller?.removeEventListener("scroll", onScroll);
+  if (frame) cancelAnimationFrame(frame);
+});
 </script>

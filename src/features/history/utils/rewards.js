@@ -29,6 +29,18 @@ export const REWARDS = [
 
 export const REWARD_KINDS = ["accent", "caret", "sound"];
 
+// Each accent's light-mode 500, for swatches (style.css has the full set,
+// for both modes)
+export const ACCENT_SWATCHES = {
+  orange: "#f97316",
+  sky: "#0ea5e9",
+  violet: "#8b5cf6",
+  rose: "#f43f5e",
+  indigo: "#6366f1",
+  amber: "#f59e0b",
+  fuchsia: "#d946ef",
+};
+
 export const KIND_NAMES = { accent: "Color", caret: "Cursor", sound: "Sonido" };
 
 export const DEFAULT_REWARDS = { accent: "orange", caret: "bar", sound: "soft" };

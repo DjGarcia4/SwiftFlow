@@ -1,0 +1,310 @@
+<template>
+  <section class="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-24">
+    <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+      <div
+        class="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+      ></div>
+    </div>
+
+    <div class="mx-auto max-w-6xl">
+      <header class="mx-auto mb-12 max-w-2xl text-center">
+        <p v-reveal class="text-xs font-extrabold uppercase tracking-widest text-primary">
+          Para volver mañana
+        </p>
+        <h2
+          v-reveal="{ delay: 100 }"
+          class="mt-2 font-display text-3xl font-black text-charcoal sm:text-5xl"
+        >
+          Cada partida te lleva a algún lado
+        </h2>
+      </header>
+
+      <!-- The ranks, Novato to the top -->
+      <div v-reveal class="mb-4 text-center text-sm font-bold text-pencil-gray">
+        {{ MAX_LEVEL }} niveles en {{ LEVEL_TIERS.length }} rangos
+      </div>
+      <ol
+        v-reveal.stagger="{ step: 70 }"
+        class="mb-16 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8"
+      >
+        <li
+          v-for="tier in LEVEL_TIERS"
+          :key="tier.title"
+          class="flex flex-col items-center gap-2 rounded-card border-2 px-2 py-4 text-center"
+          :style="tierStyle(tier)"
+        >
+          <div
+            class="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-md"
+            :style="{ backgroundColor: rgb(tier) }"
+          >
+            <component :is="ACHIEVEMENT_ICONS[tier.icon]" class="h-6 w-6" />
+          </div>
+          <div class="text-sm font-extrabold leading-tight" :style="{ color: rgb(tier) }">
+            {{ tier.title }}
+          </div>
+          <div class="text-[11px] font-bold text-pencil-gray">
+            {{ tier.from === tier.to ? `Nivel ${tier.from}` : `${tier.from}–${tier.to}` }}
+          </div>
+        </li>
+      </ol>
+
+      <div class="grid gap-4 md:grid-cols-6">
+        <!-- Rewards -->
+        <article v-reveal v-tilt="3" :class="[CARD, 'md:col-span-3']">
+          <h3 class="font-display text-xl font-extrabold text-charcoal">
+            Los niveles desbloquean cosas
+          </h3>
+          <p class="mt-1 text-sm font-bold text-pencil-gray">
+            Colores para toda la app, estilos de cursor y sonidos de teclado.
+          </p>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <span
+              v-for="(reward, i) in accents"
+              :key="reward.id"
+              class="swatch h-9 w-9 rounded-full border-4 border-paper-white shadow-md"
+              :style="{
+                backgroundColor: ACCENT_SWATCHES[reward.id],
+                animationDelay: `${i * 0.35}s`,
+              }"
+              :title="reward.label"
+            ></span>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2 text-xs font-bold">
+            <span
+              v-for="reward in carets.concat(sounds)"
+              :key="reward.id"
+              class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal"
+            >
+              {{ reward.kind === "caret" ? "Cursor" : "Sonido" }}
+              {{ reward.label.toLowerCase() }}
+              <span class="text-pencil-gray">· nv {{ reward.level }}</span>
+            </span>
+          </div>
+        </article>
+
+        <!-- Achievements -->
+        <article v-reveal="{ delay: 100 }" v-tilt="3" :class="[CARD, 'md:col-span-3']">
+          <h3 class="font-display text-xl font-extrabold text-charcoal">
+            {{ ACHIEVEMENTS.length }} logros para desbloquear
+          </h3>
+          <p class="mt-1 text-sm font-bold text-pencil-gray">
+            Velocidad, precisión, rachas, combos, horarios raros y alguno escondido.
+          </p>
+          <div class="mt-5 grid grid-cols-2 gap-2">
+            <div
+              v-for="achievement in SAMPLE_ACHIEVEMENTS"
+              :key="achievement.id"
+              class="flex items-center gap-2 rounded-xl border-2 px-2.5 py-2"
+              :style="achievementTintStyle({ ...achievement, unlocked: true })"
+            >
+              <component
+                :is="ACHIEVEMENT_ICONS[achievement.icon]"
+                class="h-4 w-4 flex-shrink-0"
+              />
+              <span class="truncate text-xs font-bold">{{ achievement.title }}</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Daily challenges -->
+        <article v-reveal v-tilt="3" :class="[CARD, 'md:col-span-2']">
+          <FlagIcon class="h-6 w-6 text-primary" />
+          <h3 class="mt-3 font-display text-lg font-extrabold text-charcoal">
+            Retos diarios
+          </h3>
+          <p class="mt-1 text-sm font-bold text-pencil-gray">
+            Tres por día, a tu medida: un poco más allá de tu promedio.
+          </p>
+          <ul class="mt-4 space-y-2">
+            <li
+              v-for="challenge in CHALLENGES"
+              :key="challenge.title"
+              class="flex items-center gap-2 text-xs font-bold"
+              :class="challenge.done ? 'text-success-dark' : 'text-charcoal'"
+            >
+              <CheckCircleIcon v-if="challenge.done" class="h-4 w-4 flex-shrink-0" />
+              <span
+                v-else
+                class="h-4 w-4 flex-shrink-0 rounded-full border-2 border-faded-gray"
+              ></span>
+              {{ challenge.title }}
+            </li>
+          </ul>
+        </article>
+
+        <!-- Weekly goal -->
+        <article v-reveal="{ delay: 100 }" v-tilt="3" :class="[CARD, 'md:col-span-2']">
+          <CalendarDaysIcon class="h-6 w-6 text-primary" />
+          <h3 class="mt-3 font-display text-lg font-extrabold text-charcoal">
+            Meta semanal
+          </h3>
+          <p class="mt-1 text-sm font-bold text-pencil-gray">
+            Minutos por semana, que se ajustan solos a tu costumbre.
+          </p>
+          <div class="mt-4 grid h-16 grid-cols-7 items-end gap-1.5" aria-hidden="true">
+            <div
+              v-for="(fill, i) in WEEK"
+              :key="i"
+              class="week-bar rounded-md"
+              :class="fill >= 1 ? 'bg-success' : 'bg-primary/70'"
+              :style="{
+                height: `${Math.max(8, fill * 100)}%`,
+                animationDelay: `${i * 80}ms`,
+              }"
+            ></div>
+          </div>
+        </article>
+
+        <!-- Weekly challenge -->
+        <article v-reveal="{ delay: 200 }" v-tilt="3" :class="[CARD, 'md:col-span-2']">
+          <TrophyIcon class="h-6 w-6 text-primary" />
+          <h3 class="mt-3 font-display text-lg font-extrabold text-charcoal">
+            Reto semanal · {{ thisWeek }}
+          </h3>
+          <p class="mt-1 text-sm font-bold text-pencil-gray">
+            El mismo texto para todos durante la semana. Jugalo y pasale tu marca a
+            alguien:
+            <span class="text-charcoal">«¿Me ganás?»</span>
+          </p>
+        </article>
+
+        <!-- Streak -->
+        <article
+          v-reveal
+          :class="[
+            CARD,
+            'md:col-span-6 flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left',
+          ]"
+        >
+          <div
+            class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-primary-tint text-primary"
+          >
+            <FireIcon class="flame h-9 w-9" />
+          </div>
+          <div class="flex-1">
+            <h3 class="font-display text-xl font-extrabold text-charcoal">
+              Una racha que no querés cortar
+            </h3>
+            <p class="mt-1 text-sm font-bold text-pencil-gray">
+              Cada día que practicás suma. Si todavía no jugaste hoy, SwiftFlow te avisa
+              cuántas horas te quedan, y si querés, te recuerda a la noche.
+            </p>
+          </div>
+          <div class="font-display text-5xl font-black text-primary">
+            12<span class="ml-1 text-base font-extrabold text-pencil-gray">días</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import {
+  FlagIcon,
+  CalendarDaysIcon,
+  TrophyIcon,
+  CheckCircleIcon,
+} from "@heroicons/vue/24/outline";
+import { FireIcon } from "@heroicons/vue/24/solid";
+import { LEVEL_TIERS, MAX_LEVEL } from "@/features/history/utils/experience";
+import { rewardsOfKind, ACCENT_SWATCHES } from "@/features/history/utils/rewards";
+import { ACHIEVEMENTS } from "@/features/history/achievements";
+import {
+  ACHIEVEMENT_ICONS,
+  achievementTintStyle,
+} from "@/features/history/achievementPresentation";
+import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
+
+// min-w-0: a grid item is otherwise as wide as its widest content, and
+// the modes strip is a few thousand pixels of it
+const CARD =
+  "min-w-0 rounded-card border-2 border-faded-gray bg-paper-white p-5 sm:p-6 transition-[border-color] duration-300 hover:border-primary/40";
+
+const rgb = (tier) => `rgb(${tier.rgb.join(" ")})`;
+const tierStyle = (tier) => {
+  const [r, g, b] = tier.rgb;
+  return {
+    borderColor: `rgba(${r}, ${g}, ${b}, 0.4)`,
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.06)`,
+  };
+};
+
+const accents = rewardsOfKind("accent");
+// The ones past the default, which comes free
+const carets = rewardsOfKind("caret").filter((r) => r.level > 1);
+const sounds = rewardsOfKind("sound").filter((r) => r.level > 1);
+
+// One from each kind of achievement, for a taste of the range
+const SAMPLE_ACHIEVEMENTS = [
+  "wpm_100",
+  "accuracy_100_x5",
+  "combo_300",
+  "streak_30",
+  "night_owl",
+  "polyglot",
+  "challenge_full_day",
+  "zen_marathon_10",
+]
+  .map((id) => ACHIEVEMENTS.find((a) => a.id === id))
+  .filter(Boolean);
+
+const CHALLENGES = [
+  { title: "Llegá a 62 wpm en una sesión", done: true },
+  { title: "Hacé un combo de 80 sin errores", done: true },
+  { title: "Completá una partida de Código", done: false },
+];
+
+// A week on its way to the goal: the full ones are days at pace or better
+const WEEK = [1.2, 0.6, 1, 0.9, 0.3, 0, 0];
+
+const thisWeek = weeklyLabel(weeklyKey());
+</script>
+
+<style scoped>
+/* The accent swatches taking a small bow, one after another */
+@keyframes swatch-bob {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+  }
+  80% {
+    transform: translateY(-6px);
+  }
+}
+
+.swatch {
+  animation: swatch-bob 2.8s var(--ease-spring) infinite;
+}
+
+/* The week's columns growing in */
+@keyframes grow-up {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.week-bar {
+  transform-origin: bottom;
+  animation: grow-up 900ms var(--ease-smooth) backwards;
+}
+
+/* The streak's flame never quite still */
+@keyframes flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  30% {
+    transform: scale(1.08) rotate(-4deg);
+  }
+  60% {
+    transform: scale(0.96) rotate(3deg);
+  }
+}
+
+.flame {
+  animation: flicker 1.4s ease-in-out infinite;
+}
+</style>

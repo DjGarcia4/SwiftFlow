@@ -33,7 +33,14 @@ const optionsOf = (value) => {
 // The elements that animate: the children for a stagger, else itself
 const targetsOf = (el, binding) => (binding.modifiers.stagger ? [...el.children] : [el]);
 
-const reveal = (target) => target.classList.add("is-revealed");
+// Once in, a stagger's delay has done its job: left on, it would hold back
+// anything else that transitions the element later (v-tilt, a hover)
+const SETTLE_MS = 900;
+const reveal = (target) => {
+  target.classList.add("is-revealed");
+  const delay = parseFloat(target.style.transitionDelay) || 0;
+  if (delay) setTimeout(() => (target.style.transitionDelay = ""), delay + SETTLE_MS);
+};
 
 let observer = null;
 // Shared by every v-reveal on the page: one observer, not one per element
