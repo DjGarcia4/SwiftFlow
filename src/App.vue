@@ -3,7 +3,7 @@
     <SplashScreen v-if="showSplash" @done="showSplash = false" />
     <Nav />
     <!-- The page scrolls in here, not the window -->
-    <div ref="scroller" class="flex-1 overflow-y-auto">
+    <div ref="scroller" class="flex-1 overflow-y-auto overflow-x-hidden">
       <div class="max-w-[1200px] mx-auto w-full">
         <RouterView v-slot="{ Component }">
           <!--
