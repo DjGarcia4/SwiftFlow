@@ -601,6 +601,15 @@
         />
       </div>
 
+      <p class="mt-8 text-center text-xs font-bold text-pencil-gray">
+        ¿Primera vez por acá?
+        <router-link
+          to="/sobre"
+          class="text-primary underline underline-offset-2 hover:text-primary-dark"
+          >Mirá todo lo que hace SwiftFlow</router-link
+        >
+      </p>
+
       <p
         v-if="backupMessage"
         class="mt-3 text-center text-sm font-bold"

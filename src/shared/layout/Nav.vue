@@ -3,13 +3,17 @@
     <div
       class="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2"
     >
-      <router-link to="/" class="flex items-center gap-2.5 group">
+      <router-link to="/" class="flex items-center gap-2.5 group" aria-label="SwiftFlow">
         <div
           class="flex items-center justify-center w-9 h-9 rounded-xl bg-primary border-2 border-b-4 border-primary-dark transition-transform duration-150 group-hover:scale-105 group-active:translate-y-0.5 group-active:border-b-2"
         >
           <BoltIcon class="w-5 h-5 text-white" />
         </div>
-        <span class="font-display text-lg font-extrabold tracking-tight text-charcoal">
+        <!-- Just the mark on a phone: with every button on the right, the
+             name pushed the last one off the edge -->
+        <span
+          class="hidden xs:inline font-display text-lg font-extrabold tracking-tight text-charcoal"
+        >
           SwiftFlow
         </span>
       </router-link>
@@ -54,6 +58,16 @@
           <ChartBarIcon class="w-5 h-5" />
         </router-link>
 
+        <!-- The landing: what SwiftFlow is, for whoever hasn't seen it -->
+        <router-link
+          to="/sobre"
+          class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
+          aria-label="Qué es SwiftFlow"
+          title="Qué es SwiftFlow"
+        >
+          <InformationCircleIcon class="w-5 h-5" />
+        </router-link>
+
         <SoundSettingsMenu />
 
         <button
@@ -83,7 +97,13 @@
 <script setup>
 import { computed } from "vue";
 import { BoltIcon } from "@heroicons/vue/24/solid";
-import { SunIcon, MoonIcon, ChartBarIcon, FireIcon } from "@heroicons/vue/24/outline";
+import {
+  SunIcon,
+  MoonIcon,
+  ChartBarIcon,
+  FireIcon,
+  InformationCircleIcon,
+} from "@heroicons/vue/24/outline";
 import { useThemeStore } from "@/shared/stores/theme";
 import { useHistoryStore } from "@/features/history/store";
 import { getDailyStreakColorRgb } from "@/shared/utils/flameColor";

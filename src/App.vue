@@ -2,7 +2,8 @@
   <div class="h-screen flex flex-col bg-paper-white">
     <SplashScreen v-if="showSplash" @done="showSplash = false" />
     <Nav />
-    <div class="flex-1 overflow-y-auto">
+    <!-- The page scrolls in here, not the window -->
+    <div ref="scroller" class="flex-1 overflow-y-auto">
       <div class="max-w-[1200px] mx-auto w-full">
         <RouterView v-slot="{ Component }">
           <!--
@@ -30,8 +31,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { RouterView } from "vue-router";
+import { ref, watch } from "vue";
+import { RouterView, useRoute } from "vue-router";
 import Nav from "@/shared/layout/Nav.vue";
 import SplashScreen from "@/shared/layout/SplashScreen.vue";
 import AchievementToast from "@/features/history/components/AchievementToast.vue";
@@ -39,6 +40,15 @@ import { useCustomizationStore } from "@/shared/stores/customization";
 import { useStreakReminderStore } from "@/features/history/streakReminder";
 
 const showSplash = ref(true);
+
+// A new page starts at its top -- the landing is long, and arriving at it
+// halfway down from wherever the last page was scrolled makes no sense
+const scroller = ref(null);
+const route = useRoute();
+watch(
+  () => route.path,
+  () => scroller.value?.scrollTo({ top: 0 })
+);
 
 // Puts the unlocked accent color on before anything paints
 useCustomizationStore();

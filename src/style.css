@@ -292,6 +292,35 @@ body {
   --color-primary-tint: #4a044e;
 }
 
+/*
+  Scroll reveals (the v-reveal directive): hidden and a little out of
+  place until scrolled to, then settling in. The reduced-motion rule
+  further down cuts the transition short like every other animation.
+*/
+.reveal {
+  opacity: 0;
+  transition:
+    opacity 700ms var(--ease-smooth),
+    transform 800ms var(--ease-smooth);
+  will-change: opacity, transform;
+}
+.reveal-fade-up {
+  transform: translateY(28px);
+}
+.reveal-zoom {
+  transform: scale(0.92);
+}
+.reveal-slide-left {
+  transform: translateX(-40px);
+}
+.reveal-slide-right {
+  transform: translateX(40px);
+}
+.reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
 h1,
 h2,
 h3,
