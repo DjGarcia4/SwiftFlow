@@ -86,6 +86,9 @@
     <ChallengesWidget />
 
     <CustomTextEditor v-if="configStore.customEditor" />
+
+    <!-- Today still needs a session to keep the streak -->
+    <StreakRiskBanner v-if="streakReminder.bannerVisible" />
   </div>
 </template>
 
@@ -98,10 +101,13 @@ import ComboToast from "@/features/typing-test/components/ComboToast.vue";
 import LiveCoach from "@/features/typing-test/components/LiveCoach.vue";
 import ChallengesWidget from "@/features/history/components/ChallengesWidget.vue";
 import CustomTextEditor from "@/features/typing-test/components/CustomTextEditor.vue";
+import StreakRiskBanner from "@/features/history/components/StreakRiskBanner.vue";
+import { useStreakReminderStore } from "@/features/history/streakReminder";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 
 const configStore = useConfigStore();
+const streakReminder = useStreakReminderStore();
 const configOpen = ref(false);
 
 // Hide the ToolBar/FAB while actively typing (but show when paused) and

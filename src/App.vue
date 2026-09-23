@@ -36,11 +36,15 @@ import Nav from "@/shared/layout/Nav.vue";
 import SplashScreen from "@/shared/layout/SplashScreen.vue";
 import AchievementToast from "@/features/history/components/AchievementToast.vue";
 import { useCustomizationStore } from "@/shared/stores/customization";
+import { useStreakReminderStore } from "@/features/history/streakReminder";
 
 const showSplash = ref(true);
 
 // Puts the unlocked accent color on before anything paints
 useCustomizationStore();
+
+// Keeps the streak warning's clock going, and the evening reminder with it
+useStreakReminderStore().start();
 </script>
 
 <style scoped></style>

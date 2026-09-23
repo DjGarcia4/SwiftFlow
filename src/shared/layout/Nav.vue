@@ -34,6 +34,12 @@
             :style="streakStyle"
             class="flex items-center gap-1 h-9 px-2.5 rounded-xl border-2 text-xs font-extrabold transition-[scale,color,border-color,background-color] duration-300 ease-spring hover:scale-105 active:scale-95"
             :aria-label="`Racha de ${historyStore.dailyStreak} días`"
+            :title="
+              streakReminder.risk.atRisk
+                ? `Tu racha se corta en ${streakReminder.timeLeft}: todavía no practicaste hoy`
+                : `Racha de ${historyStore.dailyStreak} días`
+            "
+            :class="{ 'animate-streak-risk': streakReminder.risk.atRisk }"
           >
             <FireIcon class="w-4 h-4" />
             <AnimatedNumber :value="historyStore.dailyStreak" :duration="600" />
@@ -83,10 +89,13 @@ import { useHistoryStore } from "@/features/history/store";
 import { getDailyStreakColorRgb } from "@/shared/utils/flameColor";
 import SoundSettingsMenu from "@/shared/components/SoundSettingsMenu.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
+import { useStreakReminderStore } from "@/features/history/streakReminder";
 import LevelBadge from "@/features/history/components/LevelBadge.vue";
 
 const themeStore = useThemeStore();
 const historyStore = useHistoryStore();
+// Today not practiced yet: the streak chip pulses until it is
+const streakReminder = useStreakReminderStore();
 
 const streakStyle = computed(() => {
   const [r, g, b] = getDailyStreakColorRgb(historyStore.dailyStreak);
@@ -98,4 +107,19 @@ const streakStyle = computed(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+/* A ring pulsing out of the streak chip while today is still missing */
+@keyframes streak-risk {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+.animate-streak-risk {
+  animation: streak-risk 1.8s ease-out infinite;
+}
+</style>

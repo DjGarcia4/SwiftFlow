@@ -86,3 +86,22 @@ cuentas o al menos un apodo, y alguna defensa contra marcas falsas (por ejemplo,
 servidor la línea de tiempo del fantasma contra el texto de la semana). Es un proyecto
 bastante más grande que el enlace de desafío; el enlace sirve igual como primer paso, porque
 el formato del fantasma sería el mismo que se subiría.
+
+---
+
+## Recordatorio de racha con la app cerrada
+
+Hoy el recordatorio de la noche (`src/features/history/streakReminder.js`) solo llega si
+SwiftFlow está abierto, aunque sea en otra pestaña. Avisar con la app cerrada no se puede sin
+servidor:
+
+| Opción                                     | Por qué no alcanza                                                                                                                      |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Web Push                                   | Necesita un servidor que mande el aviso (claves VAPID y guardar las suscripciones).                                                     |
+| Notificaciones programadas (`showTrigger`) | Fue un experimento de Chrome y se abandonó: no existe en ningún navegador.                                                              |
+| Periodic Background Sync                   | Solo Chrome/Android y con la PWA instalada; el navegador decide cuándo corre (como mucho cada ~12 h), así que no sirve para "a las 21". |
+
+Cuando haya backend (el mismo que pediría la tabla de posiciones), el camino es Web Push: el
+servidor guarda la hora elegida y la suscripción de cada persona, y manda el aviso si ese día
+no hubo sesión. Del lado de la app: pasar el service worker de `vite-plugin-pwa` de
+`generateSW` a `injectManifest` para poder escuchar el evento `push`.
