@@ -29,6 +29,17 @@ import {
   clearKeyReview,
 } from "@/features/history/keyReviewRepository";
 import { computeDrillReadiness } from "@/features/history/utils/drillReadiness";
+import { rewardsUnlockedBetween, KIND_NAMES } from "@/features/history/utils/rewards";
+
+// "Desbloqueaste: Cursor bloque, Sonido mecánico", or nothing
+const unlockedText = (from, to) => {
+  const unlocked = rewardsUnlockedBetween(from, to);
+  return unlocked.length
+    ? `Desbloqueaste: ${unlocked
+        .map((reward) => `${KIND_NAMES[reward.kind]} ${reward.label.toLowerCase()}`)
+        .join(", ")}`
+    : null;
+};
 import { loadGhosts, saveGhosts, clearGhosts } from "@/features/history/ghostRepository";
 import {
   applyDrillSession,
@@ -360,6 +371,8 @@ export const useHistoryStore = defineStore("history", () => {
               rgb: level.value.tier.rgb,
               title: `Nivel ${level.value.level} · ${level.value.title}`,
               kicker: "¡Subiste de nivel!",
+              // What it unlocked, to go try it
+              subtitle: unlockedText(levelBefore, level.value.level),
             },
           ]
         : [];

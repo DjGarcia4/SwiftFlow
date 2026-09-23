@@ -403,6 +403,8 @@ describe("useHistoryStore", () => {
     const toasts = store.newlyUnlocked.filter((t) => t.category === "level");
     expect(toasts).toHaveLength(1);
     expect(toasts[0].title).toBe(`Nivel ${store.level.level} · ${store.level.title}`);
+    // Nothing unlocks at level 2
+    expect(toasts[0].subtitle).toBeNull();
   });
 
   it("seeds experience from an existing history", () => {
@@ -614,5 +616,22 @@ describe("useHistoryStore", () => {
     expect(store.achievements.find((a) => a.id === "weekly_challenge_1").unlocked).toBe(
       true
     );
+  });
+
+  it("says what a level-up unlocked", () => {
+    const store = useHistoryStore();
+    // Just short of level 3, where the first accent color unlocks
+    store.experience = 100 + 125 - 5;
+    store.recordResult({
+      mode: "time",
+      wpm: 50,
+      accuracy: 95,
+      errors: 0,
+      timeElapsed: 30,
+      keystrokes: 200,
+      errorKeystrokes: 5,
+    });
+    const toast = store.newlyUnlocked.find((t) => t.category === "level");
+    expect(toast.subtitle).toBe("Desbloqueaste: Color cielo");
   });
 });

@@ -35,8 +35,12 @@ import { RouterView } from "vue-router";
 import Nav from "@/shared/layout/Nav.vue";
 import SplashScreen from "@/shared/layout/SplashScreen.vue";
 import AchievementToast from "@/features/history/components/AchievementToast.vue";
+import { useCustomizationStore } from "@/shared/stores/customization";
 
 const showSplash = ref(true);
+
+// Puts the unlocked accent color on before anything paints
+useCustomizationStore();
 </script>
 
 <style scoped></style>

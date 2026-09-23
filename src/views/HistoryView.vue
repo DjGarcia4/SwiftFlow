@@ -26,14 +26,23 @@
       >
         <XpProgress />
 
-        <div class="text-center mt-3">
+        <!-- Two panels under the level, one open at a time -->
+        <div class="mt-3 flex justify-center gap-4">
           <button
             type="button"
             class="text-xs font-bold text-primary hover:text-primary-dark"
-            :aria-expanded="showLevels"
-            @click="showLevels = !showLevels"
+            :aria-expanded="levelPanel === 'levels'"
+            @click="toggleLevelPanel('levels')"
           >
-            {{ showLevels ? "Ocultar niveles" : "Ver todos los niveles" }}
+            {{ levelPanel === "levels" ? "Ocultar niveles" : "Ver todos los niveles" }}
+          </button>
+          <button
+            type="button"
+            class="text-xs font-bold text-primary hover:text-primary-dark"
+            :aria-expanded="levelPanel === 'customize'"
+            @click="toggleLevelPanel('customize')"
+          >
+            {{ levelPanel === "customize" ? "Ocultar" : "Personalizar" }}
           </button>
         </div>
         <Transition
@@ -45,8 +54,11 @@
           leave-to-class="opacity-0"
         >
           <!-- pt makes room for the "Estás acá" tag sticking out the top -->
-          <div v-if="showLevels" class="pt-5">
+          <div v-if="levelPanel === 'levels'" class="pt-5">
             <LevelRoadmap />
+          </div>
+          <div v-else-if="levelPanel === 'customize'" class="pt-4">
+            <CustomizePanel />
           </div>
         </Transition>
       </div>
@@ -625,6 +637,7 @@ import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
 import ReviewToday from "@/features/history/components/ReviewToday.vue";
 import ReviewKeysList from "@/features/history/components/ReviewKeysList.vue";
 import LevelRoadmap from "@/features/history/components/LevelRoadmap.vue";
+import CustomizePanel from "@/features/history/components/CustomizePanel.vue";
 import { useHistoryStore } from "@/features/history/store";
 import {
   buildBackup,
@@ -741,7 +754,11 @@ const formatThousands = (value) => value.toLocaleString("es");
 
 const hasCurrent = computed(() => filteredCurrent.value.length > 0);
 
-const showLevels = ref(false);
+// Which panel the level card has open: "levels", "customize" or none
+const levelPanel = ref(null);
+const toggleLevelPanel = (panel) => {
+  levelPanel.value = levelPanel.value === panel ? null : panel;
+};
 
 const timeOfDay = computed(() => computeTimeOfDay(filteredResults.value));
 

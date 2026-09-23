@@ -28,6 +28,9 @@
         <div class="font-display font-extrabold leading-tight">
           {{ achievement.title }}
         </div>
+        <div v-if="achievement.subtitle" class="mt-0.5 text-xs font-bold opacity-90">
+          {{ achievement.subtitle }}
+        </div>
       </div>
     </div>
   </Transition>

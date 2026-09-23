@@ -588,13 +588,12 @@
               <!-- Smooth animated caret -->
               <div
                 v-show="!isCompleted && !configStore.isPaused"
-                class="absolute w-1 rounded-full bg-primary transition-[top,left,height] duration-100 ease-out pointer-events-none"
-                :class="{ 'animate-caret-idle': configStore.userInput.length === 0 }"
-                :style="{
-                  top: `${caretPosition.top}px`,
-                  left: `${caretPosition.left}px`,
-                  height: `${caretPosition.height}px`,
-                }"
+                class="absolute transition-[top,left,height,width] duration-100 ease-out pointer-events-none"
+                :class="[
+                  CARET_CLASSES[customization.caret] ?? CARET_CLASSES.bar,
+                  { 'animate-caret-idle': configStore.userInput.length === 0 },
+                ]"
+                :style="caretStyle"
               ></div>
 
               <!-- The rival's caret: where your record, or the pacer, is now -->
@@ -885,6 +884,7 @@ import GhostIcon from "@/shared/components/icons/GhostIcon";
 import MetronomeIcon from "@/shared/components/icons/MetronomeIcon";
 import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 import { useSoundStore } from "@/shared/stores/sound";
+import { useCustomizationStore } from "@/shared/stores/customization";
 import {
   playKeystrokeSound,
   playErrorSound,
@@ -1424,7 +1424,40 @@ const visibleText = computed(() => {
 const wordGroups = computed(() => groupIntoWords(visibleText.value));
 
 // Smooth animated caret position, tracked relative to the typing container
-const caretPosition = ref({ top: 0, left: 0, height: 0 });
+const caretPosition = ref({ top: 0, left: 0, height: 0, width: 0 });
+
+// The caret's look, from the ones levels unlock (rewards.js)
+const customization = useCustomizationStore();
+const CARET_CLASSES = {
+  bar: "rounded-full bg-primary",
+  block: "rounded-sm bg-primary/35",
+  underline: "rounded-full bg-primary",
+  glow: "rounded-full bg-primary shadow-[0_0_10px_2px_var(--color-primary)]",
+  rainbow: "rounded-full animate-rainbow-caret",
+};
+const UNDERLINE_PX = 3;
+
+const caretStyle = computed(() => {
+  const { top, left, height, width } = caretPosition.value;
+  switch (customization.caret) {
+    case "block":
+      return {
+        top: `${top}px`,
+        left: `${left}px`,
+        height: `${height}px`,
+        width: `${width}px`,
+      };
+    case "underline":
+      return {
+        top: `${top + height - UNDERLINE_PX - 4}px`,
+        left: `${left}px`,
+        height: `${UNDERLINE_PX}px`,
+        width: `${width}px`,
+      };
+    default:
+      return { top: `${top}px`, left: `${left}px`, height: `${height}px`, width: "4px" };
+  }
+});
 
 const getCurrentCharElement = () => {
   if (!typingContainer.value) return null;
@@ -1447,6 +1480,8 @@ const updateCaretPosition = () => {
     top: targetRect.top - containerRect.top,
     left: targetRect.left - containerRect.left,
     height: targetRect.height,
+    // For the carets that cover or underline the character
+    width: targetRect.width,
   };
 };
 
@@ -1648,7 +1683,7 @@ watch(
 
     // Sin red: a wrong key sounds like any other
     if (isCorrect || configStore.blindMode) {
-      if (soundStore.keystrokeSound) playKeystrokeSound();
+      if (soundStore.keystrokeSound) playKeystrokeSound(customization.sound);
     } else if (soundStore.errorSound) {
       playErrorSound();
     }
@@ -1998,6 +2033,30 @@ onUnmounted(() => {
     transform: scale(1.15);
     opacity: 0.85;
   }
+}
+
+/* The top-level caret: cycling through the accent colors */
+@keyframes rainbow-caret {
+  0%,
+  100% {
+    background-color: #f43f5e;
+  }
+  20% {
+    background-color: #f59e0b;
+  }
+  40% {
+    background-color: #10b981;
+  }
+  60% {
+    background-color: #0ea5e9;
+  }
+  80% {
+    background-color: #8b5cf6;
+  }
+}
+
+.animate-rainbow-caret {
+  animation: rainbow-caret 2.4s linear infinite;
 }
 
 .animate-badge-glow {
