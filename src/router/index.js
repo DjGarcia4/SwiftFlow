@@ -24,6 +24,8 @@ const router = createRouter({
           "Un test de mecanografía en español que te dice en qué fallás, por qué, y te arma la práctica para arreglarlo. Sin cuenta, todo en tu navegador.",
       },
     },
+    // Anything else (a mistyped or old link) lands on the test
+    { path: "/:rest(.*)*", redirect: "/" },
   ],
 });
 
