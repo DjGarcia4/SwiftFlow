@@ -146,6 +146,9 @@ const MONTH_NAMES = [
 // A month name over a first column of one or two days would point at a
 // month the grid barely shows.
 const MIN_FIRST_COLUMN_DAYS = 3;
+// A name takes about this many columns to write out; a month that starts
+// sooner than that after the one before would print over it ("sepoct")
+const MIN_LABEL_COLUMNS = 3;
 // Four filled steps plus "nothing", so a five-session day doesn't look the
 // same as a one-session day but a twelve-session day doesn't need its own
 // shade either.
@@ -200,6 +203,14 @@ const monthLabels = computed(() => {
     const isStub = index === 0 && week.filter(Boolean).length < MIN_FIRST_COLUMN_DAYS;
     labels[index] = month !== lastMonth && !isStub ? MONTH_NAMES[month] : "";
     lastMonth = month;
+  });
+
+  // Where two names would collide, the earlier month -- the sliver the
+  // grid opens on -- gives way to the one after it
+  labels.forEach((label, index) => {
+    if (!label) return;
+    const next = labels.findIndex((other, j) => j > index && other);
+    if (next !== -1 && next - index < MIN_LABEL_COLUMNS) labels[index] = "";
   });
 
   return labels;

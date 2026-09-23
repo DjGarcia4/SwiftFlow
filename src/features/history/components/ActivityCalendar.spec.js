@@ -42,6 +42,22 @@ describe("ActivityCalendar", () => {
     expect(months).toEqual(["ene", "feb", "mar"]);
   });
 
+  it("drops the opening month's name when the next one starts too soon to fit both", () => {
+    // 365 days back from 22 September 2026 opens on 22 September 2025: a
+    // column and a half of September before October begins
+    const wrapper = mount(ActivityCalendar, {
+      props: { activity: activity(365, new Date(2026, 8, 22)) },
+    });
+
+    const months = wrapper
+      .findAll("span")
+      .map((span) => span.text())
+      .filter((text) => /^[a-z]{3}$/.test(text));
+
+    expect(months[0]).toBe("oct");
+    expect(months.filter((m) => m === "sep")).toHaveLength(1);
+  });
+
   it("labels Monday, Wednesday and Friday down the left", () => {
     const wrapper = mount(ActivityCalendar, {
       props: { activity: activity(21, new Date(2026, 2, 12)) },
