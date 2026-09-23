@@ -15,9 +15,13 @@
     ></div>
 
     <LandingHero :parallax="parallax" @explore="scrollToId('que-tiene')" />
+    <TryItSection />
     <FeatureGrid />
     <StatsShowcase />
+    <ComparisonSection />
     <ProgressShowcase />
+    <NarrativeSection />
+    <ChangelogSection />
     <LandingClosing @top="scrollToTop" />
   </div>
 </template>
@@ -31,6 +35,10 @@ import FeatureGrid from "@/features/landing/components/FeatureGrid.vue";
 import StatsShowcase from "@/features/landing/components/StatsShowcase.vue";
 import ProgressShowcase from "@/features/landing/components/ProgressShowcase.vue";
 import LandingClosing from "@/features/landing/components/LandingClosing.vue";
+import TryItSection from "@/features/landing/components/TryItSection.vue";
+import ComparisonSection from "@/features/landing/components/ComparisonSection.vue";
+import NarrativeSection from "@/features/landing/components/NarrativeSection.vue";
+import ChangelogSection from "@/features/landing/components/ChangelogSection.vue";
 
 const router = useRouter();
 const root = ref(null);

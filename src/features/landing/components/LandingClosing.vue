@@ -1,41 +1,5 @@
 <template>
   <div>
-    <!-- How it works -->
-    <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-      <header class="mx-auto mb-12 max-w-2xl text-center">
-        <p v-reveal class="text-xs font-extrabold uppercase tracking-widest text-primary">
-          Cómo funciona
-        </p>
-        <h2
-          v-reveal="{ delay: 100 }"
-          class="mt-2 font-display text-3xl font-black text-charcoal sm:text-5xl"
-        >
-          Tres pasos, y de nuevo
-        </h2>
-      </header>
-      <ol v-reveal.stagger="{ step: 140 }" class="grid gap-4 md:grid-cols-3">
-        <li
-          v-for="(step, index) in STEPS"
-          :key="step.title"
-          class="relative rounded-card border-2 border-faded-gray bg-paper-white p-6"
-        >
-          <span
-            class="font-display text-6xl font-black leading-none text-primary/20"
-            aria-hidden="true"
-            >{{ index + 1 }}</span
-          >
-          <component
-            :is="step.icon"
-            class="absolute right-6 top-6 h-7 w-7 text-primary"
-          />
-          <h3 class="mt-3 font-display text-xl font-extrabold text-charcoal">
-            {{ step.title }}
-          </h3>
-          <p class="mt-1 text-sm font-bold text-pencil-gray">{{ step.text }}</p>
-        </li>
-      </ol>
-    </section>
-
     <!-- Questions -->
     <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
       <h2
@@ -120,34 +84,10 @@
 </template>
 
 <script setup>
-import {
-  ArrowRightIcon,
-  ChevronDownIcon,
-  PencilIcon,
-  ChartBarIcon,
-  ViewfinderCircleIcon,
-} from "@heroicons/vue/24/outline";
+import { ArrowRightIcon, ChevronDownIcon } from "@heroicons/vue/24/outline";
 import { BoltIcon } from "@heroicons/vue/24/solid";
 
 const emit = defineEmits(["top"]);
-
-const STEPS = [
-  {
-    icon: PencilIcon,
-    title: "Escribí",
-    text: "Elegí un modo y arrancá. Cada tecla queda anotada: cuál era, cuál apretaste y cuánto tardaste.",
-  },
-  {
-    icon: ChartBarIcon,
-    title: "Mirá qué te frena",
-    text: "Al terminar ves dónde te trabaste, y con unas cuantas sesiones, tus teclas, dedos y palabras flojas.",
-  },
-  {
-    icon: ViewfinderCircleIcon,
-    title: "Entrená justo eso",
-    text: "Un botón arma un entrenamiento con eso mismo, te dice cuándo alcanza por hoy y te lo repasa después.",
-  },
-];
 
 const FAQS = [
   {

@@ -1,0 +1,67 @@
+// What's new, newest first, for the landing's "Novedades". Add an entry
+// at the top when something ships; the page shows the latest few. `date`
+// is the month it shipped, as "YYYY-MM".
+
+export const CHANGELOG = [
+  {
+    date: "2026-09",
+    title: "La página de SwiftFlow",
+    text: "Todo lo que hace, en un solo lugar, y una frase para probarlo ahí mismo.",
+  },
+  {
+    date: "2026-09",
+    title: "Recompensas por nivel",
+    text: "Colores para toda la app, estilos de cursor y sonidos de teclado que se desbloquean subiendo de nivel.",
+  },
+  {
+    date: "2026-09",
+    title: "Recordatorio de racha",
+    text: "Un aviso cuando hoy todavía no practicaste, y si querés, uno a la noche.",
+  },
+  {
+    date: "2026-09",
+    title: "Colores por dedo",
+    text: "El teclado en pantalla te muestra qué dedo va en cada tecla.",
+  },
+  {
+    date: "2026-09",
+    title: "Palabras que te cuestan",
+    text: "Las palabras enteras que se te traban, y un entrenamiento con ellas.",
+  },
+  {
+    date: "2026-09",
+    title: "Mi texto",
+    text: "Pegá lo que escribís seguido y practicalo tal cual.",
+  },
+  {
+    date: "2026-09",
+    title: "Sin red",
+    text: "Escribí sin ver tus errores hasta el final.",
+  },
+  {
+    date: "2026-09",
+    title: "Marcapasos y fantasma",
+    text: "Corré contra el ritmo de tu récord o contra una velocidad fija.",
+  },
+];
+
+const MONTHS = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+
+// "septiembre de 2026"
+export const formatChangelogDate = (date) => {
+  const [year, month] = date.split("-").map(Number);
+  return `${MONTHS[month - 1]} de ${year}`;
+};
