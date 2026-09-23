@@ -646,7 +646,7 @@
       </div>
 
       <div
-        class="text-center flex gap-2 sm:gap-3 justify-center transition-[opacity,translate] duration-500 ease-smooth"
+        class="relative z-20 text-center flex gap-2 sm:gap-3 justify-center transition-[opacity,translate] duration-500 ease-smooth"
         :class="[
           isCompleted ? 'mt-4' : 'mt-6 sm:mt-12',
           isTypingActive
