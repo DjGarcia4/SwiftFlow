@@ -3,10 +3,13 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { routePages } from "./build/routePages.js";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    // A real HTML file per route, with its own title and social card
+    routePages({ siteUrl: process.env.SITE_URL ?? "" }),
     vue(),
     tailwindcss(),
     VitePWA({
