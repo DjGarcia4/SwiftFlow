@@ -4,8 +4,13 @@
 // description and social card written in, and the landing a plain-text
 // account of itself for anything that reads the page without JavaScript.
 //
-// SITE_URL (e.g. SITE_URL=https://swiftflow.app npm run build) makes the
-// image and page links absolute, which some previews insist on.
+// Other routes are written as "sobre.html" rather than "sobre/index.html":
+// hosts like Netlify serve /sobre from the first one as it is, but answer
+// the second with a redirect to /sobre/.
+//
+// The site's address makes the image and page links absolute, which some
+// previews (WhatsApp) insist on -- see vite.config.js for where it comes
+// from.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -110,9 +115,7 @@ export const routePages = ({ siteUrl = "" } = {}) => {
       const built = readFileSync(indexPath, "utf8");
       for (const route of ROUTES) {
         const target =
-          route.path === "/"
-            ? indexPath
-            : join(outDir, route.path.slice(1), "index.html");
+          route.path === "/" ? indexPath : join(outDir, `${route.path.slice(1)}.html`);
         mkdirSync(join(target, ".."), { recursive: true });
         writeFileSync(target, pageFor(built, route, siteUrl));
       }

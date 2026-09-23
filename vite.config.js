@@ -8,8 +8,13 @@ import { routePages } from "./build/routePages.js";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    // A real HTML file per route, with its own title and social card
-    routePages({ siteUrl: process.env.SITE_URL ?? "" }),
+    // A real HTML file per route, with its own title and social card. The
+    // site's address: SITE_URL if given, else the one Netlify sets on its
+    // builds, else the published site.
+    routePages({
+      siteUrl:
+        process.env.SITE_URL ?? process.env.URL ?? "https://swiftflowtyping.netlify.app",
+    }),
     vue(),
     tailwindcss(),
     VitePWA({
