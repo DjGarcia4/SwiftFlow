@@ -61,6 +61,12 @@
               <!-- How the keys are going -->
               <KeyTrendCard v-else-if="row.id === 'trends'" :trends="demoKeyTrends" />
 
+              <!-- Day to day -->
+              <DayConsistencyCard
+                v-else-if="row.id === 'steady'"
+                :data="demoDayConsistency"
+              />
+
               <!-- Keys and transitions that hold you up -->
               <div v-else-if="row.id === 'slow'" class="space-y-6">
                 <TimingBars :stats="demoKeyTiming" title="Tus teclas más lentas" />
@@ -147,6 +153,7 @@ import { staggerStyle } from "@/shared/utils/motion";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
 import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
+import DayConsistencyCard from "@/features/history/components/DayConsistencyCard.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
 import TimeOfDayCard from "@/features/history/components/TimeOfDayCard.vue";
 import WpmChart from "@/features/typing-test/components/WpmChart.vue";
@@ -160,6 +167,7 @@ import {
   demoTimeOfDay,
   demoProblemWords,
   demoKeyTrends,
+  demoDayConsistency,
 } from "../demoData";
 
 const ROWS = [
@@ -222,6 +230,18 @@ const ROWS = [
       "Palabras enteras que se te traban",
     ],
     height: "18rem",
+  },
+  {
+    id: "steady",
+    kicker: "Constancia",
+    title: "Qué tan parejo sos",
+    text: "No alcanza con un buen día. SwiftFlow promedia cada día que practicás y te dice si tu velocidad se sostiene de uno al otro, o si hay días que se te van.",
+    points: [
+      "Un puntaje de 0 a 100, y entre qué velocidades se mueven tus días",
+      "Cada día contra tu franja habitual",
+      "Solo con partidas comparables: tu modo más jugado",
+    ],
+    height: "14rem",
   },
   {
     id: "habits",

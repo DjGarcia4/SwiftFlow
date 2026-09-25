@@ -82,6 +82,7 @@ const ROWS = [
   { label: "Qué dedo falla más", typical: false },
   { label: "En qué palabra de la partida te trabaste", typical: false },
   { label: "Qué tan parejo es tu ritmo", typical: false },
+  { label: "Qué tan parejo sos de un día al otro", typical: false },
   { label: "Cuándo parar de entrenar, y cuándo repasar", typical: false },
 ];
 </script>

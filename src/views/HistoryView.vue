@@ -327,6 +327,14 @@
         <KeyTrendCard :trends="keyTrends" />
       </div>
 
+      <!-- How steady you are from day to day -->
+      <div
+        v-if="dayConsistency"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:507ms]"
+      >
+        <DayConsistencyCard :data="dayConsistency" />
+      </div>
+
       <!-- Whole words you stumble on, with a drill on them -->
       <div
         v-if="problemWords.length"
@@ -525,10 +533,14 @@
       <!-- Sessions list. Capped and scrolled on its own so a long history
            doesn't bury the buttons underneath it; the extra right padding
            keeps the cards clear of the scrollbar, and the negative margin
-           puts the block back where it would have sat. -->
+           puts the block back where it would have sat. Focusable, so it
+           can be scrolled from the keyboard too. -->
       <TransitionGroup
         tag="div"
-        class="space-y-2 mb-6 max-h-[32rem] overflow-y-auto overscroll-contain pr-2 -mr-2"
+        role="region"
+        aria-label="Tus partidas"
+        tabindex="0"
+        class="space-y-2 mb-6 max-h-[32rem] overflow-y-auto overscroll-contain pr-2 -mr-2 rounded-card"
         enter-active-class="transition-all duration-500 ease-smooth"
         enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0"
@@ -655,6 +667,8 @@ import { staggerStyle } from "@/shared/utils/motion";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
+import DayConsistencyCard from "@/features/history/components/DayConsistencyCard.vue";
+import { computeDayConsistency } from "@/features/history/utils/dayConsistency";
 import { computeKeyTrends } from "@/features/history/utils/keyTrends";
 import { strictModeById } from "@/features/typing-test/utils/strictModes";
 import KeyboardLayoutPicker from "@/features/typing-test/components/KeyboardLayoutPicker.vue";
@@ -842,6 +856,7 @@ const dailyActivity = computed(() =>
 const keyErrorStats = computed(() => computeKeyErrorStats(keyStatsResults.value));
 // Its own window: the latest sessions against the ones before them
 const keyTrends = computed(() => computeKeyTrends(filteredResults.value));
+const dayConsistency = computed(() => computeDayConsistency(filteredResults.value));
 const confusionStats = computed(() => computeConfusionStats(keyStatsResults.value));
 const transpositionStats = computed(() =>
   computeTranspositionStats(keyStatsResults.value)

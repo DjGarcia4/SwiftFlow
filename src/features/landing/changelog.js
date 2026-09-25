@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Qué tan parejo sos",
+    text: "Un puntaje de constancia de un día al otro, con cada día contra tu franja habitual.",
+  },
+  {
+    date: "2026-09",
     title: "Cómo van tus teclas",
     text: "El historial te dice qué teclas mejoraron y cuáles empeoraron: tus últimas partidas contra las anteriores.",
   },

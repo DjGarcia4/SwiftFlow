@@ -9,6 +9,7 @@ import { computeChallengeStats } from "@/features/history/dailyChallenges";
 import { classics } from "@/features/typing-test/content/classics";
 import { courseProgress, LESSONS } from "@/features/course/course";
 import { hasTamedKey } from "@/features/history/utils/keyTrends";
+import { computeDayConsistency } from "@/features/history/utils/dayConsistency";
 
 // MODES_COUNT stays at 5 even though there are now 6 modes (numbers was
 // added later), so nobody loses "Explorador" after having earned it.
@@ -188,6 +189,14 @@ export const ACHIEVEMENTS = [
     title: "Tecla domada",
     description: "Bajá a la mitad los errores de una tecla que te costaba",
     check: (ctx) => ctx.hasTamedKey,
+  },
+  {
+    id: "steady_days",
+    category: "accuracy",
+    icon: "check-badge",
+    title: "Constante",
+    description: "Mantené 90 de parejo de un día al otro, en al menos 7 días de práctica",
+    check: (ctx) => ctx.steadyDays,
   },
   {
     id: "accuracy_avg_95",
@@ -790,6 +799,12 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
     focusCount: results.filter((r) => r.focus).length,
     course: courseProgress(results),
     hasTamedKey: hasTamedKey(results),
+    steadyDays: (() => {
+      const consistency = computeDayConsistency(results);
+      return Boolean(
+        consistency && consistency.days.length >= 7 && consistency.score >= 90
+      );
+    })(),
     dictationCount: results.filter((r) => r.mode === "dictation").length,
     hasCleanLongDictation: results.some(
       (r) => r.mode === "dictation" && r.modeValue >= 5 && r.accuracy >= 98

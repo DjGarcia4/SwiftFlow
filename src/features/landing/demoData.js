@@ -114,3 +114,33 @@ export const demoKeyTrends = {
   worsened: [{ key: "v", before: 0.03, after: 0.06, change: 0.03 }],
   all: [],
 };
+
+// "Qué tan parejo sos": two weeks of days, a steady typist with an off day
+export const demoDayConsistency = (() => {
+  const wpms = [58, 61, 60, 57, 62, 49, 59, 63, 61, 60, 64, 62, 63, 65];
+  const today = new Date();
+  const days = wpms.map((wpm, i) => ({
+    date: new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - (wpms.length - 1 - i) * 2,
+      12
+    ).toISOString(),
+    wpm,
+    sessions: 1 + (i % 3),
+  }));
+  const mean = wpms.reduce((sum, wpm) => sum + wpm, 0) / wpms.length;
+  const sd = Math.sqrt(
+    wpms.reduce((sum, wpm) => sum + (wpm - mean) ** 2, 0) / wpms.length
+  );
+  return {
+    score: Math.round((1 - sd / mean) * 100),
+    level: "Muy parejo",
+    label: "30s",
+    days,
+    mean,
+    sd,
+    min: Math.min(...wpms),
+    max: Math.max(...wpms),
+  };
+})();

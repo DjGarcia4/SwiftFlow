@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { ACHIEVEMENTS, computeAchievements } from "./achievements";
 import { classics } from "@/features/typing-test/content/classics";
 import { LESSONS } from "@/features/course/course";
+import { METRICS_VERSION } from "@/features/history/utils/historyStats";
 
 const isUnlocked = (achievements, id) => achievements.find((a) => a.id === id).unlocked;
 
@@ -148,6 +149,24 @@ describe("computeAchievements", () => {
       true
     );
     expect(isUnlocked(computeAchievements(earlier), "tamed_key")).toBe(false);
+  });
+
+  it("unlocks steady_days after a week of steady days", () => {
+    const day = (daysAgo, wpm) => ({
+      mode: "time",
+      modeValue: 30,
+      wpm,
+      accuracy: 95,
+      metricsVersion: METRICS_VERSION,
+      date: new Date(2026, 8, 25 - daysAgo, 12).toISOString(),
+    });
+    const steadyWeek = [60, 61, 59, 60, 62, 58, 60].map((wpm, i) => day(i, wpm));
+    expect(isUnlocked(computeAchievements(steadyWeek), "steady_days")).toBe(true);
+    expect(isUnlocked(computeAchievements(steadyWeek.slice(0, 6)), "steady_days")).toBe(
+      false
+    );
+    const bumpy = [40, 70, 45, 75, 40, 70, 50].map((wpm, i) => day(i, wpm));
+    expect(isUnlocked(computeAchievements(bumpy), "steady_days")).toBe(false);
   });
 
   it("unlocks the dictation achievements", () => {
