@@ -46,7 +46,7 @@ const eachScreen = async (page, check) => {
   await openTest(page);
   await check("test");
 
-  await page.getByRole("button", { name: "Texto" }).click();
+  await page.getByRole("button", { name: "Texto", exact: true }).click();
   await check("text menu");
   await page.keyboard.press("Escape");
 
@@ -107,7 +107,7 @@ test("high contrast follows the system until it's switched", async ({ page }) =>
   await openTest(page);
   await expect(page.locator("html")).toHaveAttribute("data-contrast", "more");
 
-  await page.getByRole("button", { name: "Texto" }).click();
+  await page.getByRole("button", { name: "Texto", exact: true }).click();
   const toggle = page.getByRole("switch", { name: /Alto contraste/ });
   await expect(toggle).toHaveAttribute("aria-checked", "true");
   await toggle.click();

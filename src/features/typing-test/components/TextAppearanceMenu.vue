@@ -128,6 +128,7 @@ import {
   TEXT_SIZES,
   LINE_HEIGHTS,
   CARET_MOTIONS,
+  FOCUS_OPTIONS,
   TEXT_APPEARANCE_DEFAULTS,
   optionOf,
 } from "@/shared/utils/textAppearance";
@@ -171,6 +172,8 @@ const SETTINGS = [
   { field: "size", label: "Tamaño", options: toOptions(TEXT_SIZES) },
   { field: "lineHeight", label: "Interlineado", options: toOptions(LINE_HEIGHTS) },
   { field: "caretMotion", label: "Cursor", options: toOptions(CARET_MOTIONS) },
+  // Just the word being typed and the next, big and centered
+  { field: "focus", label: "Modo foco", options: toOptions(FOCUS_OPTIONS) },
 ];
 
 // The sample's font and spacing as picked, at a size that fits the menu

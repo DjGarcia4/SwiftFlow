@@ -628,6 +628,7 @@
               ref="textContentEl"
               :key="`text-${textVersion}`"
               class="animate-fade-in relative tracking-wide whitespace-pre-wrap"
+              :class="{ 'text-center': textAppearance.focusMode }"
               :style="textStyle"
             >
               <!-- Smooth animated caret -->
@@ -659,7 +660,10 @@
                 />
               </div>
 
-              <span v-for="(group, groupIndex) in wordGroups" :key="groupIndex">
+              <span
+                v-for="group in shownGroups"
+                :key="group.type === 'word' ? group.chars[0].index : group.index"
+              >
                 <span
                   v-if="group.type === 'word'"
                   class="inline-block break-words max-w-full"
@@ -909,7 +913,7 @@ import {
   generateWeeklyText,
 } from "@/features/typing-test/content/weekly";
 import { useConfigStore } from "@/features/typing-test/store";
-import { groupIntoWords } from "@/features/typing-test/utils/textGroups";
+import { groupIntoWords, focusWindow } from "@/features/typing-test/utils/textGroups";
 import { computeKeyboardViewportStyle } from "@/features/typing-test/utils/keyboardViewport";
 import { useHistoryStore } from "@/features/history/store";
 import {
@@ -1547,6 +1551,14 @@ const visibleText = computed(() => {
 // (individual per-character spans keep the exact index-based coloring/logic)
 const wordGroups = computed(() => groupIntoWords(visibleText.value));
 
+// Focus mode: just the word being typed and the next one. They keep their
+// real indexes, so coloring and the caret work exactly as on the full text.
+const shownGroups = computed(() =>
+  textAppearance.focusMode && !isCompleted.value
+    ? focusWindow(wordGroups.value, configStore.userInput.length)
+    : wordGroups.value
+);
+
 // Smooth animated caret position, tracked relative to the typing container
 const caretPosition = ref({ top: 0, left: 0, height: 0, width: 0 });
 
@@ -1563,9 +1575,13 @@ const onWideChange = (event) => {
 };
 wideQuery?.addEventListener?.("change", onWideChange);
 onUnmounted(() => wideQuery?.removeEventListener?.("change", onWideChange));
-const textStyle = computed(() =>
-  textStyleFor(textAppearance.appearance, { wide: isWide.value })
-);
+// Focus mode draws its two words half again as big
+const FOCUS_SCALE = 1.5;
+const textStyle = computed(() => {
+  const style = textStyleFor(textAppearance.appearance, { wide: isWide.value });
+  if (!textAppearance.focusMode) return style;
+  return { ...style, fontSize: `${parseFloat(style.fontSize) * FOCUS_SCALE}px` };
+});
 
 // Any of that moves every character: put the carets back on theirs, and
 // the line being typed back in the middle
@@ -1659,7 +1675,11 @@ const updateGhostCaret = () => {
   // character
   const index = Math.min(ghostIndex.value, length - 1);
   const target = typingContainer.value.querySelector(`[data-char-index="${index}"]`);
-  if (!target) return;
+  // Off screen in focus mode: the lead counter still says where it is
+  if (!target) {
+    ghostCaret.value = null;
+    return;
+  }
   const containerRect = textContentEl.value.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
   ghostCaret.value = {

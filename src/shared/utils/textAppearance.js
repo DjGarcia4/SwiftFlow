@@ -50,11 +50,18 @@ export const CARET_MOTIONS = [
   { id: "instant", label: "Salta" },
 ];
 
+// Focus mode: only the word being typed and the next one, big and alone
+export const FOCUS_OPTIONS = [
+  { id: "off", label: "No" },
+  { id: "on", label: "Sí" },
+];
+
 export const TEXT_APPEARANCE_DEFAULTS = {
   font: "mono",
   size: "m",
   lineHeight: "normal",
   caretMotion: "smooth",
+  focus: "off",
 };
 
 const OPTIONS = {
@@ -62,6 +69,7 @@ const OPTIONS = {
   size: TEXT_SIZES,
   lineHeight: LINE_HEIGHTS,
   caretMotion: CARET_MOTIONS,
+  focus: FOCUS_OPTIONS,
 };
 
 const STORAGE_KEY = "swiftflow_text_appearance";

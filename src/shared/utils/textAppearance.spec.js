@@ -25,6 +25,7 @@ describe("text appearance", () => {
       size: "xl",
       lineHeight: "loose",
       caretMotion: "instant",
+      focus: "on",
     };
     saveTextAppearance(picked);
     expect(loadTextAppearance()).toEqual(picked);

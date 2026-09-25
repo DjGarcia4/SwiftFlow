@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Modo foco",
+    text: "Solo la palabra que estás escribiendo y la siguiente, grandes y en el centro.",
+  },
+  {
+    date: "2026-09",
     title: "Modos exigentes",
     text: "Muerte súbita, corregir para avanzar y precisión mínima, combinables con cualquier modo. Y tres logros nuevos para quien se anime.",
   },

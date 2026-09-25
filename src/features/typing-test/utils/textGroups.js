@@ -27,3 +27,29 @@ export const groupIntoWords = (text) => {
 
   return groups;
 };
+
+// Focus mode: just the word being typed and the one after it, out of
+// groupIntoWords' groups. Sitting on the space right after a word still
+// counts as being on that word -- the space is its last key. Anything
+// further along (a code line's indentation) is typed as part of what's
+// coming.
+export const focusWindow = (groups, position) => {
+  const at = groups.findIndex((group) =>
+    group.type === "word"
+      ? position >= group.chars[0].index && position <= group.chars.at(-1).index
+      : group.index === position
+  );
+  if (at === -1) return [];
+
+  const trailingSpace = groups[at].type === "space" && groups[at - 1]?.type === "word";
+  const start = trailingSpace ? at - 1 : at;
+  const current = groups.findIndex((group, i) => i >= start && group.type === "word");
+  const next =
+    current === -1
+      ? -1
+      : groups.findIndex(
+          (group, i) => i > Math.max(current, at) && group.type === "word"
+        );
+  const end = next !== -1 ? next : groups.length - 1;
+  return groups.slice(start, end + 1);
+};

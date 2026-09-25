@@ -42,6 +42,7 @@ Y combinables con cualquier modo:
   Colemak
 - Texto a tu gusto: fuente (monoespaciada, JetBrains Mono, Nunito, Atkinson Hyperlegible u
   OpenDyslexic), tamaño, interlineado, y cursor que se desliza o salta
+- Modo foco: solo la palabra que estás escribiendo y la siguiente, grandes y centradas
 - Efectos de sonido configurables (tecla, error, celebración)
 - Tema claro y oscuro, y alto contraste (sigue al del sistema hasta que lo cambies)
 - Accesible: todo se maneja con el teclado, los diálogos atrapan y devuelven el foco, y

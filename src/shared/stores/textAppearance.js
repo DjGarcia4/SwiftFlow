@@ -36,6 +36,7 @@ export const useTextAppearanceStore = defineStore("textAppearance", () => {
   );
 
   const caretGlides = computed(() => appearance.value.caretMotion === "smooth");
+  const focusMode = computed(() => appearance.value.focus === "on");
 
-  return { appearance, fontsLoaded, caretGlides, set };
+  return { appearance, fontsLoaded, caretGlides, focusMode, set };
 });

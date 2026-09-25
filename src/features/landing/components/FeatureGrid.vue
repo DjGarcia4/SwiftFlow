@@ -187,6 +187,7 @@ import {
   LanguageIcon,
   UserGroupIcon,
   HeartIcon,
+  EyeIcon,
 } from "@heroicons/vue/24/outline";
 import TextStyleIcon from "@/shared/components/icons/TextStyleIcon";
 import { FireIcon } from "@heroicons/vue/24/solid";
@@ -289,6 +290,11 @@ const SMALL_CARDS = [
     icon: EyeSlashIcon,
     title: "Sin red",
     text: "Escribí sin ver tus errores hasta el final: entrena la confianza en tus dedos.",
+  },
+  {
+    icon: EyeIcon,
+    title: "Modo foco",
+    text: "Solo la palabra que estás escribiendo y la siguiente, grandes y en el centro. Nada más que mirar.",
   },
   {
     icon: HeartIcon,

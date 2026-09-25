@@ -9,7 +9,7 @@ test("the text's size, font and spacing can be changed, and stay", async ({ page
   const before = await textArea(page).evaluate((el) => getComputedStyle(el).fontSize);
   expect(before).toBe(isPhone(page) ? "24px" : "30px");
 
-  await page.getByRole("button", { name: "Texto" }).click();
+  await page.getByRole("button", { name: "Texto", exact: true }).click();
   const menu = page.getByRole("dialog", { name: "Cómo se ve el texto" });
   await menu.getByRole("radio", { name: "XL" }).click();
   await menu.getByRole("radio", { name: "Amplio" }).click();
@@ -29,7 +29,7 @@ test("the text's size, font and spacing can be changed, and stay", async ({ page
 
 test("a test can still be typed to the end with big text", async ({ page }) => {
   await openTest(page);
-  await page.getByRole("button", { name: "Texto" }).click();
+  await page.getByRole("button", { name: "Texto", exact: true }).click();
   await page.getByRole("radio", { name: "XL" }).click();
   await page.getByRole("radio", { name: "Salta" }).click();
   await page.keyboard.press("Escape");
