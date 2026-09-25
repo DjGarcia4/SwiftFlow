@@ -62,7 +62,7 @@ teclado.
 
 - Gráfico de WPM y errores a lo largo de la sesión
 - Tarjeta para compartir el resultado, con un diseño distinto si fue récord
-- 83 logros en 12 categorías, con aviso al desbloquearlos
+- 84 logros en 12 categorías, con aviso al desbloquearlos
 
 ### En el historial
 
@@ -79,6 +79,8 @@ teclado.
 - **Actividad**: los últimos tres meses, un cuadradito por día
 - **Tendencia** de WPM, récords personales por modo, y filtro por modo para que los
   promedios comparen lo comparable
+- **Tu resumen** (`/resumen`): cada mes y cada año contados, con récord, promedio contra el
+  período anterior, la tecla que domaste y los logros nuevos, para compartir como imagen
 - Exportar e importar el historial como archivo JSON
 
 Todo se guarda en el navegador (localStorage). No hay cuenta, servidor ni telemetría.

@@ -25,6 +25,16 @@ const router = createRouter({
       },
     },
     {
+      path: "/resumen",
+      name: "summary",
+      component: () => import("@/views/SummaryView.vue"),
+      meta: {
+        title: "Tu resumen",
+        description:
+          "Tu mes o tu año de práctica en SwiftFlow: cuánto, qué tan rápido, qué mejoraste.",
+      },
+    },
+    {
       path: "/sobre",
       name: "about",
       component: () => import("@/views/AboutView.vue"),

@@ -26,6 +26,18 @@ const WORD_OPTIONS_COUNT = 4;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+// The most distinct days practiced within a single calendar month
+const mostDaysInAMonth = (results) => {
+  const months = new Map();
+  for (const result of results) {
+    const date = new Date(result.date);
+    const month = `${date.getFullYear()}-${date.getMonth()}`;
+    if (!months.has(month)) months.set(month, new Set());
+    months.get(month).add(date.getDate());
+  }
+  return Math.max(0, ...[...months.values()].map((days) => days.size));
+};
+
 // The full catalog: each entry is pure data plus a check() against a
 // derived-stats context, so unlock status is always computed fresh from
 // history — no separate "unlocked" state to persist or get out of sync.
@@ -238,6 +250,15 @@ export const ACHIEVEMENTS = [
     title: "Pulso firme",
     description: "Completá una partida exigiéndote un 98% de precisión",
     check: (ctx) => ctx.hasStrictAccuracy98,
+  },
+
+  {
+    id: "month_20_days",
+    category: "streak",
+    icon: "calendar",
+    title: "Mes de hierro",
+    description: "Practicá 20 días distintos en un mismo mes",
+    check: (ctx) => ctx.mostDaysInAMonth >= 20,
   },
 
   // Reading — the classics, and the rest of the Spanish that isn't loose words
@@ -797,6 +818,7 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
       (r) => r.mode === "words" && r.modeValue >= 100 && r.punctuation
     ),
     focusCount: results.filter((r) => r.focus).length,
+    mostDaysInAMonth: mostDaysInAMonth(results),
     course: courseProgress(results),
     hasTamedKey: hasTamedKey(results),
     steadyDays: (() => {

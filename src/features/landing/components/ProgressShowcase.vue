@@ -232,6 +232,42 @@
             12<span class="ml-1 text-base font-extrabold text-pencil-gray">días</span>
           </div>
         </article>
+
+        <!-- The month, looked back on -->
+        <article
+          v-reveal
+          :class="[
+            CARD,
+            'md:col-span-6 grid items-center gap-6 lg:grid-cols-[1fr_1.2fr]',
+          ]"
+        >
+          <div>
+            <h3 class="font-display text-xl font-extrabold text-charcoal">
+              Tu mes, contado
+            </h3>
+            <p class="mt-1 text-sm font-bold text-pencil-gray">
+              Cada mes y cada año, un resumen: cuánto practicaste, tu récord, cuánto más
+              rápido vas que antes, la tecla que domaste y los logros del camino. Listo
+              para compartir como imagen.
+            </p>
+          </div>
+          <div
+            class="rounded-card bg-night-ink px-5 py-4 text-center text-white"
+            aria-hidden="true"
+          >
+            <div class="text-sm font-extrabold text-primary">Mi septiembre</div>
+            <div class="mt-2 grid grid-cols-3 gap-2">
+              <div v-for="stat in SUMMARY_DEMO" :key="stat.label">
+                <div class="font-display text-3xl font-black">{{ stat.value }}</div>
+                <div class="text-[11px] font-bold text-white/70">{{ stat.label }}</div>
+              </div>
+            </div>
+            <div class="mt-3 space-y-0.5 text-xs font-bold">
+              <div>🏆 Récord: 71 WPM · 30s</div>
+              <div>Tecla domada: Ñ 12% → 4%</div>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </section>
@@ -256,6 +292,12 @@ import {
   achievementTintStyle,
 } from "@/features/history/achievementPresentation";
 import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
+
+const SUMMARY_DEMO = [
+  { value: 64, label: "partidas" },
+  { value: 212, label: "minutos" },
+  { value: 21, label: "días" },
+];
 
 // min-w-0: a grid item is otherwise as wide as its widest content, and
 // the modes strip is a few thousand pixels of it

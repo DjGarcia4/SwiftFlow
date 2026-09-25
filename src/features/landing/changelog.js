@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Tu resumen",
+    text: "Tu mes y tu año contados: cuánto practicaste, tu récord, la tecla que domaste y los logros del camino, listos para compartir.",
+  },
+  {
+    date: "2026-09",
     title: "Qué tan parejo sos",
     text: "Un puntaje de constancia de un día al otro, con cada día contra tu franja habitual.",
   },

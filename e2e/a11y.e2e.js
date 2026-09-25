@@ -69,6 +69,11 @@ const eachScreen = async (page, check) => {
   await page.waitForTimeout(1200);
   await check("history");
 
+  await page.goto("/resumen");
+  await expect(page.getByText("Tu resumen", { exact: true })).toBeVisible();
+  await page.waitForTimeout(900);
+  await check("summary");
+
   await page.goto("/curso");
   await expect(
     page.getByRole("heading", { name: "Aprendé a escribir sin mirar" })

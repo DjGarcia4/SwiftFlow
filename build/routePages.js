@@ -40,7 +40,7 @@ export const ROUTES = [
       <h2>Entrenamiento</h2>
       <p>Entrenamientos con tus teclas y palabras flojas, que te dicen cuándo parar y te las repasan a 1, 3, 7, 14 y 30 días.</p>
       <h2>Progreso</h2>
-      <p>50 niveles en 8 rangos, recompensas, logros, retos diarios, meta semanal, reto semanal y racha.</p>
+      <p>50 niveles en 8 rangos, recompensas, logros, retos diarios, meta semanal, reto semanal, racha y un resumen de cada mes y cada año.</p>
       <p><a href="/">Empezar a escribir</a></p>`,
   },
   {
@@ -48,6 +48,12 @@ export const ROUTES = [
     title: "Curso desde cero · SwiftFlow",
     description:
       "Aprendé a escribir sin mirar el teclado, en español: una fila por vez, con lecciones que se adaptan a tu teclado.",
+  },
+  {
+    path: "/resumen",
+    title: "Tu resumen · SwiftFlow",
+    description:
+      "Tu mes o tu año de práctica en SwiftFlow: cuánto, qué tan rápido, qué mejoraste.",
   },
   {
     path: "/historial",

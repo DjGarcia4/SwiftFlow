@@ -26,6 +26,18 @@
       >
         <XpProgress />
 
+        <!-- This month, told as a story -->
+        <RouterLink
+          to="/resumen"
+          class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-primary-tint/50 px-3 py-2 text-sm font-extrabold text-primary transition-colors duration-200 hover:bg-primary-tint"
+        >
+          <span class="flex items-center gap-2">
+            <SparklesIcon class="h-4 w-4" />
+            Tu resumen de {{ currentMonthName }}
+          </span>
+          <ArrowRightIcon class="h-4 w-4" />
+        </RouterLink>
+
         <!-- Two panels under the level, one open at a time -->
         <div class="mt-3 flex justify-center gap-4">
           <button
@@ -657,6 +669,10 @@
 </template>
 
 <script setup>
+import { RouterLink } from "vue-router";
+import { ArrowRightIcon } from "@heroicons/vue/24/outline";
+
+const currentMonthName = new Date().toLocaleDateString("es", { month: "long" });
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { FireIcon, SparklesIcon } from "@heroicons/vue/24/outline";

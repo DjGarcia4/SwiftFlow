@@ -31,7 +31,7 @@
         >
           <div class="flex items-center justify-between mb-3">
             <h2 id="share-title" class="text-sm font-bold text-charcoal">
-              Compartir resultado
+              {{ title }}
             </h2>
             <IconButton
               icon="close"
@@ -76,6 +76,7 @@ import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
+  title: { type: String, default: "Compartir resultado" },
   imageUrl: { type: String, default: null },
   canNativeShare: { type: Boolean, default: false },
 });

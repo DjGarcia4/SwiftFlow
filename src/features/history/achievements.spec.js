@@ -169,6 +169,21 @@ describe("computeAchievements", () => {
     expect(isUnlocked(computeAchievements(bumpy), "steady_days")).toBe(false);
   });
 
+  it("unlocks month_20_days for twenty days in one month", () => {
+    const days = (count, month) =>
+      Array.from({ length: count }, (_, i) => ({
+        mode: "time",
+        wpm: 40,
+        accuracy: 95,
+        date: new Date(2026, month, i + 1, 12).toISOString(),
+      }));
+    expect(isUnlocked(computeAchievements(days(20, 8)), "month_20_days")).toBe(true);
+    // Twenty days, but across two months
+    expect(
+      isUnlocked(computeAchievements([...days(10, 7), ...days(10, 8)]), "month_20_days")
+    ).toBe(false);
+  });
+
   it("unlocks the dictation achievements", () => {
     const dictation = (fields) => ({
       mode: "dictation",
