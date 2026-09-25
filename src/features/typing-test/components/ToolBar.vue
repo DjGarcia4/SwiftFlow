@@ -14,6 +14,7 @@
             :variant="
               configStore.selectedContentTypes === contentType ? 'primary' : 'secondary'
             "
+            :aria-pressed="configStore.selectedContentTypes === contentType"
             size="sm"
             :text="`${contentType == 'punctuation' ? 'Puntuación' : 'Números'}`"
             @click="configStore.handleContentTypes(contentType)"
@@ -22,6 +23,7 @@
         <IconButton
           icon="eye-slash"
           :variant="configStore.blindMode ? 'primary' : 'secondary'"
+          :aria-pressed="configStore.blindMode"
           size="sm"
           text="Sin red"
           @click="configStore.toggleBlindMode"
@@ -32,13 +34,18 @@
       <div class="h-px w-full bg-faded-gray"></div>
 
       <!-- Type selection -->
-      <div class="flex flex-wrap items-center justify-center gap-2">
+      <div
+        role="group"
+        aria-label="Modo"
+        class="flex flex-wrap items-center justify-center gap-2"
+      >
         <IconButton
           v-for="type in offeredTypes"
           :key="type"
           :value="type"
           :icon="typeMeta[type].icon"
           :variant="configStore.type === type ? 'primary' : 'secondary'"
+          :aria-pressed="configStore.type === type"
           size="sm"
           :text="typeMeta[type].label"
           @click="configStore.handleType(type)"
@@ -61,6 +68,8 @@
 
         <div
           :key="configStore.type"
+          role="group"
+          :aria-label="valueOptions?.label ?? 'Texto'"
           class="flex flex-wrap items-center justify-center gap-2 animate-rise [animation-duration:400ms]"
         >
           <template v-if="configStore.type === 'time'">
@@ -69,6 +78,7 @@
               :key="time"
               :value="time"
               :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
+              :aria-pressed="configStore.selectedTime === time"
               size="sm"
               :text="`${time}s`"
               @click="configStore.handleTime(time)"
@@ -86,6 +96,7 @@
               :key="word"
               :value="word"
               :variant="configStore.selectedWords === word ? 'primary' : 'secondary'"
+              :aria-pressed="configStore.selectedWords === word"
               size="sm"
               :text="`${word} `"
               @click="configStore.handleWords(word)"
@@ -94,6 +105,7 @@
           <template v-if="configStore.type === 'code'">
             <IconButton
               :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
+              :aria-pressed="!configStore.selectedCodeLanguage"
               size="sm"
               text="Todos"
               @click="configStore.handleCodeLanguage(null)"
@@ -105,6 +117,7 @@
               :variant="
                 configStore.selectedCodeLanguage === language ? 'primary' : 'secondary'
               "
+              :aria-pressed="configStore.selectedCodeLanguage === language"
               size="sm"
               :text="language"
               @click="configStore.handleCodeLanguage(language)"
@@ -117,6 +130,7 @@
               :variant="
                 configStore.selectedCustomText?.id === entry.id ? 'primary' : 'secondary'
               "
+              :aria-pressed="configStore.selectedCustomText?.id === entry.id"
               size="sm"
               :text="entry.name"
               @click="configStore.selectCustomText(entry.id)"

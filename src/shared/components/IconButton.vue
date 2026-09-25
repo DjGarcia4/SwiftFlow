@@ -6,12 +6,14 @@
       :disabled="disabled"
       :loading="loading"
       :full-width="fullWidth"
+      :aria-label="text ? undefined : tooltip"
       @click="$emit('click', $event)"
     >
       <template v-if="icon" #icon>
         <div
           v-if="icon === 'letter'"
           class="w-4 h-4 flex items-center justify-center font-bold text-sm"
+          aria-hidden="true"
         >
           A
         </div>
@@ -20,8 +22,9 @@
       {{ text }}
     </ButtonCustom>
 
-    <!-- Tooltip -->
+    <!-- Tooltip: sighted users' label; screen readers get it on the button -->
     <div
+      aria-hidden="true"
       class="absolute bottom-full left-1/2 -translate-x-1/2 translate-y-1 scale-95 mb-2 px-3 py-1.5 text-xs font-bold text-white bg-night-ink rounded-xl opacity-0 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 transition-[opacity,translate,scale] duration-200 ease-smooth group-hover:delay-150 origin-bottom pointer-events-none whitespace-nowrap z-50"
     >
       {{ tooltip }}
@@ -45,6 +48,7 @@
       <div
         v-if="icon === 'letter'"
         class="w-4 h-4 flex items-center justify-center font-bold text-sm"
+        aria-hidden="true"
       >
         A
       </div>

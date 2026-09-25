@@ -70,13 +70,14 @@ npm run dev
 | `npm test`              | Corre los tests una vez |
 | `npm run test:watch`    | Tests en modo watch     |
 | `npm run test:coverage` | Tests con cobertura     |
+| `npm run test:e2e`      | Tests end-to-end        |
 | `npm run lint`          | ESLint + Prettier       |
 | `npm run lint:fix`      | Corrige lo que se pueda |
 
 ## 🛠️ Stack
 
 Vue 3 (Composition API, `<script setup>`) · Pinia · Vue Router · Tailwind CSS 4 ·
-Vite · Vitest + @vue/test-utils · Heroicons · vite-plugin-pwa
+Vite · Vitest + @vue/test-utils · Playwright · Heroicons · vite-plugin-pwa
 
 ## 📁 Estructura
 
