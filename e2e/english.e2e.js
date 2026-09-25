@@ -166,3 +166,51 @@ test("the texts can be practiced in English with the app in Spanish", async ({
   );
   expect(saved[0].textLanguage).toBe("en");
 });
+
+test("a link in English opens the app in English, on the same page", async ({ page }) => {
+  await page.goto("/en/curso");
+  await expect(page).toHaveURL(/\/curso$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page).toHaveTitle("Course from scratch · SwiftFlow");
+});
+
+test("the landing switches to the other language", async ({ page }) => {
+  await page.goto("/sobre");
+  await page.getByRole("button", { name: "Read it in English" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page).toHaveTitle("What is SwiftFlow · SwiftFlow");
+  await page.getByRole("button", { name: "Leelo en español" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "es");
+});
+
+test("the history keeps records apart per language, and filters by it", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    const run = (i, wpm, extra = {}) => ({
+      id: `s${i}`,
+      date: new Date(now - i * 60000).toISOString(),
+      metricsVersion: 3,
+      mode: "words",
+      modeValue: 25,
+      wpm,
+      accuracy: 95,
+      errors: 1,
+      timeElapsed: 30,
+      ...extra,
+    });
+    localStorage.setItem(
+      "swiftflow_results",
+      JSON.stringify([run(0, 70, { textLanguage: "en" }), run(1, 50), run(2, 40)])
+    );
+  });
+  await page.goto("/historial");
+  await expect(page.getByText("25 palabras · inglés").first()).toBeVisible();
+  const languages = page.getByRole("group", { name: "Idioma de los textos" });
+  await languages.getByRole("button", { name: "English" }).click();
+  await expect(page.getByText("25 palabras · inglés").first()).toBeVisible();
+  await expect(page.getByText("25 palabras", { exact: true })).toHaveCount(0);
+  await languages.getByRole("button", { name: "Español" }).click();
+  await expect(page.getByText("25 palabras · inglés")).toHaveCount(0);
+});

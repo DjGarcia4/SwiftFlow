@@ -13,6 +13,7 @@ import {
   computeAverageWpm,
   computeAverageAccuracy,
   computePersonalBests,
+  languageOf,
   computeDailyStreak,
   computeKeyErrorStats,
   toLocalDayKey,
@@ -189,19 +190,25 @@ export const useHistoryStore = defineStore("history", () => {
     const byWeek = new Map();
     for (const result of results.value) {
       if (result.mode !== "weekly" || !result.modeValue) continue;
-      const week = byWeek.get(result.modeValue) ?? {
+      // Each language has its own text, so its own week
+      const language = languageOf(result);
+      const id = `${result.modeValue}:${language}`;
+      const week = byWeek.get(id) ?? {
         key: result.modeValue,
+        language,
         best: null,
         attempts: 0,
       };
       week.attempts++;
       if (!week.best || result.wpm > week.best.wpm) week.best = result;
-      byWeek.set(result.modeValue, week);
+      byWeek.set(id, week);
     }
     return [...byWeek.values()].sort((a, b) => b.key.localeCompare(a.key));
   });
-  const weeklyChallengeFor = (key) =>
-    weeklyChallenges.value.find((week) => week.key === key) ?? null;
+  const weeklyChallengeFor = (key, language = "es") =>
+    weeklyChallenges.value.find(
+      (week) => week.key === key && week.language === language
+    ) ?? null;
 
   // Ghosts: the best run at each kind of session, to race
   const ghosts = ref(loadGhosts());
@@ -281,6 +288,7 @@ export const useHistoryStore = defineStore("history", () => {
         [key]: {
           mode: fullEntry.mode,
           modeValue: fullEntry.modeValue ?? null,
+          ...(fullEntry.textLanguage && { textLanguage: fullEntry.textLanguage }),
           count: perfectCount,
         },
       };

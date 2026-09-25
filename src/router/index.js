@@ -1,6 +1,6 @@
 import { watch } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
-import { t, locale } from "@/shared/i18n";
+import { t, locale, setLocale } from "@/shared/i18n";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,6 +33,16 @@ const router = createRouter({
       name: "about",
       component: () => import("@/views/AboutView.vue"),
       meta: { page: "about" },
+    },
+    // The English pages shared as links (build/routePages.js): the app in
+    // English, on the same page without the /en
+    {
+      path: "/en/:rest(.*)*",
+      redirect: (to) => {
+        setLocale("en");
+        const rest = [to.params.rest ?? []].flat().join("/");
+        return { path: `/${rest}`, query: to.query, hash: to.hash };
+      },
     },
     // Anything else (a mistyped or old link) lands on the test
     { path: "/:rest(.*)*", redirect: "/" },

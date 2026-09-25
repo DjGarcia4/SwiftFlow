@@ -3,7 +3,12 @@
 // Thursday's. Read off your most-played kind of session only, since 15
 // seconds and 120 seconds, or words and code, don't run at the same speed.
 import { t } from "@/shared/i18n";
-import { isCurrentMetrics, toLocalDayKey, formatModeLabel } from "./historyStats";
+import {
+  isCurrentMetrics,
+  toLocalDayKey,
+  formatModeLabel,
+  sessionKind,
+} from "./historyStats";
 
 // The latest days you played, each one's average against the others
 export const CONSISTENCY_DAYS = 14;
@@ -23,7 +28,7 @@ export const CONSISTENCY_LEVELS = [
   },
 }));
 
-const kindOf = (result) => `${result.mode}:${result.modeValue ?? ""}`;
+const kindOf = sessionKind;
 
 // results: the history, most recent first. Null until there are days enough.
 export const computeDayConsistency = (results) => {

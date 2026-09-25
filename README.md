@@ -91,6 +91,10 @@ teclado.
   clásicos de dominio público (Austen, Dickens, Melville, Poe, Shakespeare…), dictado con
   voz en inglés, el reto semanal y el curso. Cada partida guarda en qué idioma se jugó, y
   hay logros y retos diarios para practicar en los dos
+- Récords, promedios, rondas perfectas, fantasmas y el reto semanal van por idioma, con
+  un filtro por idioma en el historial
+- Cada página tiene su versión en inglés para compartir (`/en`, `/en/sobre`, `/en/curso`…),
+  con su título, descripción e imagen en inglés; abrirla arranca la app en inglés
 
 Todo se guarda en el navegador (localStorage). No hay cuenta, servidor ni telemetría.
 Funciona instalada como PWA y sin conexión.

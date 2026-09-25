@@ -1231,7 +1231,12 @@ const availableGhost = computed(() => historyStore.ghostFor(raceKey.value));
 const autoPacerTarget = computed(() =>
   autoPacerWpm(
     historyStore.currentResults
-      .filter((result) => result.mode === configStore.type)
+      .filter(
+        (result) =>
+          result.mode === configStore.type &&
+          result.textLanguage ===
+            resultLanguage(configStore.type, configStore.textLanguage)
+      )
       .slice(0, 10)
       .map((result) => result.wpm)
   )
@@ -1585,7 +1590,10 @@ watch(isCompleted, (completed) => {
       configStore.updateBestWpm();
       const weeklyBefore =
         configStore.type === "weekly"
-          ? historyStore.weeklyChallengeFor(currentWeeklyKey.value)
+          ? historyStore.weeklyChallengeFor(
+              currentWeeklyKey.value,
+              resultLanguage("weekly") ?? "es"
+            )
           : null;
       // Resolved before saving: with no hand-picked letters they come from
       // the history, which this session is about to become part of
@@ -1649,6 +1657,7 @@ watch(isCompleted, (completed) => {
             label: formatModeLabel({
               mode: configStore.type,
               modeValue: currentModeValue(),
+              textLanguage: resultLanguage(configStore.type),
             }),
           }
         : null;
@@ -2257,7 +2266,11 @@ const handleShare = () => {
     wpm: configStore.wpm,
     accuracy: configStore.accuracy,
     errors: configStore.errors,
-    modeLabel: formatModeLabel({ mode: configStore.type, modeValue: currentModeValue() }),
+    modeLabel: formatModeLabel({
+      mode: configStore.type,
+      modeValue: currentModeValue(),
+      textLanguage: resultLanguage(configStore.type),
+    }),
     streak: historyStore.dailyStreak,
     isRecord: justBrokeRecord.value,
   });

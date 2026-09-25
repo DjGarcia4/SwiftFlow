@@ -51,7 +51,9 @@ const router = useRouter();
 
 // The week the challenges are on, so it turns over with them
 const key = computed(() => weeklyKey(historyStore.challengeDay));
-const week = computed(() => historyStore.weeklyChallengeFor(key.value));
+const week = computed(() =>
+  historyStore.weeklyChallengeFor(key.value, configStore.textLanguage)
+);
 
 const play = () => {
   if (configStore.type !== "weekly") configStore.handleType("weekly");

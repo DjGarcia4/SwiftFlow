@@ -24,8 +24,10 @@ import {
   isUsableInterval,
 } from "@/features/typing-test/utils/typingMetrics";
 import {
+  PRACTICE_LANGUAGES,
   isPracticeLanguage,
   setPracticeLanguage,
+  resultLanguage,
 } from "@/features/typing-test/content/practiceLanguage";
 import { t, locale } from "@/shared/i18n";
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
@@ -335,7 +337,22 @@ export const useConfigStore = defineStore("config", () => {
   // those older records aren't comparable (see METRICS_VERSION).
   localStorage.removeItem("swiftflow_best_wpm");
   localStorage.removeItem("swiftflow_best_wpm_v2");
-  const bestWpm = ref(Number(localStorage.getItem(BEST_WPM_KEY)) || 0);
+  // One record per language: English texts get their own, apart from the
+  // one every run had before there was a choice (Spanish, code, numbers...)
+  const bestWpmKey = (language) =>
+    language === "es" ? BEST_WPM_KEY : `${BEST_WPM_KEY}_${language}`;
+  const bestWpms = ref(
+    Object.fromEntries(
+      PRACTICE_LANGUAGES.map((language) => [
+        language,
+        Number(localStorage.getItem(bestWpmKey(language))) || 0,
+      ])
+    )
+  );
+  const recordLanguage = computed(
+    () => resultLanguage(type.value, textLanguage.value) ?? "es"
+  );
+  const bestWpm = computed(() => bestWpms.value[recordLanguage.value]);
 
   // Configuration handlers
   // Picking letters puts the drill back on letters
@@ -490,8 +507,9 @@ export const useConfigStore = defineStore("config", () => {
 
   const updateBestWpm = () => {
     if (wpm.value > bestWpm.value) {
-      bestWpm.value = wpm.value;
-      localStorage.setItem(BEST_WPM_KEY, String(bestWpm.value));
+      const language = recordLanguage.value;
+      bestWpms.value = { ...bestWpms.value, [language]: wpm.value };
+      localStorage.setItem(bestWpmKey(language), String(wpm.value));
     }
   };
 

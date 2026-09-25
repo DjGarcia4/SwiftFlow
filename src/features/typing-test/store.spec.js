@@ -144,6 +144,22 @@ describe("useConfigStore", () => {
       store.updateBestWpm();
       expect(store.bestWpm).toBe(5);
     });
+
+    it("keeps a record apart for English texts", () => {
+      const store = useConfigStore();
+      store.setReferenceText("una dos tres cuatro cinco seis siete ocho");
+      store.userInput = "una dos tres cuatro cinco";
+      store.startTime = Date.now();
+      store.elapsedMs = 60000;
+      store.updateBestWpm();
+      expect(store.bestWpm).toBe(5);
+
+      store.setTextLanguage("en");
+      expect(store.bestWpm).toBe(0);
+      // Code has no language: it keeps the record it always had
+      store.handleType("code");
+      expect(store.bestWpm).toBe(5);
+    });
   });
 
   describe("config persistence", () => {

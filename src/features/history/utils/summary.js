@@ -11,6 +11,7 @@ import {
   formatModeLabel,
   formatModeName,
   toLocalDayKey,
+  languageOf,
 } from "./historyStats";
 import { computeAchievements } from "@/features/history/achievements";
 import { t, localeTag } from "@/shared/i18n";
@@ -134,12 +135,18 @@ export const computeSummary = (results, period, now = new Date()) => {
   const busiestDay = [...perDay.values()].sort((a, b) => b.sessions - a.sessions)[0];
 
   // The fastest session, and whether it beat everything before the period
+  // in the same language
   const fastest = comparable.reduce(
     (top, r) => (!top || r.wpm > top.wpm ? r : top),
     null
   );
   const bestBefore = results
-    .filter((r) => isCurrentMetrics(r) && Date.parse(r.date) < bounds.start.getTime())
+    .filter(
+      (r) =>
+        isCurrentMetrics(r) &&
+        Date.parse(r.date) < bounds.start.getTime() &&
+        languageOf(r) === (fastest && languageOf(fastest))
+    )
     .reduce((top, r) => Math.max(top, r.wpm), 0);
 
   const averageWpm = comparable.length ? computeAverageWpm(comparable) : null;

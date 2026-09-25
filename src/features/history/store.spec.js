@@ -616,6 +616,20 @@ describe("useHistoryStore", () => {
     expect(store.achievements.find((a) => a.id === "weekly_challenge_1").unlocked).toBe(
       true
     );
+
+    // The English text is another week's challenge of its own
+    store.recordResult({
+      mode: "weekly",
+      modeValue: "2026-W39",
+      textLanguage: "en",
+      wpm: 70,
+      accuracy: 96,
+      errors: 1,
+      timeElapsed: 40,
+    });
+    expect(store.weeklyChallengeFor("2026-W39").best.wpm).toBe(61);
+    expect(store.weeklyChallengeFor("2026-W39", "en").best.wpm).toBe(70);
+    expect(store.weeklyChallengeFor("2026-W39", "en").attempts).toBe(1);
   });
 
   it("says what a level-up unlocked", () => {

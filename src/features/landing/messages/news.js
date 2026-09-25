@@ -7,6 +7,10 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        recordsByLanguage: {
+          title: "Récords por idioma",
+          text: "Tus récords, promedios, rondas perfectas y el reto semanal, por separado en español y en inglés, con un filtro por idioma en el historial. Y los links en inglés ya se ven en inglés al compartirlos.",
+        },
         practiceEnglish: {
           title: "Practicá en inglés",
           text: "Palabras, citas, textos, clásicos de Austen, Dickens y Poe, dictado con voz en inglés y el curso: elegí el idioma de los textos aparte del de la app. Con logros y retos nuevos.",
@@ -126,6 +130,10 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        recordsByLanguage: {
+          title: "Records per language",
+          text: "Your records, averages, perfect rounds and the weekly challenge, kept apart for Spanish and English, with a language filter in the history. And links in English now look English when shared.",
+        },
         practiceEnglish: {
           title: "Practice in English",
           text: "Words, quotes, texts, classics by Austen, Dickens and Poe, dictation with an English voice, and the course: pick the texts' language apart from the app's. With new achievements and challenges.",

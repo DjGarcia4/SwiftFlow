@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { ROUTES, pageFor, socialTags } from "./routePages";
+import { ROUTES, PAGES, pageFor, socialTags, pathIn } from "./routePages";
+import shared from "@/shared/messages";
 
 const INDEX = `<!DOCTYPE html>
 <html lang="es">
@@ -12,7 +13,8 @@ const INDEX = `<!DOCTYPE html>
   </body>
 </html>`;
 
-const landing = ROUTES.find((route) => route.path === "/sobre");
+const landing = PAGES.find((page) => page.path === "/sobre");
+const englishLanding = PAGES.find((page) => page.path === "/en/sobre");
 
 describe("pageFor", () => {
   it("writes the route's own title and description into the page", () => {
@@ -39,7 +41,7 @@ describe("pageFor", () => {
   });
 
   it("leaves the app's mount point empty on pages without a summary", () => {
-    const home = ROUTES.find((route) => route.path === "/");
+    const home = PAGES.find((page) => page.path === "/");
     expect(pageFor(INDEX, home)).toContain('<div id="app" class="relative z-10"></div>');
   });
 });
@@ -55,5 +57,53 @@ describe("socialTags", () => {
     expect(
       socialTags({ path: "/", title: 'Un "título" <raro>', description: "x" })
     ).toContain('content="Un &quot;título&quot; &lt;raro>"');
+  });
+});
+
+describe("the pages in English", () => {
+  it("puts every route under /en too", () => {
+    expect(PAGES.map((page) => page.path)).toEqual(
+      ROUTES.flatMap((route) => [route.path, pathIn(route.path, "en")])
+    );
+    expect(pathIn("/", "en")).toBe("/en");
+    expect(pathIn("/curso", "en")).toBe("/en/curso");
+  });
+
+  it("writes them in English, with the English picture", () => {
+    const page = pageFor(INDEX, englishLanding, "https://swiftflow.app");
+    expect(page).toContain('<html lang="en">');
+    expect(page).toContain("<title>What is SwiftFlow · SwiftFlow</title>");
+    expect(page).toContain('<meta property="og:locale" content="en_US" />');
+    expect(page).toContain('<meta property="og:locale:alternate" content="es_AR" />');
+    expect(page).toContain('content="https://swiftflow.app/og-image-en.png"');
+    expect(page).toMatch(/<noscript><main>\s*<h1>SwiftFlow: type faster/);
+    expect(pageFor(INDEX, landing)).toContain('<html lang="es">');
+  });
+
+  it("points each page at itself in the other language", () => {
+    const tags = socialTags(landing, "https://swiftflow.app");
+    expect(tags).toContain(
+      '<link rel="alternate" hreflang="en" href="https://swiftflow.app/en/sobre" />'
+    );
+    expect(tags).toContain(
+      '<link rel="alternate" hreflang="x-default" href="https://swiftflow.app/sobre" />'
+    );
+  });
+
+  it("names each page the way the app does once it's running", () => {
+    const APP_PAGES = {
+      "/sobre": "about",
+      "/curso": "course",
+      "/resumen": "summary",
+      "/historial": "history",
+    };
+    for (const [path, id] of Object.entries(APP_PAGES)) {
+      const route = ROUTES.find((each) => each.path === path);
+      for (const language of ["es", "en"]) {
+        const names = shared[language].pages[id];
+        expect(route[language].title).toBe(`${names.title} · SwiftFlow`);
+        expect(route[language].description).toBe(names.description);
+      }
+    }
   });
 });

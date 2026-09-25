@@ -109,6 +109,19 @@
           >
           {{ t("landing.intro.hero.toStart") }}
         </p>
+        <!-- The page in the other language, named in that language so
+             whoever needs it can read it -->
+        <div v-reveal="{ variant: 'fade-in', delay: 550 }" class="mt-4">
+          <button
+            type="button"
+            :lang="otherLanguage"
+            class="inline-flex items-center gap-1.5 rounded-full border-2 border-faded-gray px-3 py-1 text-xs font-extrabold text-pencil-gray transition-colors hover:border-primary hover:text-primary"
+            @click="setLocale(otherLanguage)"
+          >
+            <GlobeAltIcon class="h-4 w-4" />
+            {{ t("landing.intro.hero.otherLanguage") }}
+          </button>
+        </div>
       </div>
 
       <div v-reveal="{ variant: 'zoom', delay: 250 }">
@@ -148,6 +161,7 @@ import {
   ArrowRightIcon,
   ArrowDownIcon,
   ArrowDownTrayIcon,
+  GlobeAltIcon,
 } from "@heroicons/vue/24/outline";
 import { FireIcon } from "@heroicons/vue/24/solid";
 import { useHistoryStore } from "@/features/history/store";
@@ -161,7 +175,7 @@ import { ACHIEVEMENTS } from "@/features/history/achievements";
 import { MAX_LEVEL } from "@/features/history/utils/experience";
 import TypingDemo from "./TypingDemo.vue";
 import InView from "./InView.vue";
-import { t } from "@/shared/i18n";
+import { t, locale, setLocale } from "@/shared/i18n";
 
 defineProps({
   // How far the page has scrolled, for the background's slow drift
@@ -171,6 +185,8 @@ defineProps({
 const emit = defineEmits(["explore"]);
 
 const historyStore = useHistoryStore();
+
+const otherLanguage = computed(() => (locale.value === "en" ? "es" : "en"));
 const returning = computed(() => historyStore.sessionsCount > 0);
 // The letter the history most wants practiced, once there's enough to say
 const weakKey = computed(() => suggestedDrillKeys(historyStore.results)[0] ?? null);

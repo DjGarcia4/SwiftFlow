@@ -20,6 +20,8 @@ export default {
       orPress: "o apretá",
       space: "ESPACIO",
       toStart: "para empezar ya",
+      // In the other language on purpose: it's for whoever reads that one
+      otherLanguage: "Read it in English",
       stats: {
         modes: "modos",
         codeLanguages: "lenguajes de código",
@@ -102,7 +104,7 @@ export default {
         {
           question: "¿Puedo practicar en inglés?",
           answer:
-            "Sí. En el menú de sonido e idioma elegís los textos para practicar, aparte del idioma de la app: palabras, citas, clásicos, dictado y el curso vienen también en inglés.",
+            "Sí. En el menú de sonido e idioma elegís los textos para practicar, aparte del idioma de la app: palabras, citas, clásicos, dictado y el curso vienen también en inglés. Cada idioma lleva sus propios récords.",
         },
         {
           question: "¿Cómo se calcula el WPM?",
@@ -143,6 +145,7 @@ export default {
       orPress: "or press",
       space: "SPACE",
       toStart: "to start right away",
+      otherLanguage: "Leelo en español",
       stats: {
         modes: "modes",
         codeLanguages: "code languages",
@@ -225,7 +228,7 @@ export default {
         {
           question: "Can I practice in English?",
           answer:
-            "Yes. In the sound and language menu you pick the practice texts, apart from the app's language: words, quotes, classics, dictation and the course all come in English too.",
+            "Yes. In the sound and language menu you pick the practice texts, apart from the app's language: words, quotes, classics, dictation and the course all come in English too. Each language keeps its own records.",
         },
         {
           question: "How is WPM calculated?",

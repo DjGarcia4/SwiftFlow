@@ -88,10 +88,27 @@ export const formatModeName = (mode) => {
   return name === `shared.modes.${mode}` ? mode : name;
 };
 
-export const formatModeLabel = ({ mode, modeValue }) => {
+// "25 palabras", or "25 palabras · inglés" for a run on English texts
+export const formatModeLabel = ({ mode, modeValue, textLanguage }) => {
   const format = MODE_LABELS[mode];
-  return format ? format(modeValue) : mode;
+  const label = format ? format(modeValue) : mode;
+  return textLanguage && textLanguage !== "es"
+    ? t("history.inLanguage", label, t(`history.languages.${textLanguage}`))
+    : label;
 };
+
+// The kind of session a result is: its mode and value, and the language of
+// its text when that isn't Spanish -- an English 25 words isn't raced
+// against a Spanish one. Spanish keeps the key it had before there was a
+// choice, so nothing stored under it goes missing.
+export const sessionKind = ({ mode, modeValue, textLanguage }) => {
+  const key = `${mode}:${modeValue ?? ""}`;
+  return textLanguage && textLanguage !== "es" ? `${key}:${textLanguage}` : key;
+};
+
+// The language a result's text was in; Spanish for everything from before
+// there was a choice, and for the modes that have no language
+export const languageOf = (result) => result.textLanguage ?? "es";
 
 // One entry per distinct mode+modeValue combo (e.g. "time · 15s", "code ·
 // JavaScript"), keeping only the highest-wpm result seen for each. Sorted
@@ -100,7 +117,7 @@ export const computePersonalBests = (results) => {
   const bestByKey = new Map();
 
   for (const result of results) {
-    const key = `${result.mode}:${result.modeValue ?? ""}`;
+    const key = sessionKind(result);
     const current = bestByKey.get(key);
     if (!current || result.wpm > current.wpm) {
       bestByKey.set(key, result);

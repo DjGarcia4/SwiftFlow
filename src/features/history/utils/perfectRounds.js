@@ -1,7 +1,8 @@
 // A "perfect round": a finished session without a single wrong keystroke,
 // not even one fixed with backspace. Counted per kind of session (the same
-// mode + value pairs the personal bests use), so "15s" and "Código · Go"
+// kinds the personal bests use), so "15s" and "Código · Go"
 // each keep their own tally.
+import { sessionKind } from "./historyStats";
 
 // Short enough to be over before a mistake could happen isn't an
 // achievement -- a zen session ended after five letters, say.
@@ -17,15 +18,20 @@ export const isPerfectRound = (result) => {
   return result.errorKeystrokes === 0 && result.keystrokes >= MIN_PERFECT_KEYSTROKES;
 };
 
-export const perfectRoundKey = ({ mode, modeValue }) => `${mode}:${modeValue ?? ""}`;
+export const perfectRoundKey = sessionKind;
 
-// { [key]: { mode, modeValue, count } } from a list of results.
+// { [key]: { mode, modeValue, textLanguage?, count } } from a list of results.
 export const tallyPerfectRounds = (results) => {
   const tally = {};
   for (const result of results) {
     if (!isPerfectRound(result)) continue;
     const key = perfectRoundKey(result);
-    tally[key] ??= { mode: result.mode, modeValue: result.modeValue ?? null, count: 0 };
+    tally[key] ??= {
+      mode: result.mode,
+      modeValue: result.modeValue ?? null,
+      ...(result.textLanguage && { textLanguage: result.textLanguage }),
+      count: 0,
+    };
     tally[key].count++;
   }
   return tally;

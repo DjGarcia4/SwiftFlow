@@ -105,6 +105,31 @@
         />
       </div>
 
+      <!-- And which language, once there are runs in more than one: an
+           English text and a Spanish one aren't the same exercise either -->
+      <div
+        v-if="availableLanguages.length > 1"
+        role="group"
+        :aria-label="t('history.view.languageFilter')"
+        class="flex flex-wrap items-center gap-1.5 -mt-2 mb-4 animate-rise"
+      >
+        <IconButton
+          :variant="selectedLanguage === null ? 'primary' : 'secondary'"
+          size="xs"
+          :text="t('history.view.allLanguages')"
+          @click="selectedLanguage = null"
+        />
+        <IconButton
+          v-for="language in availableLanguages"
+          :key="language"
+          :value="language"
+          :variant="selectedLanguage === language ? 'primary' : 'secondary'"
+          size="xs"
+          :text="languageName(language)"
+          @click="selectedLanguage = language"
+        />
+      </div>
+
       <!-- Summary cards -->
       <div
         class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6 [&>*]:animate-rise [&>*:nth-child(2)]:[animation-delay:50ms] [&>*:nth-child(3)]:[animation-delay:100ms] [&>*:nth-child(4)]:[animation-delay:150ms] [&>*:nth-child(5)]:[animation-delay:200ms]"
@@ -222,14 +247,20 @@
           <div class="flex flex-wrap gap-2">
             <div
               v-for="week in pastWeeklyChallenges"
-              :key="week.key"
+              :key="`${week.key}:${week.language}`"
               class="flex items-center gap-2 rounded-xl border-2 border-faded-gray px-3 py-1.5"
             >
               <span class="font-display font-extrabold text-charcoal">{{
                 week.best.wpm
               }}</span>
               <span class="text-xs font-bold text-pencil-gray">{{
-                weeklyLabel(week.key)
+                week.language === "es"
+                  ? weeklyLabel(week.key)
+                  : t(
+                      "history.inLanguage",
+                      weeklyLabel(week.key),
+                      t(`history.languages.${week.language}`)
+                    )
               }}</span>
             </div>
           </div>
@@ -402,7 +433,7 @@
 
       <!-- Personal bests -->
       <div
-        v-if="historyStore.personalBests.length"
+        v-if="filteredPersonalBests.length"
         class="mb-6 animate-rise [animation-delay:550ms]"
       >
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
@@ -420,8 +451,8 @@
           move-class="transition-transform duration-300 ease-out"
         >
           <div
-            v-for="best in historyStore.personalBests"
-            :key="`${best.mode}:${best.modeValue}`"
+            v-for="best in filteredPersonalBests"
+            :key="sessionKind(best)"
             class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3 transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-success"
           >
             <div class="font-display font-extrabold text-success text-lg">
@@ -446,7 +477,7 @@
         <div class="flex flex-wrap gap-2">
           <div
             v-for="entry in filteredPerfectRounds"
-            :key="`${entry.mode}:${entry.modeValue}`"
+            :key="sessionKind(entry)"
             class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3 transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-success"
           >
             <div
@@ -689,7 +720,9 @@
 <script setup>
 import { RouterLink } from "vue-router";
 import { ArrowRightIcon } from "@heroicons/vue/24/outline";
-import { t, localeTag } from "@/shared/i18n";
+import { t, localeTag, LOCALES } from "@/shared/i18n";
+import { LANGUAGE_MODES } from "@/features/typing-test/content/practiceLanguage";
+import { useConfigStore } from "@/features/typing-test/store";
 
 const currentMonthName = computed(() =>
   new Date().toLocaleDateString(localeTag(), { month: "long" })
@@ -733,6 +766,8 @@ import {
 } from "@/features/history/utils/historyBackup";
 import {
   formatModeLabel as formatModeLabelUtil,
+  languageOf,
+  sessionKind,
   formatModeName,
   computeBestStreak,
   computeTotalTimeElapsed,
@@ -757,6 +792,7 @@ import {
 } from "@/features/history/achievementPresentation";
 
 const historyStore = useHistoryStore();
+const configStore = useConfigStore();
 const router = useRouter();
 
 // Space jumps straight back to typing — same key that restarts a finished
@@ -796,10 +832,29 @@ const availableModes = computed(() => [
   ...new Set(historyStore.results.map((result) => result.mode)),
 ]);
 
-const filteredResults = computed(() =>
-  selectedMode.value
-    ? historyStore.results.filter((result) => result.mode === selectedMode.value)
-    : historyStore.results
+// And which language the texts were in (null = both)
+const selectedLanguage = ref(null);
+
+const availableLanguages = computed(() =>
+  LOCALES.map(({ id }) => id).filter((language) =>
+    historyStore.results.some(
+      (result) => LANGUAGE_MODES.has(result.mode) && languageOf(result) === language
+    )
+  )
+);
+const languageName = (id) => LOCALES.find((entry) => entry.id === id).label;
+
+// A result (or a best, or a tally of perfect rounds) the filters let through.
+// A language picked means runs on texts in it: code and numbers have none.
+const inFilters = (entry) =>
+  (!selectedMode.value || entry.mode === selectedMode.value) &&
+  (!selectedLanguage.value ||
+    (LANGUAGE_MODES.has(entry.mode) && languageOf(entry) === selectedLanguage.value));
+
+const filteredResults = computed(() => historyStore.results.filter(inFilters));
+
+const filteredPersonalBests = computed(() =>
+  historyStore.personalBests.filter(inFilters)
 );
 
 // Sessions measured with the current formula, within the current filter --
@@ -857,13 +912,14 @@ const problemWords = computed(() => computeProblemWords(keyStatsResults.value));
 // This week has its own card; the list is for the ones before it
 const pastWeeklyChallenges = computed(() => {
   const current = weeklyKey(historyStore.challengeDay);
-  return historyStore.weeklyChallenges.filter((week) => week.key !== current);
+  // The card shows this week in the language being practiced
+  return historyStore.weeklyChallenges.filter(
+    (week) => week.key !== current || week.language !== configStore.textLanguage
+  );
 });
 
 const filteredPerfectRounds = computed(() =>
-  selectedMode.value
-    ? historyStore.perfectRoundsList.filter((entry) => entry.mode === selectedMode.value)
-    : historyStore.perfectRoundsList
+  historyStore.perfectRoundsList.filter(inFilters)
 );
 const filteredPerfectTotal = computed(() =>
   filteredPerfectRounds.value.reduce((sum, entry) => sum + entry.count, 0)
