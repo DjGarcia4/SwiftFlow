@@ -19,6 +19,7 @@
         enter-to-class="opacity-100 translate-y-0 scale-100"
       >
         <div
+          ref="dialog"
           class="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-card border-2 border-faded-gray bg-paper-white p-5 sm:p-6 shadow-xl"
           role="dialog"
           aria-modal="true"
@@ -130,7 +131,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from "vue";
+import { ref, computed } from "vue";
+import { useModalFocus } from "@/shared/composables/useModalFocus";
 import { normalizeWord } from "@/features/typing-test/utils/wordStats";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 
@@ -165,9 +167,10 @@ const LEGEND = [
 
 const seconds = (ms) => (ms / 1000).toFixed(1).replace(".", ",");
 
-const handleKeydown = (event) => {
-  if (props.open && event.key === "Escape") emit("close");
-};
-onMounted(() => document.addEventListener("keydown", handleKeydown));
-onUnmounted(() => document.removeEventListener("keydown", handleKeydown));
+const dialog = ref(null);
+useModalFocus({
+  open: () => props.open,
+  container: dialog,
+  onClose: () => emit("close"),
+});
 </script>

@@ -36,7 +36,9 @@ Con o sin puntuación y mayúsculas, salvo en código, que siempre se escribe ta
 - Texto a tu gusto: fuente (monoespaciada, JetBrains Mono, Nunito, Atkinson Hyperlegible u
   OpenDyslexic), tamaño, interlineado, y cursor que se desliza o salta
 - Efectos de sonido configurables (tecla, error, celebración)
-- Tema claro y oscuro
+- Tema claro y oscuro, y alto contraste (sigue al del sistema hasta que lo cambies)
+- Accesible: todo se maneja con el teclado, los diálogos atrapan y devuelven el foco, y
+  los resultados, logros y consejos se anuncian al lector de pantalla
 
 ### Cuando terminás
 

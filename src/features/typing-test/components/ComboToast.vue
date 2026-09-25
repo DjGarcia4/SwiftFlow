@@ -32,7 +32,7 @@
         <div class="leading-tight">
           <div
             class="font-display text-xl font-extrabold tabular-nums"
-            :style="{ color: flameColor }"
+            :style="{ color: contrast.high ? 'var(--color-charcoal)' : flameColor }"
           >
             x{{ push.milestone }}
           </div>
@@ -48,6 +48,7 @@ import { ref, computed, watch, onUnmounted } from "vue";
 import { FireIcon } from "@heroicons/vue/24/solid";
 import { useConfigStore } from "@/features/typing-test/store";
 import { getCharacterStreakColorRgb } from "@/shared/utils/flameColor";
+import { useContrastStore } from "@/shared/stores/contrast";
 import {
   detectComboMilestone,
   pickComboMessage,
@@ -101,6 +102,8 @@ watch(
 );
 
 onUnmounted(() => clearTimeout(hideTimeout));
+
+const contrast = useContrastStore();
 
 // Same amber -> orange -> red ramp as the in-session streak badge
 const flameColor = computed(() => {

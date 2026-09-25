@@ -33,6 +33,7 @@ import CoachCard from "./CoachCard.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import { computeLiveCoach } from "@/features/typing-test/utils/liveCoach";
 import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
+import { announce, sentences } from "@/shared/utils/announcer";
 
 const configStore = useConfigStore();
 const trainNow = useTrainNow();
@@ -63,4 +64,12 @@ const visibleCoach = computed(() => {
   if (configStore.isCompleted || configStore.userInput.length === 0) return null;
   return coach.value;
 });
+
+// Said once when it shows up, not again on every keystroke that keeps it
+watch(
+  () => visibleCoach.value?.title ?? null,
+  (title) => {
+    if (title) announce(sentences([title, visibleCoach.value.detail]));
+  }
+);
 </script>

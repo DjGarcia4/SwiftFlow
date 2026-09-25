@@ -19,7 +19,11 @@
           <span class="font-bold text-pencil-gray">· {{ level.title }}</span>
         </span>
         <span class="text-xs font-bold tabular-nums text-pencil-gray">
-          <span v-if="gained" class="font-extrabold" :style="{ color }"
+          <!-- The tier's color, unless it has to be readable above all -->
+          <span
+            v-if="gained"
+            class="font-extrabold text-charcoal"
+            :style="contrast.high ? null : { color }"
             >+{{ gained }} XP ·
           </span>
           <template v-if="level.isMax">nivel máximo</template>
@@ -40,6 +44,7 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useHistoryStore } from "@/features/history/store";
 import { levelFromXp } from "@/features/history/utils/experience";
+import { useContrastStore } from "@/shared/stores/contrast";
 
 const props = defineProps({
   // XP the session just earned; 0 when just showing where things stand
@@ -49,6 +54,7 @@ const props = defineProps({
 const historyStore = useHistoryStore();
 const level = computed(() => historyStore.level);
 // Each rank has its own color, and everything about the level wears it
+const contrast = useContrastStore();
 const color = computed(() => `rgb(${level.value.tier.rgb.join(" ")})`);
 const leveledUp = computed(
   () =>

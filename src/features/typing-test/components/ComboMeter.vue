@@ -24,7 +24,7 @@
           :key="progress.from"
           class="text-sm sm:text-base font-extrabold tabular-nums"
           :class="{ 'animate-key-pop': progress.from > 0 }"
-          :style="{ color: breaking ? DANGER : flame }"
+          :style="{ color: breaking ? DANGER : flameText }"
           >x{{ streak }}</span
         >
         <span
@@ -52,6 +52,7 @@ import { ref, computed, watch, onUnmounted } from "vue";
 import { FireIcon } from "@heroicons/vue/24/solid";
 import { useConfigStore } from "@/features/typing-test/store";
 import { getCharacterStreakColorRgb } from "@/shared/utils/flameColor";
+import { useContrastStore } from "@/shared/stores/contrast";
 import { comboProgress } from "@/features/typing-test/utils/comboMilestones";
 
 const DANGER = "var(--color-danger)";
@@ -72,6 +73,11 @@ const flame = computed(() => {
   const [r, g, b] = getCharacterStreakColorRgb(streak.value);
   return `rgb(${r} ${g} ${b})`;
 });
+
+// The count itself in the text color when it has to be readable above all;
+// the flame and the bar keep the ramp
+const contrast = useContrastStore();
+const flameText = computed(() => (contrast.high ? "var(--color-charcoal)" : flame.value));
 
 const breaking = ref(false);
 let breakTimeout = null;

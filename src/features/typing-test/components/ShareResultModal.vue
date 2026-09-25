@@ -23,10 +23,16 @@
       >
         <div
           v-if="open"
+          ref="dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="share-title"
           class="w-full max-w-sm bg-paper-white rounded-card border-2 border-faded-gray p-4 sm:p-6"
         >
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-bold text-charcoal">Compartir resultado</span>
+            <h2 id="share-title" class="text-sm font-bold text-charcoal">
+              Compartir resultado
+            </h2>
             <IconButton
               icon="close"
               variant="secondary"
@@ -63,14 +69,23 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
+import { useModalFocus } from "@/shared/composables/useModalFocus";
 import IconButton from "@/shared/components/IconButton.vue";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 
-defineProps({
+const props = defineProps({
   open: { type: Boolean, default: false },
   imageUrl: { type: String, default: null },
   canNativeShare: { type: Boolean, default: false },
 });
 
-defineEmits(["close", "download", "share"]);
+const emit = defineEmits(["close", "download", "share"]);
+
+const dialog = ref(null);
+useModalFocus({
+  open: () => props.open,
+  container: dialog,
+  onClose: () => emit("close"),
+});
 </script>

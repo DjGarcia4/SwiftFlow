@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { openTest, isPhone, setUpShortWordsTest, typeAll } from "./helpers";
+import { openTest, isPhone, setUpShortWordsTest, typeAll, restartHint } from "./helpers";
 
 const textArea = (page) =>
   page.locator("[data-char-index]").first().locator("xpath=../../..");
@@ -36,5 +36,5 @@ test("a test can still be typed to the end with big text", async ({ page }) => {
 
   await setUpShortWordsTest(page);
   await typeAll(page);
-  await expect(page.getByText("para empezar de nuevo")).toBeVisible();
+  await expect(restartHint(page)).toBeVisible();
 });

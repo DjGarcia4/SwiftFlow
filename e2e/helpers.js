@@ -73,3 +73,8 @@ export const typeAll = async (page) => {
   await page.keyboard.type(text);
   return text;
 };
+
+// The "press space to start over" hint under the results (not the same
+// words read out by the screen reader announcer)
+export const restartHint = (page) =>
+  page.getByText("Presiona ESPACIO para empezar de nuevo");

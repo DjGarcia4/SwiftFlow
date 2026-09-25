@@ -75,6 +75,34 @@
             />
           </div>
 
+          <!-- Not just the text: the whole app's colors -->
+          <div
+            class="mt-4 flex items-center justify-between gap-3 border-t-2 border-faded-gray/40 pt-3"
+          >
+            <span id="contrast-label" class="text-xs font-bold text-pencil-gray">
+              Alto contraste
+              <span class="block">en toda la app</span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-labelledby="contrast-label"
+              :aria-checked="contrast.high"
+              class="relative h-6 w-10 flex-shrink-0 rounded-full border-2 transition-colors duration-200"
+              :class="
+                contrast.high
+                  ? 'border-primary bg-primary'
+                  : 'border-faded-gray bg-faded-gray/40'
+              "
+              @click="contrast.setHigh(!contrast.high)"
+            >
+              <span
+                class="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-300 ease-spring"
+                :class="contrast.high ? 'translate-x-4' : 'translate-x-0'"
+              ></span>
+            </button>
+          </div>
+
           <button
             v-if="!isDefault"
             type="button"
@@ -94,6 +122,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
+import { useContrastStore } from "@/shared/stores/contrast";
 import {
   TEXT_FONTS,
   TEXT_SIZES,
@@ -104,6 +133,7 @@ import {
 } from "@/shared/utils/textAppearance";
 
 const store = useTextAppearanceStore();
+const contrast = useContrastStore();
 const open = ref(false);
 const root = ref(null);
 const menu = ref(null);

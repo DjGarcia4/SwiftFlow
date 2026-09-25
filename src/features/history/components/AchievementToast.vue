@@ -47,6 +47,7 @@ import {
 } from "@/features/history/achievementPresentation";
 import { useSoundStore } from "@/shared/stores/sound";
 import { playCelebrationSound } from "@/shared/utils/sound";
+import { announce, sentences } from "@/shared/utils/announcer";
 
 const historyStore = useHistoryStore();
 const soundStore = useSoundStore();
@@ -84,6 +85,15 @@ watch(
         soundStore.celebrationSound
       ) {
         playCelebrationSound();
+      }
+      if (current.id !== lastCelebrated) {
+        announce(
+          sentences([
+            current.kicker ?? "¡Logro desbloqueado!",
+            current.title,
+            current.subtitle,
+          ])
+        );
       }
       lastCelebrated = current.id;
       dismissTimeout = setTimeout(() => {

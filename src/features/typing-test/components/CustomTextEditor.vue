@@ -5,6 +5,7 @@
     @click.self="close"
   >
     <form
+      ref="dialog"
       class="w-full max-w-2xl rounded-card border-2 border-faded-gray bg-paper-white p-5 sm:p-6 shadow-xl animate-pop-in"
       role="dialog"
       aria-modal="true"
@@ -98,7 +99,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onUnmounted } from "vue";
+import { useModalFocus } from "@/shared/composables/useModalFocus";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 import { useConfigStore } from "@/features/typing-test/store";
@@ -146,17 +148,9 @@ const remove = () => {
   configStore.deleteCustomText(existing.id);
 };
 
-const handleKeydown = (event) => {
-  if (event.key === "Escape") close();
-};
+// Mounted only while open; the name is what's filled in first
+const dialog = ref(null);
+useModalFocus({ open: true, container: dialog, onClose: close, initialFocus: nameInput });
 
-onMounted(() => {
-  document.addEventListener("keydown", handleKeydown);
-  nextTick(() => nameInput.value?.focus());
-});
-
-onUnmounted(() => {
-  document.removeEventListener("keydown", handleKeydown);
-  clearTimeout(confirmTimeout);
-});
+onUnmounted(() => clearTimeout(confirmTimeout));
 </script>

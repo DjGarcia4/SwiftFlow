@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { openTest, setUpShortWordsTest, typeAll } from "./helpers";
+import { openTest, setUpShortWordsTest, typeAll, restartHint } from "./helpers";
 
 test("a finished test is in the history, and still is after a reload", async ({
   page,
@@ -10,7 +10,7 @@ test("a finished test is in the history, and still is after a reload", async ({
   await openTest(page);
   await setUpShortWordsTest(page);
   await typeAll(page);
-  await expect(page.getByText("para empezar de nuevo")).toBeVisible();
+  await expect(restartHint(page)).toBeVisible();
 
   await page.goto("/historial");
   await expect(page.getByRole("heading", { name: "Historial" })).toBeVisible();

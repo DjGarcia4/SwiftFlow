@@ -351,3 +351,65 @@ h3,
     scroll-behavior: auto !important;
   }
 }
+
+/* Where the keyboard is, always visible: controls that draw their own
+   focus ring override this with their utilities */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/*
+  High contrast, on top of either theme and over any unlocked accent:
+  `data-contrast="more"` on <html> (the text menu's switch, or the OS's
+  "increase contrast" until that's touched). Every text color here clears
+  WCAG AA (4.5:1) against the page and against its own tint, and the
+  borders that outline controls clear 3:1.
+*/
+:root[data-contrast="more"]:not([data-theme="dark"]) {
+  --color-primary: #a8360a;
+  --color-primary-dark: #7c2804;
+  --color-primary-tint: #fff4ea;
+  --color-success: #04704f;
+  --color-success-dark: #035a40;
+  --color-success-tint: #ecfdf5;
+  --color-danger: #9b1515;
+  --color-danger-tint: #fef2f2;
+  --color-paper-white: #ffffff;
+  --color-charcoal: #0b1220;
+  --color-pencil-gray: #1e293b;
+  --color-faded-gray: #64748b;
+}
+
+:root[data-contrast="more"][data-theme="dark"] {
+  --color-primary: #fdba74;
+  --color-primary-dark: #fed7aa;
+  --color-primary-tint: #2a1204;
+  --color-success: #6ee7b7;
+  --color-success-dark: #a7f3d0;
+  --color-success-tint: #01241c;
+  --color-danger: #fca5a5;
+  --color-danger-tint: #3b0a0a;
+  --color-paper-white: #0b1120;
+  --color-charcoal: #ffffff;
+  --color-pencil-gray: #e2e8f0;
+  --color-faded-gray: #94a3b8;
+}
+
+/* Text faded for hierarchy is at full strength here: hierarchy is carried
+   by size and weight alone */
+:root[data-contrast="more"] :is(.opacity-70, .opacity-80, .opacity-90) {
+  opacity: 1;
+}
+
+/* In the dark, the colors above are light, so what sits on them in white
+   turns dark instead */
+:root[data-contrast="more"][data-theme="dark"]
+  :is(.bg-primary, .bg-success, .bg-danger).text-white,
+:root[data-contrast="more"][data-theme="dark"]
+  :is(.bg-primary, .bg-success, .bg-danger)
+  .text-white {
+  color: var(--color-paper-white);
+}

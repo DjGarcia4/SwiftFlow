@@ -503,6 +503,7 @@
           v-model="configStore.userInput"
           class="absolute inset-0 w-full h-full resize-none opacity-0 cursor-default"
           :disabled="isCompleted || !referenceText"
+          aria-label="Escribí el texto"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
@@ -830,6 +831,8 @@ import { computeReplay } from "@/features/typing-test/utils/replay";
 import { sessionWordStats } from "@/features/typing-test/utils/wordStats";
 import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
+import { levelFromXp } from "@/features/history/utils/experience";
+import { announce, spokenNumber } from "@/shared/utils/announcer";
 import DrillSummary from "@/features/history/components/DrillSummary.vue";
 import {
   ClockIcon,
@@ -996,9 +999,19 @@ const restartOnSpace = (event) => {
   return true;
 };
 
+// A focused button, link or field takes space itself: that's how the
+// keyboard presses it
+const isOnControl = (target) =>
+  Boolean(
+    target?.closest?.(
+      "button, a[href], input, select, textarea, summary, [role='button'], [contenteditable='true']"
+    )
+  );
+
 const handleGlobalKeydown = (event) => {
   // Space belongs to whatever dialog is open, not to "play again"
   if (replayOpen.value || shareModalOpen.value) return;
+  if (event.key === " " && isOnControl(event.target)) return;
   restartOnSpace(event);
 };
 
@@ -1222,6 +1235,34 @@ const resultCards = computed(() => {
   ];
 });
 
+// The results, read out: the cards say it only to whoever can see them
+const announceResults = () => {
+  const parts = [
+    `Terminaste: ${spokenNumber(configStore.wpm)} palabras por minuto`,
+    `${spokenNumber(configStore.accuracy)} % de precisión`,
+    `${configStore.errors} ${configStore.errors === 1 ? "error" : "errores"}`,
+  ];
+  const sentences = [parts.join(", ") + "."];
+  if (justBrokeRecord.value) sentences.push("¡Nuevo récord!");
+  if (xpGained.value) {
+    sentences.push(`Ganaste ${xpGained.value} de experiencia.`);
+    const now = historyStore.level.level;
+    if (levelFromXp(historyStore.experience - xpGained.value).level < now) {
+      sentences.push(`¡Subiste al nivel ${now}!`);
+    }
+  }
+  sentences.push("Espacio para empezar de nuevo.");
+  announce(sentences.join(" "));
+};
+
+watch(
+  () => configStore.isPaused,
+  (paused) => {
+    if (paused)
+      announce("Pausado. Escribí para continuar, o Esc para terminar la partida.");
+  }
+);
+
 const trainNow = useTrainNow();
 
 // This session's weak letters if it showed any, otherwise the ones the
@@ -1406,6 +1447,7 @@ watch(isCompleted, (completed) => {
             }
           : null;
     }
+    announceResults();
 
     // Add global keydown listener for space key restart
     document.addEventListener("keydown", handleGlobalKeydown);
@@ -1785,6 +1827,8 @@ const handleTypeAnywhereKeydown = (event) => {
   const active = document.activeElement;
   if (active === typingInput.value) return;
   if (active?.closest?.("input, textarea, select, [contenteditable='true']")) return;
+  // Space on a focused button presses it; letters still go to the text
+  if (event.key === " " && isOnControl(active)) return;
 
   focusInput();
 };

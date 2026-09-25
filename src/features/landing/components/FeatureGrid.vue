@@ -185,6 +185,7 @@ import {
   ShieldCheckIcon,
   WifiIcon,
   LanguageIcon,
+  UserGroupIcon,
 } from "@heroicons/vue/24/outline";
 import TextStyleIcon from "@/shared/components/icons/TextStyleIcon";
 import { FireIcon } from "@heroicons/vue/24/solid";
@@ -277,6 +278,11 @@ const SMALL_CARDS = [
     icon: TextStyleIcon,
     title: "Texto a tu gusto",
     text: "Tamaño, interlineado y fuente, con opciones pensadas para leer mejor como Atkinson Hyperlegible y OpenDyslexic.",
+  },
+  {
+    icon: UserGroupIcon,
+    title: "Para todos",
+    text: "Alto contraste, todo usable con el teclado, y los resultados leídos en voz alta por tu lector de pantalla.",
   },
   {
     icon: EyeSlashIcon,

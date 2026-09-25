@@ -8,6 +8,7 @@ import {
   closeSettings,
   choose,
   expectChosen,
+  restartHint,
 } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
@@ -20,7 +21,7 @@ test("a words test typed to the end shows the results", async ({ page }) => {
 
   await expect(page.getByText("WPM", { exact: true })).toBeVisible();
   await expect(page.getByText("Precisión", { exact: true })).toBeVisible();
-  await expect(page.getByText("para empezar de nuevo")).toBeVisible();
+  await expect(restartHint(page)).toBeVisible();
 });
 
 test("a clean run is 100% accurate with no mistakes", async ({ page }) => {
@@ -36,7 +37,7 @@ test("a clean run is 100% accurate with no mistakes", async ({ page }) => {
 test("space after the results starts a fresh text", async ({ page }) => {
   await setUpShortWordsTest(page);
   const first = await typeAll(page);
-  await expect(page.getByText("para empezar de nuevo")).toBeVisible();
+  await expect(restartHint(page)).toBeVisible();
 
   // Space only restarts once the results have settled
   await expect(async () => {

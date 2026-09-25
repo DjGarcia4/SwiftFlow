@@ -56,7 +56,13 @@
           leave-from-class="opacity-100 translate-y-0"
           leave-to-class="opacity-0 translate-y-4"
         >
-          <div class="w-full max-w-md max-h-[85vh] overflow-y-auto">
+          <div
+            ref="configSheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Configuración"
+            class="w-full max-w-md max-h-[85vh] overflow-y-auto"
+          >
             <div class="flex justify-end mb-2">
               <IconButton
                 icon="close"
@@ -105,10 +111,19 @@ import StreakRiskBanner from "@/features/history/components/StreakRiskBanner.vue
 import { useStreakReminderStore } from "@/features/history/streakReminder";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
+import { useModalFocus } from "@/shared/composables/useModalFocus";
 
 const configStore = useConfigStore();
 const streakReminder = useStreakReminderStore();
 const configOpen = ref(false);
+const configSheet = ref(null);
+useModalFocus({
+  open: configOpen,
+  container: configSheet,
+  onClose: () => {
+    configOpen.value = false;
+  },
+});
 
 // Hide the ToolBar/FAB while actively typing (but show when paused) and
 // while looking at the results screen — there's nothing to configure there.

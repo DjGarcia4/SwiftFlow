@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Para todos",
+    text: "Tema de alto contraste, diálogos que se manejan con el teclado, y resultados, logros y consejos anunciados al lector de pantalla.",
+  },
+  {
+    date: "2026-09",
     title: "Texto a tu gusto",
     text: "Elegí la fuente, el tamaño y el interlineado del texto, y si el cursor se desliza o salta.",
   },

@@ -27,6 +27,7 @@
       </div>
     </div>
     <AchievementToast />
+    <LiveAnnouncer />
   </div>
 </template>
 
@@ -36,7 +37,9 @@ import { RouterView, useRoute } from "vue-router";
 import Nav from "@/shared/layout/Nav.vue";
 import SplashScreen from "@/shared/layout/SplashScreen.vue";
 import AchievementToast from "@/features/history/components/AchievementToast.vue";
+import LiveAnnouncer from "@/shared/components/LiveAnnouncer.vue";
 import { useCustomizationStore } from "@/shared/stores/customization";
+import { useContrastStore } from "@/shared/stores/contrast";
 import { useStreakReminderStore } from "@/features/history/streakReminder";
 
 const showSplash = ref(true);
@@ -50,8 +53,10 @@ watch(
   () => scroller.value?.scrollTo({ top: 0 })
 );
 
-// Puts the unlocked accent color on before anything paints
+// Puts the unlocked accent color on before anything paints, and high
+// contrast if it's wanted
 useCustomizationStore();
+useContrastStore();
 
 // Keeps the streak warning's clock going, and the evening reminder with it
 useStreakReminderStore().start();

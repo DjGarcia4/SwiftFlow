@@ -107,6 +107,7 @@ import {
 import { useThemeStore } from "@/shared/stores/theme";
 import { useHistoryStore } from "@/features/history/store";
 import { getDailyStreakColorRgb } from "@/shared/utils/flameColor";
+import { useContrastStore } from "@/shared/stores/contrast";
 import SoundSettingsMenu from "@/shared/components/SoundSettingsMenu.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { useStreakReminderStore } from "@/features/history/streakReminder";
@@ -117,10 +118,12 @@ const historyStore = useHistoryStore();
 // Today not practiced yet: the streak chip pulses until it is
 const streakReminder = useStreakReminderStore();
 
+const contrast = useContrastStore();
 const streakStyle = computed(() => {
   const [r, g, b] = getDailyStreakColorRgb(historyStore.dailyStreak);
   return {
-    color: `rgb(${r} ${g} ${b})`,
+    // The number in the text color when it has to be readable above all
+    color: contrast.high ? "var(--color-charcoal)" : `rgb(${r} ${g} ${b})`,
     borderColor: `rgb(${r} ${g} ${b})`,
     backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
   };
