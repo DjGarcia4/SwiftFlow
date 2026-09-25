@@ -27,6 +27,7 @@ describe("loadConfig", () => {
       selectedCustomTextId: null,
       drillWords: [],
       fingerColors: false,
+      keyboardLayout: null,
     });
   });
 
@@ -50,6 +51,7 @@ describe("loadConfig", () => {
       selectedCustomTextId: null,
       drillWords: [],
       fingerColors: false,
+      keyboardLayout: null,
     });
   });
 });
@@ -69,8 +71,14 @@ describe("sanitizeConfig", () => {
       selectedCustomTextId: "abc",
       drillWords: ["desarrollo"],
       fingerColors: true,
+      keyboardLayout: "es",
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
+  });
+
+  it("forgets a keyboard layout it doesn't know, so it's guessed again", () => {
+    const config = { type: "time", keyboardLayout: "azerty" };
+    expect(sanitizeConfig(config, options).keyboardLayout).toBeNull();
   });
 
   it("falls back to defaults for a mode that no longer exists", () => {

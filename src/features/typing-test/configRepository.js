@@ -4,6 +4,7 @@ import {
   normalizeDrillKeys,
   normalizeDrillWords,
 } from "@/features/typing-test/content/drill";
+import { isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
 
 const STORAGE_KEY = "swiftflow_config";
 
@@ -24,6 +25,7 @@ const DEFAULTS = {
   selectedCustomTextId: null,
   drillWords: [], // non-empty: the drill is on these words, not letters
   fingerColors: false,
+  keyboardLayout: null, // null = guessed from the browser's language
 };
 
 export const loadConfig = () => {
@@ -74,4 +76,5 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
     typeof config.selectedCustomTextId === "string" ? config.selectedCustomTextId : null,
   drillWords: normalizeDrillWords(config.drillWords),
   fingerColors: config.fingerColors === true,
+  keyboardLayout: isLayoutId(config.keyboardLayout) ? config.keyboardLayout : null,
 });

@@ -297,11 +297,14 @@
           <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
             Teclas más falladas
           </div>
-          <div
-            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
-          >
-            últimas {{ keyStatsResults.length }}
-            {{ keyStatsResults.length === 1 ? "sesión" : "sesiones" }}
+          <div class="flex items-baseline gap-2">
+            <KeyboardLayoutPicker class="hidden sm:inline-flex" />
+            <div
+              class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+            >
+              últimas {{ keyStatsResults.length }}
+              {{ keyStatsResults.length === 1 ? "sesión" : "sesiones" }}
+            </div>
           </div>
         </div>
         <KeyErrorHeatmap :stats="keyErrorStats" />
@@ -631,6 +634,7 @@ import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
+import KeyboardLayoutPicker from "@/features/typing-test/components/KeyboardLayoutPicker.vue";
 import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";

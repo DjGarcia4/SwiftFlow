@@ -69,7 +69,8 @@
               >
             </div>
           </div>
-          <div class="hidden origin-center scale-75 sm:block lg:-my-6">
+          <!-- Scaled down, and the room the scaling frees handed back -->
+          <div class="hidden origin-center scale-75 sm:block lg:-mx-14 lg:-my-6">
             <KeyboardLayout compact :key-class="() => ''" :key-style="fingerKeyStyle" />
           </div>
         </div>
@@ -150,12 +151,12 @@
         </ol>
       </article>
 
-      <!-- Small ones -->
+      <!-- Small ones: three to a row, or two when that leaves none alone -->
       <article
         v-for="small in SMALL_CARDS"
         :key="small.title"
         v-tilt="3"
-        :class="[CARD, 'md:col-span-2']"
+        :class="[CARD, SMALL_CARDS.length % 3 ? 'md:col-span-3' : 'md:col-span-2']"
       >
         <CardTitle :icon="small.icon" :title="small.title" :text="small.text" />
       </article>
@@ -182,6 +183,7 @@ import {
   EyeSlashIcon,
   ShieldCheckIcon,
   WifiIcon,
+  LanguageIcon,
 } from "@heroicons/vue/24/outline";
 import { FireIcon } from "@heroicons/vue/24/solid";
 import GhostIcon from "@/shared/components/icons/GhostIcon";
@@ -193,6 +195,8 @@ import {
   SHIFT_KEY,
 } from "@/features/typing-test/utils/keyboardMap";
 import { codeLanguages } from "@/features/typing-test/content/code";
+import { KEYBOARD_LAYOUTS } from "@/features/typing-test/utils/keyboardLayouts";
+import { useConfigStore } from "@/features/typing-test/store";
 import { demoReplay } from "../demoData";
 
 // min-w-0: a grid item is otherwise as wide as its widest content, and
@@ -257,7 +261,16 @@ const TRAINING_STEPS = [
   { title: "Repasa", detail: "a 1, 3, 7, 14 y 30 días" },
 ];
 
+// "Latinoamericano, Español (España), ... y Colemak"
+const layoutNames = KEYBOARD_LAYOUTS.map((layout) => layout.name.split(" (")[0]);
+const LAYOUTS_TEXT = `${layoutNames.slice(0, -1).join(", ")} o ${layoutNames.at(-1)}: el teclado en pantalla, los dedos y los consejos siguen al tuyo.`;
+
 const SMALL_CARDS = [
+  {
+    icon: LanguageIcon,
+    title: "Tu teclado",
+    text: LAYOUTS_TEXT,
+  },
   {
     icon: EyeSlashIcon,
     title: "Sin red",
@@ -283,8 +296,11 @@ const FINGER_RGB = {
   index: [245, 158, 11],
   thumb: [100, 116, 139],
 };
+// Drawn on the visitor's own keyboard, as the app would
+const configStore = useConfigStore();
 const fingerKeyStyle = (key) => {
-  const finger = key === SHIFT_KEY ? "left-pinky" : fingerOfKey(key);
+  const finger =
+    key === SHIFT_KEY ? "left-pinky" : fingerOfKey(key, configStore.keyboardLayout);
   if (!finger) return {};
   const [r, g, b] = FINGER_RGB[FINGERS[finger].kind];
   return {

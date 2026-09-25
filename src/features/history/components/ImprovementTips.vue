@@ -102,6 +102,8 @@ const TIP_ICONS = {
   document: DocumentTextIcon,
 };
 
+const configStore = useConfigStore();
+
 const result = computed(() =>
   computeImprovementTips(props.stats, {
     averageAccuracy: props.averageAccuracy,
@@ -110,11 +112,11 @@ const result = computed(() =>
     keyTiming: props.keyTiming,
     bigramTiming: props.bigramTiming,
     problemWords: props.problemWords,
+    layout: configStore.keyboardLayout,
   })
 );
 
 const router = useRouter();
-const configStore = useConfigStore();
 
 // Jump straight into the suggested practice mode. Setting the drill's keys
 // first means the session is already aimed by the time it loads.

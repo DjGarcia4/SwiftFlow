@@ -30,6 +30,9 @@ Con o sin puntuación y mayúsculas, salvo en código, que siempre se escribe ta
 - Precisión sobre cada pulsación: los errores corregidos con backspace también cuentan
 - Combo de caracteres correctos seguidos, con avisos al pasar cada hito
 - Pausa automática a los 3 segundos sin escribir, y se reanuda sola al seguir
+- Teclado en pantalla con la próxima tecla, el dedo que va y la tecla muerta, Shift o AltGr
+  que necesita, en tu distribución: Latinoamericano, España, EE. UU. internacional, Dvorak o
+  Colemak
 - Efectos de sonido configurables (tecla, error, celebración)
 - Tema claro y oscuro
 

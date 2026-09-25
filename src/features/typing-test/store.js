@@ -24,6 +24,7 @@ import {
   isUsableInterval,
 } from "@/features/typing-test/utils/typingMetrics";
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
+import { guessLayoutId, isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
 import {
   loadConfig,
   saveConfig,
@@ -85,6 +86,14 @@ export const useConfigStore = defineStore("config", () => {
   const keyboardVisible = computed(() => showKeyboard.value ?? type.value === "drill");
   // The on-screen keyboard colored by which finger types each key
   const fingerColors = ref(savedConfig.fingerColors);
+  // The keyboard being typed on: the one picked, or else a guess from the
+  // browser's language
+  const chosenKeyboardLayout = ref(savedConfig.keyboardLayout);
+  const keyboardLayout = computed(
+    () =>
+      chosenKeyboardLayout.value ??
+      guessLayoutId(typeof navigator === "undefined" ? [] : navigator.languages)
+  );
   // The pacer's speed in wpm, or null for "Auto" (a notch above your
   // recent average)
   const pacerWpm = ref(savedConfig.pacerWpm);
@@ -114,6 +123,7 @@ export const useConfigStore = defineStore("config", () => {
       drillWords: drillWords.value,
       showKeyboard: showKeyboard.value,
       fingerColors: fingerColors.value,
+      keyboardLayout: chosenKeyboardLayout.value,
       pacerWpm: pacerWpm.value,
       blindMode: blindMode.value,
       selectedCustomTextId: selectedCustomTextId.value,
@@ -179,6 +189,12 @@ export const useConfigStore = defineStore("config", () => {
 
   const toggleFingerColors = () => {
     fingerColors.value = !fingerColors.value;
+    persistConfig();
+  };
+
+  const setKeyboardLayout = (id) => {
+    if (!isLayoutId(id)) return;
+    chosenKeyboardLayout.value = id;
     persistConfig();
   };
 
@@ -786,6 +802,8 @@ export const useConfigStore = defineStore("config", () => {
     toggleKeyboard,
     fingerColors,
     toggleFingerColors,
+    keyboardLayout,
+    setKeyboardLayout,
     contentTypes,
     times,
     words,

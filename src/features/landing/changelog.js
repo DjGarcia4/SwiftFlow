@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Tu distribución de teclado",
+    text: "Latinoamericano, España, EE. UU. internacional, Dvorak o Colemak: el teclado en pantalla, los dedos y los consejos siguen al tuyo.",
+  },
+  {
+    date: "2026-09",
     title: "La página de SwiftFlow",
     text: "Todo lo que hace, en un solo lugar, y una frase para probarlo ahí mismo.",
   },

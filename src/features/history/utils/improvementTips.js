@@ -1,6 +1,12 @@
 import { formatPairLabel } from "./historyStats";
 import { ERROR_RATE_BAR, SLOW_RATIO_BAR } from "./problemWords";
-import { FINGERS, fingerOfChar } from "@/features/typing-test/utils/keyboardMap";
+import {
+  FINGERS,
+  fingerOfChar,
+  fingerOfKey,
+  keyPosition,
+  layoutRows,
+} from "@/features/typing-test/utils/keyboardMap";
 
 // Turns the per-key error stats into a short list of concrete, readable
 // "work on this" tips. Pure data in, pure data out (icons are string keys),
@@ -45,15 +51,26 @@ const SLOW_KEY_FACTOR = 1.3;
 const SLOW_BIGRAM_FACTOR = 1.5;
 const MAX_SLOW_KEYS = 2;
 
-const LEFT_HAND = new Set([..."qwertasdfgzxcvb12345"]);
-const RIGHT_HAND = new Set([..."yuiophjklñnm67890"]);
-// `letters` keeps the physical left-to-right order, so two keys can be
-// checked for being side by side; `keys` is the same thing for lookups.
-const ROWS = ["qwertyuiop", "asdfghjklñ", "zxcvbnm"].map((letters, index) => ({
-  name: ["de arriba", "del medio", "de abajo"][index],
-  letters,
-  keys: new Set([...letters]),
-}));
+const ROW_NAMES = ["de arriba", "del medio", "de abajo"];
+const isLetterOrDigit = (key) => /^[\p{L}\d]$/u.test(key);
+
+// The keyboard's letter and digit keys by hand, and its three letter rows
+// (the numbers row aside), for the layout being typed on
+const keyGroups = (layout) => {
+  const hands = { left: new Set(), right: new Set() };
+  const rows = layoutRows(layout);
+  for (const key of rows.flat()) {
+    const hand = FINGERS[fingerOfKey(key, layout)]?.hand;
+    if (hand && isLetterOrDigit(key)) hands[hand].add(key);
+  }
+  return {
+    hands,
+    rows: rows.slice(1).map((keys, index) => ({
+      name: ROW_NAMES[index],
+      keys: new Set(keys.filter((key) => /^\p{L}$/u.test(key))),
+    })),
+  };
+};
 const DIGITS = new Set([..."0123456789"]);
 const ACCENTED = new Set([..."áéíóúü"]);
 
@@ -68,12 +85,11 @@ const outOfTen = (share) => `${Math.round(share * 10)} de cada 10`;
 
 // Whether two keys sit side by side on the same row -- the difference
 // between "your finger slid" and "your hand was in the wrong place".
-const areNeighbours = (first, second) =>
-  ROWS.some((row) => {
-    const a = row.letters.indexOf(first);
-    const b = row.letters.indexOf(second);
-    return a !== -1 && b !== -1 && Math.abs(a - b) === 1;
-  });
+const areNeighbours = (first, second, layout) => {
+  const a = keyPosition(first.toLowerCase(), layout);
+  const b = keyPosition(second.toLowerCase(), layout);
+  return Boolean(a && b) && a.row === b.row && Math.abs(a.column - b.column) === 1;
+};
 
 // "la Ñ y la Q" -- the article has to repeat, or the second key reads as an
 // afterthought ("la Ñ y Q").
@@ -136,6 +152,8 @@ export const computeImprovementTips = (
     keyTiming = [],
     bigramTiming = [],
     problemWords = [],
+    // The keyboard layout id; the default one when left out
+    layout = null,
   } = {}
 ) => {
   const totalAttempts = keyStats.reduce((sum, s) => sum + s.attempts, 0);
@@ -209,7 +227,7 @@ export const computeImprovementTips = (
       severity: topConfusion.shareOfKeyMisses / MIN_CONFUSION_SHARE,
       title: `Confundís la ${from} con la ${to}`,
       detail: `${outOfTen(topConfusion.shareOfKeyMisses)} veces que errás la ${from} terminás apretando la ${to}. ${
-        areNeighbours(topConfusion.expected, topConfusion.typed)
+        areNeighbours(topConfusion.expected, topConfusion.typed, layout)
           ? "Son teclas vecinas: el dedo se te corre a la de al lado. Bajá un cambio en esa zona hasta que la posición se acomode sola."
           : "Fijate en esa mano: es un error de posición, no de velocidad."
       }`,
@@ -256,8 +274,9 @@ export const computeImprovementTips = (
   //    bigger, so the two don't repeat the same story.
   const groupCandidates = [];
 
-  const left = groupRate(keyStats, LEFT_HAND);
-  const right = groupRate(keyStats, RIGHT_HAND);
+  const groups = keyGroups(layout);
+  const left = groupRate(keyStats, groups.hands.left);
+  const right = groupRate(keyStats, groups.hands.right);
   if (left.attempts >= MIN_GROUP_ATTEMPTS && right.attempts >= MIN_GROUP_ATTEMPTS) {
     const [worse, better, name] =
       left.rate >= right.rate ? [left, right, "izquierda"] : [right, left, "derecha"];
@@ -275,9 +294,9 @@ export const computeImprovementTips = (
     }
   }
 
-  const rows = ROWS.map((row) => ({ ...row, ...groupRate(keyStats, row.keys) })).filter(
-    (row) => row.attempts >= MIN_GROUP_ATTEMPTS
-  );
+  const rows = groups.rows
+    .map((row) => ({ ...row, ...groupRate(keyStats, row.keys) }))
+    .filter((row) => row.attempts >= MIN_GROUP_ATTEMPTS);
   if (rows.length >= 2) {
     const sorted = [...rows].sort((a, b) => b.rate - a.rate);
     const [worst, best] = [sorted[0], sorted[sorted.length - 1]];
@@ -301,7 +320,7 @@ export const computeImprovementTips = (
   // types anything hard.
   const fingers = new Map();
   for (const stat of keyStats) {
-    const finger = fingerOfChar(stat.key);
+    const finger = fingerOfChar(stat.key, layout);
     if (!finger || finger === "thumb") continue;
     const group = fingers.get(finger) ?? {
       finger,

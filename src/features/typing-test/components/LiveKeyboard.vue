@@ -1,7 +1,7 @@
 <template>
   <!--
-    The keyboard while typing: the next key lit up (with Shift or the accent
-    key when it needs them), keys tinting red as this session misses them,
+    The keyboard while typing: the next key lit up (with Shift, AltGr or the
+    accent's dead key when it needs them), keys tinting red as this session misses them,
     and a mistake flashing both the key that was wanted and the one hit.
   -->
   <div class="flex-col items-center gap-3">
@@ -21,6 +21,7 @@
         ></span>
         Próxima: {{ FINGERS[nextFinger].name }}
       </span>
+      <KeyboardLayoutPicker @picked="refocusText" />
       <button
         type="button"
         class="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 transition-colors duration-200"
@@ -43,21 +44,24 @@
 import { ref, computed, watch, onUnmounted, nextTick } from "vue";
 import { HandRaisedIcon } from "@heroicons/vue/24/outline";
 import KeyboardLayout from "./KeyboardLayout.vue";
+import KeyboardLayoutPicker from "./KeyboardLayoutPicker.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import {
   keyboardTarget,
   foldByKey,
-  ACCENT_KEY,
   SHIFT_KEY,
+  ALTGR_KEY,
   FINGERS,
   fingerOfKey,
 } from "@/features/typing-test/utils/keyboardMap";
+import { layoutById } from "@/features/typing-test/utils/keyboardLayouts";
 
 // A key needs a couple of misses before it's worth coloring
 const MIN_TINT_MISSES = 2;
 const FLASH_MS = 450;
 
 const configStore = useConfigStore();
+const layout = computed(() => layoutById(configStore.keyboardLayout));
 
 // One color per kind of finger, the same on both hands
 const FINGER_RGB = {
@@ -71,26 +75,30 @@ const rgbOf = (finger) => FINGER_RGB[FINGERS[finger].kind];
 const fingerColor = (finger) => `rgb(${rgbOf(finger).join(" ")})`;
 
 // Shift belongs to whichever pinky isn't pressing the key; drawn as a pinky
-const fingerFor = (key) => (key === SHIFT_KEY ? "left-pinky" : fingerOfKey(key));
+const fingerFor = (key) =>
+  key === SHIFT_KEY ? "left-pinky" : fingerOfKey(key, layout.value);
 
-const nextFinger = computed(() => (next.value ? fingerOfKey(next.value.key) : null));
+const nextFinger = computed(() =>
+  next.value ? fingerOfKey(next.value.key, layout.value) : null
+);
 
-// The button keeps the focus after a click; hand it back to the text
+// The controls keep the focus after a click; hand it back to the text
+const refocusText = () => nextTick(() => document.querySelector("textarea")?.focus());
 const toggleFingerColors = () => {
   configStore.toggleFingerColors();
-  nextTick(() => document.querySelector("textarea")?.focus());
+  refocusText();
 };
 
 const next = computed(() =>
-  keyboardTarget(configStore.referenceText[configStore.userInput.length])
+  keyboardTarget(configStore.referenceText[configStore.userInput.length], layout.value)
 );
 
 // This session's miss rate per key, as a share of the worst one's
 const missTint = computed(() => {
   // Sin red: no key gives away that it's being missed
   if (configStore.blindMode) return {};
-  const misses = foldByKey(configStore.missedKeys);
-  const attempts = foldByKey(configStore.keyAttempts);
+  const misses = foldByKey(configStore.missedKeys, layout.value);
+  const attempts = foldByKey(configStore.keyAttempts, layout.value);
   const rates = {};
   for (const [key, missed] of Object.entries(misses)) {
     if (missed >= MIN_TINT_MISSES) rates[key] = missed / (attempts[key] || missed);
@@ -114,8 +122,8 @@ watch(
     if (input[index] === expected || configStore.blindMode) return;
 
     flash.value = {
-      wanted: keyboardTarget(expected)?.key ?? null,
-      pressed: keyboardTarget(input[index])?.key ?? null,
+      wanted: keyboardTarget(expected, layout.value)?.key ?? null,
+      pressed: keyboardTarget(input[index], layout.value)?.key ?? null,
     };
     clearTimeout(flashTimeout);
     flashTimeout = setTimeout(() => {
@@ -126,11 +134,16 @@ watch(
 
 onUnmounted(() => clearTimeout(flashTimeout));
 
-const isNext = (key) =>
-  Boolean(next.value) &&
-  (key === next.value.key ||
-    (key === SHIFT_KEY && next.value.shift) ||
-    (key === ACCENT_KEY && next.value.accent));
+// The key itself, and whatever goes with it: Shift or AltGr held for it or
+// for its dead key, and the dead key pressed first
+const isNext = (key) => {
+  const target = next.value;
+  if (!target) return false;
+  if (key === target.key || key === target.dead?.key) return true;
+  if (key === SHIFT_KEY) return target.shift || Boolean(target.dead?.shift);
+  if (key === ALTGR_KEY) return target.altgr;
+  return false;
+};
 
 const keyClass = (key) => {
   const base =
@@ -166,7 +179,7 @@ const fingerStyle = (key) => {
       boxShadow: `0 4px 10px -2px rgba(${r}, ${g}, ${b}, 0.5)`,
     };
   }
-  // Held with it (Shift, the accent): outlined. At rest: a faint wash.
+  // Held with it (Shift, AltGr, the accent): outlined. At rest: a faint wash.
   const held = isNext(key);
   return {
     backgroundColor: `rgba(${r}, ${g}, ${b}, ${held ? 0.2 : 0.1})`,

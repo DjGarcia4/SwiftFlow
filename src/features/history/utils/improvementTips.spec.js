@@ -171,6 +171,18 @@ describe("computeImprovementTips · confusion patterns", () => {
     expect(tip.detail).toContain("error de posición");
   });
 
+  it("judges neighbours on the keyboard being typed on", () => {
+    const detail = (layout, typed) =>
+      computeImprovementTips(stats, {
+        confusions: [confusion({ pair: `m${typed}`, typed })],
+        layout,
+      }).tips.find((t) => t.id === "key-confusion").detail;
+
+    // On Dvorak the M sits by the W, and the N is a row up
+    expect(detail("dvorak", "w")).toContain("Son teclas vecinas");
+    expect(detail("dvorak", "n")).toContain("error de posición");
+  });
+
   it("ignores a confusion that's neither frequent nor habitual enough", () => {
     const weak = computeImprovementTips(stats, {
       confusions: [confusion({ slips: 4 }), confusion({ shareOfKeyMisses: 0.2 })],
