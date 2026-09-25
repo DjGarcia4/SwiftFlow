@@ -107,6 +107,26 @@ describe("computeAchievements", () => {
     expect(isUnlocked(computeAchievements(read(["gone"])), "classics_1")).toBe(false);
   });
 
+  it("unlocks the dictation achievements", () => {
+    const dictation = (fields) => ({
+      mode: "dictation",
+      modeValue: 3,
+      wpm: 35,
+      accuracy: 95,
+      ...fields,
+    });
+    expect(isUnlocked(computeAchievements([dictation()]), "dictation_1")).toBe(true);
+    expect(isUnlocked(computeAchievements([dictation()]), "dictation_clean")).toBe(false);
+    expect(
+      isUnlocked(
+        computeAchievements([dictation({ modeValue: 5, accuracy: 98 })]),
+        "dictation_clean"
+      )
+    ).toBe(true);
+    const ten = Array.from({ length: 10 }, () => dictation());
+    expect(isUnlocked(computeAchievements(ten), "dictation_10")).toBe(true);
+  });
+
   it("unlocks punctuated words, focus and must-correct achievements", () => {
     const words100 = { mode: "words", modeValue: 100, wpm: 40, accuracy: 97 };
     expect(isUnlocked(computeAchievements([words100]), "punctuated_words_100")).toBe(

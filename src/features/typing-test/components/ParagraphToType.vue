@@ -36,6 +36,23 @@
         >
           — {{ currentQuoteAuthor }}
         </p>
+        <!-- Dictation: the text at last, with what came out wrong marked -->
+        <div
+          v-else-if="isCompleted && configStore.type === 'dictation'"
+          class="mx-auto max-w-3xl rounded-card border-2 border-faded-gray px-4 py-3 text-left"
+        >
+          <p class="mb-1 text-xs font-bold uppercase tracking-wide text-pencil-gray">
+            Lo que se dictó
+          </p>
+          <p class="font-mono text-base sm:text-lg leading-relaxed">
+            <span
+              v-for="(char, index) in configStore.referenceText"
+              :key="index"
+              :class="revealClass(index)"
+              >{{ char }}</span
+            >
+          </p>
+        </div>
         <p
           v-else-if="isCompleted && configStore.type === 'classics' && currentClassic"
           class="text-center text-sm sm:text-base font-bold text-pencil-gray"
@@ -571,7 +588,7 @@
           leave-to-class="opacity-0"
         >
           <div
-            v-if="configStore.isPaused"
+            v-if="configStore.isPaused && configStore.type !== 'dictation'"
             class="absolute inset-0 bg-paper-white/80 backdrop-blur-sm flex items-center justify-center z-10 pointer-events-none"
           >
             <div class="text-center animate-pop-in">
@@ -612,6 +629,9 @@
             />
           </div>
         </div>
+
+        <!-- Dictation: what's heard comes from here, not the screen -->
+        <DictationPanel v-if="configStore.type === 'dictation'" class="mb-2" />
 
         <div
           ref="typingContainer"
@@ -919,6 +939,11 @@ import { punctuateWords } from "@/features/typing-test/content/punctuate";
 import { generateRandomNumbers } from "@/features/typing-test/content/numbers";
 import { getRandomQuote } from "@/features/typing-test/content/quotes";
 import { getRandomClassic } from "@/features/typing-test/content/classics";
+import {
+  buildDictation,
+  sentenceIndexAt,
+} from "@/features/typing-test/content/dictation";
+import DictationPanel from "./DictationPanel.vue";
 import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
 import {
   weeklyKey,
@@ -1224,6 +1249,13 @@ const refreshReferenceText = () => {
     return;
   }
 
+  if (configStore.type === "dictation") {
+    const dictation = buildDictation(configStore.dictationSentences);
+    configStore.setDictation(dictation);
+    configStore.setReferenceText(dictation.text);
+    return;
+  }
+
   if (configStore.type === "classics") {
     const passage = getRandomClassic(currentClassic.value?.id);
     currentClassic.value = passage;
@@ -1418,6 +1450,7 @@ const currentModeValue = () => {
   }
   if (configStore.type === "code") return currentCodeLanguage.value;
   if (configStore.type === "weekly") return currentWeeklyKey.value;
+  if (configStore.type === "dictation") return configStore.dictationSentences;
   // Which passage: the history names it, and the achievements count them
   if (configStore.type === "classics") return currentClassic.value?.id ?? null;
   // By name, which is what the history and the personal bests show
@@ -1583,10 +1616,24 @@ const wordGroups = computed(() => groupIntoWords(visibleText.value));
 
 // Focus mode: just the word being typed and the next one. They keep their
 // real indexes, so coloring and the caret work exactly as on the full text.
+// A dictation only shows the sentence being dictated: the ones after it
+// haven't been heard yet.
+const heardGroups = computed(() => {
+  const dictation = configStore.dictation;
+  if (configStore.type !== "dictation" || !dictation || isCompleted.value) {
+    return wordGroups.value;
+  }
+  const next =
+    dictation.starts[sentenceIndexAt(dictation.starts, configStore.userInput.length) + 1];
+  if (next === undefined) return wordGroups.value;
+  return wordGroups.value.filter(
+    (group) => (group.type === "word" ? group.chars[0].index : group.index) < next
+  );
+});
 const shownGroups = computed(() =>
   textAppearance.focusMode && !isCompleted.value
-    ? focusWindow(wordGroups.value, configStore.userInput.length)
-    : wordGroups.value
+    ? focusWindow(heardGroups.value, configStore.userInput.length)
+    : heardGroups.value
 );
 
 // Smooth animated caret position, tracked relative to the typing container
@@ -1908,6 +1955,7 @@ watch(
     configStore.selectedCustomText?.text,
     configStore.strictMode,
     configStore.minAccuracy,
+    configStore.dictationSentences,
   ],
   () => {
     refreshReferenceText();
@@ -2031,9 +2079,22 @@ const getCharacterClass = (index) => {
     } else {
       return `${baseClasses} text-danger bg-danger-tint rounded-sm${isJustTyped ? " animate-key-shake" : ""}`;
     }
+  } else if (configStore.type === "dictation" && !isCompleted.value) {
+    // Heard, not read: a blank per letter, so the words' lengths still show
+    return visibleText.value[index] === " "
+      ? `${baseClasses} text-transparent`
+      : `${baseClasses} text-transparent dictation-slot`;
   } else {
     return `${baseClasses} text-pencil-gray`;
   }
+};
+
+// The dictated text under the results: right, wrong, or never reached
+const revealClass = (index) => {
+  const typed = configStore.userInput[index];
+  if (typed === undefined) return "text-pencil-gray";
+  if (typed === configStore.referenceText[index]) return "text-charcoal";
+  return "rounded-sm bg-danger-tint text-danger font-bold";
 };
 
 const restart = () => {
@@ -2192,6 +2253,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* A dictated letter still to come: its place, not its face */
+.dictation-slot {
+  border-bottom: 2px dotted color-mix(in srgb, var(--color-pencil-gray) 55%, transparent);
+}
+
 .newline-mark::before {
   content: "↵";
   opacity: 0.5;

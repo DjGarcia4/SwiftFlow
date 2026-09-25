@@ -18,6 +18,7 @@ te arma la práctica para arreglarlo.
 | **Números**  | Enteros, decimales, porcentajes, horas y miles                |
 | **Cita**     | Frases reales con su autor                                    |
 | **Clásicos** | Cervantes, Bécquer, Machado, Martí y más, verso por verso     |
+| **Dictado**  | Una voz en español te dicta frases y las escribís sin verlas  |
 | **Código**   | Fragmentos de JavaScript, TypeScript, Python, Java, Go y Rust |
 | **Zen**      | Sin límite: terminás cuando querés                            |
 | **Entrenar** | Texto armado alrededor de tus teclas más flojas               |
@@ -53,7 +54,7 @@ Y combinables con cualquier modo:
 
 - Gráfico de WPM y errores a lo largo de la sesión
 - Tarjeta para compartir el resultado, con un diseño distinto si fue récord
-- 74 logros en 11 categorías, con aviso al desbloquearlos
+- 77 logros en 11 categorías, con aviso al desbloquearlos
 
 ### En el historial
 

@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Dictado",
+    text: "Una voz en español te dicta frases y las escribís sin verlas, con tildes y todo. El texto aparece al final, con lo que se te escapó marcado.",
+  },
+  {
+    date: "2026-09",
     title: "Clásicos, y más español",
     text: "Un modo con Cervantes, Bécquer, Machado, Martí y más, verso por verso. El modo Palabras ahora arma oraciones, con ¿? y ¡!. Y logros y retos nuevos para la lectura, el modo foco y los modos exigentes.",
   },

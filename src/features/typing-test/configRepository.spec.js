@@ -30,6 +30,8 @@ describe("loadConfig", () => {
       keyboardLayout: null,
       strictMode: null,
       minAccuracy: null,
+      dictationSentences: 3,
+      dictationRate: "normal",
     });
   });
 
@@ -56,6 +58,8 @@ describe("loadConfig", () => {
       keyboardLayout: null,
       strictMode: null,
       minAccuracy: null,
+      dictationSentences: 3,
+      dictationRate: "normal",
     });
   });
 });
@@ -78,8 +82,18 @@ describe("sanitizeConfig", () => {
       keyboardLayout: "es",
       strictMode: "sudden-death",
       minAccuracy: 95,
+      dictationSentences: 5,
+      dictationRate: "slow",
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
+  });
+
+  it("falls back for a dictation length or pace it doesn't offer", () => {
+    const config = { type: "time", dictationSentences: 4, dictationRate: "turbo" };
+    expect(sanitizeConfig(config, options)).toMatchObject({
+      dictationSentences: 3,
+      dictationRate: "normal",
+    });
   });
 
   it("drops demanding modes and thresholds it doesn't know", () => {
@@ -87,6 +101,8 @@ describe("sanitizeConfig", () => {
     expect(sanitizeConfig(config, options)).toMatchObject({
       strictMode: null,
       minAccuracy: null,
+      dictationSentences: 3,
+      dictationRate: "normal",
     });
   });
 

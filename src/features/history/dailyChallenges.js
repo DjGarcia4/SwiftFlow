@@ -69,6 +69,7 @@ const CHALLENGE_MODES = [
   { mode: "zen" },
   { mode: "drill" },
   { mode: "classics", since: since(2026, 9, 26) },
+  { mode: "dictation", since: since(2026, 9, 26) },
 ];
 
 // Each template turns the baseline into a concrete goal plus a measure of

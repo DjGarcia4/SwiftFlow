@@ -247,6 +247,30 @@ export const ACHIEVEMENTS = [
     check: (ctx) => ctx.classicsRead >= classics.length,
   },
   {
+    id: "dictation_1",
+    category: "reading",
+    icon: "speaker",
+    title: "Buen oído",
+    description: "Completá un dictado",
+    check: (ctx) => ctx.dictationCount >= 1,
+  },
+  {
+    id: "dictation_10",
+    category: "reading",
+    icon: "speaker",
+    title: "Taquígrafo",
+    description: "Completá 10 dictados",
+    check: (ctx) => ctx.dictationCount >= 10,
+  },
+  {
+    id: "dictation_clean",
+    category: "reading",
+    icon: "speaker",
+    title: "Oído fino",
+    description: "Completá un dictado de 5 frases con 98% de precisión o más",
+    check: (ctx) => ctx.hasCleanLongDictation,
+  },
+  {
     id: "punctuated_words_100",
     category: "reading",
     icon: "document",
@@ -717,6 +741,10 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
       (r) => r.mode === "words" && r.modeValue >= 100 && r.punctuation
     ),
     focusCount: results.filter((r) => r.focus).length,
+    dictationCount: results.filter((r) => r.mode === "dictation").length,
+    hasCleanLongDictation: results.some(
+      (r) => r.mode === "dictation" && r.modeValue >= 5 && r.accuracy >= 98
+    ),
     longestStreak: computeLongestDailyStreak(results),
     modesPlayed: new Set(results.map((r) => r.mode)).size,
     codeLanguagesPlayed: new Set(

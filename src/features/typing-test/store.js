@@ -56,6 +56,7 @@ export const useConfigStore = defineStore("config", () => {
     "numbers",
     "quote",
     "classics",
+    "dictation",
     "code",
     "zen",
     "drill",
@@ -111,6 +112,11 @@ export const useConfigStore = defineStore("config", () => {
   const strictMode = ref(savedConfig.strictMode);
   // How accurate a run has to be to count: null, or 90/95/98
   const minAccuracy = ref(savedConfig.minAccuracy);
+  // "Dictado": how many sentences, how fast the voice reads them, and the
+  // ones on screen now with where each starts in the text
+  const dictationSentences = ref(savedConfig.dictationSentences);
+  const dictationRate = ref(savedConfig.dictationRate);
+  const dictation = ref(null);
 
   // "Mi texto": your own saved texts, the one picked, and the editor for
   // them (null when closed, { id } -- null id for a new one -- when open)
@@ -140,6 +146,8 @@ export const useConfigStore = defineStore("config", () => {
       blindMode: blindMode.value,
       strictMode: strictMode.value,
       minAccuracy: minAccuracy.value,
+      dictationSentences: dictationSentences.value,
+      dictationRate: dictationRate.value,
       selectedCustomTextId: selectedCustomTextId.value,
     });
   };
@@ -344,6 +352,20 @@ export const useConfigStore = defineStore("config", () => {
     selectedWords.value = newWords;
     persistConfig();
     resetTypingSession();
+  };
+
+  const handleDictationSentences = (count) => {
+    dictationSentences.value = count;
+    persistConfig();
+    resetTypingSession();
+  };
+  // Doesn't restart anything: the next sentence just comes out at the new pace
+  const setDictationRate = (rate) => {
+    dictationRate.value = rate;
+    persistConfig();
+  };
+  const setDictation = (value) => {
+    dictation.value = value;
   };
 
   const handleCodeLanguage = (language) => {
@@ -820,6 +842,8 @@ export const useConfigStore = defineStore("config", () => {
       type.value === "drill" ||
       type.value === "weekly" ||
       type.value === "custom" ||
+      // Already as it's dictated: plain, but keeping its accents
+      type.value === "dictation" ||
       selectedContentTypes.value === "punctuation"
     ) {
       referenceText.value = text; // Show original when selected
@@ -903,6 +927,12 @@ export const useConfigStore = defineStore("config", () => {
     pacerWpm,
     setPacerWpm,
     blindMode,
+    dictationSentences,
+    handleDictationSentences,
+    dictationRate,
+    setDictationRate,
+    dictation,
+    setDictation,
     strictMode,
     setStrictMode,
     minAccuracy,

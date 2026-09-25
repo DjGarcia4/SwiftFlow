@@ -62,6 +62,8 @@ const MODE_LABELS = {
     const work = classicById(value)?.work;
     return work ? `Clásicos · ${work}` : "Clásicos";
   },
+  dictation: (value) =>
+    value ? `Dictado · ${value} ${value === 1 ? "frase" : "frases"}` : "Dictado",
   zen: () => "Zen",
   // Sessions saved before the drill reported its word count have no value
   drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
@@ -77,6 +79,7 @@ const MODE_NAMES = {
   numbers: "Números",
   quote: "Cita",
   classics: "Clásicos",
+  dictation: "Dictado",
   code: "Código",
   zen: "Zen",
   drill: "Entrenar",

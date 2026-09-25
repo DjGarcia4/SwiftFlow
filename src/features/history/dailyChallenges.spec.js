@@ -127,7 +127,7 @@ describe("challenges added later", () => {
     for (const day of daysFrom(LAUNCH, 400, -1).slice(1)) {
       for (const challenge of buildDailyChallenges([], day)) {
         expect(NEW_KINDS).not.toContain(challenge.kind);
-        expect(challenge.action?.mode).not.toBe("classics");
+        expect(["classics", "dictation"]).not.toContain(challenge.action?.mode);
       }
     }
   });
@@ -139,12 +139,14 @@ describe("challenges added later", () => {
         if (NEW_KINDS.includes(challenge.kind) && !seen.has(challenge.kind)) {
           seen.set(challenge.kind, day);
         }
-        if (challenge.action?.mode === "classics" && !seen.has("classics")) {
-          seen.set("classics", day);
+        for (const mode of ["classics", "dictation"]) {
+          if (challenge.action?.mode === mode && !seen.has(mode)) seen.set(mode, day);
         }
       }
     }
-    expect([...seen.keys()].sort()).toEqual([...NEW_KINDS, "classics"].sort());
+    expect([...seen.keys()].sort()).toEqual(
+      [...NEW_KINDS, "classics", "dictation"].sort()
+    );
 
     const doneBy = {
       "sudden-death": { strict: "sudden-death" },

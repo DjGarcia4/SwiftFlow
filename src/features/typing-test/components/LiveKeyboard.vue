@@ -89,8 +89,14 @@ const toggleFingerColors = () => {
   refocusText();
 };
 
+// In a dictation the next key would give the answer away
 const next = computed(() =>
-  keyboardTarget(configStore.referenceText[configStore.userInput.length], layout.value)
+  configStore.type === "dictation"
+    ? null
+    : keyboardTarget(
+        configStore.referenceText[configStore.userInput.length],
+        layout.value
+      )
 );
 
 // This session's miss rate per key, as a share of the worst one's

@@ -189,6 +189,7 @@ import {
   HeartIcon,
   EyeIcon,
   BookOpenIcon,
+  SpeakerWaveIcon,
 } from "@heroicons/vue/24/outline";
 import TextStyleIcon from "@/shared/components/icons/TextStyleIcon";
 import { FireIcon } from "@heroicons/vue/24/solid";
@@ -232,6 +233,7 @@ const MODES = [
   { name: "Números", detail: "decimales, horas, miles", icon: HashtagIcon },
   { name: "Cita", detail: "frases con autor", icon: ChatBubbleBottomCenterTextIcon },
   { name: "Clásicos", detail: "Cervantes, Bécquer, Martí…", icon: BookOpenIcon },
+  { name: "Dictado", detail: "escuchás y escribís", icon: SpeakerWaveIcon },
   { name: "Código", detail: `${codeLanguages.length} lenguajes`, icon: CodeBracketIcon },
   { name: "Zen", detail: "sin límite", icon: SparklesIcon },
   {

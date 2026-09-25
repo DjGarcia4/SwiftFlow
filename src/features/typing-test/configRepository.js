@@ -6,6 +6,10 @@ import {
 } from "@/features/typing-test/content/drill";
 import { isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
 import { isStrictMode, isMinAccuracy } from "@/features/typing-test/utils/strictModes";
+import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
+
+// How fast the dictation's voice speaks
+export const DICTATION_RATES = { slow: 0.75, normal: 0.95, fast: 1.15 };
 
 const STORAGE_KEY = "swiftflow_config";
 
@@ -29,6 +33,8 @@ const DEFAULTS = {
   keyboardLayout: null, // null = guessed from the browser's language
   strictMode: null, // "sudden-death" | "must-correct"
   minAccuracy: null, // 90 | 95 | 98
+  dictationSentences: 3,
+  dictationRate: "normal",
 };
 
 export const loadConfig = () => {
@@ -82,4 +88,10 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
   keyboardLayout: isLayoutId(config.keyboardLayout) ? config.keyboardLayout : null,
   strictMode: isStrictMode(config.strictMode) ? config.strictMode : null,
   minAccuracy: isMinAccuracy(config.minAccuracy) ? config.minAccuracy : null,
+  dictationSentences: DICTATION_SENTENCE_COUNTS.includes(config.dictationSentences)
+    ? config.dictationSentences
+    : DEFAULTS.dictationSentences,
+  dictationRate: Object.hasOwn(DICTATION_RATES, config.dictationRate)
+    ? config.dictationRate
+    : DEFAULTS.dictationRate,
 });

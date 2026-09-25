@@ -23,6 +23,7 @@ import {
   HeartIcon,
   BookOpenIcon,
   EyeIcon,
+  SpeakerWaveIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -52,6 +53,7 @@ export const ACHIEVEMENT_ICONS = {
   heart: HeartIcon,
   book: BookOpenIcon,
   eye: EyeIcon,
+  speaker: SpeakerWaveIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {
