@@ -3,14 +3,15 @@
   <RouterLink
     to="/curso"
     class="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-primary/50 bg-primary-tint px-2.5 py-1.5 text-xs font-extrabold text-primary transition-[border-color] duration-200 hover:border-primary"
-    :title="`Lección ${number} de ${LESSONS.length}: ver el curso`"
+    :title="t('course.chip.hint', number, LESSONS.length)"
   >
     <AcademicCapIcon class="h-4 w-4" />
-    Lección {{ number }} · {{ title }}
+    {{ t("course.chip.label", number, title) }}
   </RouterLink>
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
 import { AcademicCapIcon } from "@heroicons/vue/24/outline";

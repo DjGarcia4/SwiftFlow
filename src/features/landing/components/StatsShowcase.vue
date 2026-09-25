@@ -3,17 +3,16 @@
     <div class="mx-auto max-w-6xl">
       <header class="mx-auto mb-14 max-w-2xl text-center">
         <p v-reveal class="text-xs font-extrabold uppercase tracking-widest text-primary">
-          Las estadísticas
+          {{ t("landing.showcase.stats.kicker") }}
         </p>
         <h2
           v-reveal="{ delay: 100 }"
           class="mt-2 font-display text-3xl font-black text-charcoal sm:text-5xl"
         >
-          No te dice solo cuánto. Te dice por qué.
+          {{ t("landing.showcase.stats.title") }}
         </h2>
         <p v-reveal="{ delay: 200 }" class="mt-4 text-base font-bold text-pencil-gray">
-          Cada tecla que apretás queda anotada: cuál era, cuál apretaste, cuánto tardaste.
-          Con eso SwiftFlow encuentra lo que un número de WPM nunca te va a mostrar.
+          {{ t("landing.showcase.stats.intro") }}
         </p>
       </header>
 
@@ -69,11 +68,14 @@
 
               <!-- Keys and transitions that hold you up -->
               <div v-else-if="row.id === 'slow'" class="space-y-6">
-                <TimingBars :stats="demoKeyTiming" title="Tus teclas más lentas" />
+                <TimingBars
+                  :stats="demoKeyTiming"
+                  :title="t('landing.showcase.stats.slowKeys')"
+                />
                 <TimingBars
                   :stats="demoBigramTiming"
-                  title="Tus combinaciones más lentas"
-                  unit-label="combo"
+                  :title="t('landing.showcase.stats.slowCombos')"
+                  :unit-label="t('landing.showcase.stats.comboUnit')"
                 />
               </div>
 
@@ -143,6 +145,7 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import {
   CheckCircleIcon,
   ArrowsPointingInIcon,
@@ -150,6 +153,7 @@ import {
   HandRaisedIcon,
 } from "@heroicons/vue/24/outline";
 import { staggerStyle } from "@/shared/utils/motion";
+import { t } from "@/shared/i18n";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
 import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
@@ -170,112 +174,32 @@ import {
   demoDayConsistency,
 } from "../demoData";
 
-const ROWS = [
-  {
-    id: "keys",
-    kicker: "Teclas",
-    title: "Dónde se te escapan los dedos",
-    text: "Un mapa del teclado con cada tecla teñida según cuánto la errás, y la lista ordenada por lo que de verdad te cuesta: no la tecla que más usás, sino la que más fallás en proporción.",
-    points: [
-      "Tasa de error de cada tecla, sobre tus últimas 30 sesiones",
-      "Errores corregidos con borrar también cuentan",
-      "Qué dedo y qué mano fallan más",
-    ],
-    height: "18rem",
-  },
-  {
-    id: "trends",
-    kicker: "Evolución",
-    title: "Cómo van tus teclas",
-    text: "Tus últimas 30 partidas contra las 30 anteriores, tecla por tecla: cuáles mejoraron y cuáles se te están escapando más que antes. Solo cambios claros, no una mala tarde.",
-    points: [
-      "Qué teclas bajaron sus errores, y cuánto",
-      "Cuáles empeoraron, antes de que se vuelvan un hábito",
-      "El «antes» de cada tecla en el mapa del teclado",
-    ],
-    height: "10rem",
-  },
-  {
-    id: "slow",
-    kicker: "Velocidad",
-    title: "Lo que te frena aunque no lo erres",
-    text: "Hay teclas que nunca fallás pero te hacen dudar. SwiftFlow mide el tiempo entre cada tecla y te muestra las que te llevan más que tu ritmo habitual, y las combinaciones que se te traban.",
-    points: [
-      "Milisegundos por tecla, contra tu propia mediana",
-      "Combinaciones lentas: «ue», «ct», «rr»",
-      "Sin confundirlo con errores: son problemas distintos",
-    ],
-    height: "20rem",
-  },
-  {
-    id: "session",
-    kicker: "Cada partida",
-    title: "La partida, segundo a segundo",
-    text: "El gráfico de tu velocidad durante toda la partida con cada error marcado, tu WPM bruto, la precisión contando cada pulsación, y qué tan parejo fue tu ritmo.",
-    points: [
-      "WPM neto (palabras correctas) y bruto (todas)",
-      "Consistencia: qué tan parejo fue tu ritmo",
-      "Combo máximo y errores corregidos",
-    ],
-    height: "16rem",
-  },
-  {
-    id: "patterns",
-    kicker: "Patrones",
-    title: "Los errores tienen forma",
-    text: "No es lo mismo errar una letra que apretar siempre la de al lado, o invertir dos letras por adelantarte. SwiftFlow distingue cada patrón y te dice cómo arreglarlo.",
-    points: [
-      "Qué tecla apretás cuando errás otra",
-      "Letras invertidas: «qeu» por «que»",
-      "Palabras enteras que se te traban",
-    ],
-    height: "18rem",
-  },
-  {
-    id: "steady",
-    kicker: "Constancia",
-    title: "Qué tan parejo sos",
-    text: "No alcanza con un buen día. SwiftFlow promedia cada día que practicás y te dice si tu velocidad se sostiene de uno al otro, o si hay días que se te van.",
-    points: [
-      "Un puntaje de 0 a 100, y entre qué velocidades se mueven tus días",
-      "Cada día contra tu franja habitual",
-      "Solo con partidas comparables: tu modo más jugado",
-    ],
-    height: "14rem",
-  },
-  {
-    id: "habits",
-    kicker: "Hábitos",
-    title: "Cuándo y cuánto practicás",
-    text: "Un año de práctica de un vistazo, tu racha de días, y a qué hora del día escribís mejor comparado con tu propio promedio en cada modo.",
-    points: [
-      "Calendario de actividad del año",
-      "Tu mejor momento del día",
-      "Tendencia de velocidad sesión a sesión",
-    ],
-    height: "18rem",
-  },
-];
+const ROW_HEIGHTS = {
+  keys: "18rem",
+  trends: "10rem",
+  slow: "20rem",
+  session: "16rem",
+  patterns: "18rem",
+  steady: "14rem",
+  habits: "18rem",
+};
 
-const SESSION_CHIPS = ["65 WPM", "97% precisión", "91% consistencia", "58 combo máx."];
+// Rebuilt when the language changes
+const ROWS = computed(() =>
+  Object.entries(ROW_HEIGHTS).map(([id, height]) => ({
+    id,
+    height,
+    ...t(`landing.showcase.stats.rows.${id}`),
+  }))
+);
 
-const PATTERNS = [
-  {
-    icon: ArrowsPointingInIcon,
-    title: "Confundís la R con la T",
-    detail:
-      "7 de cada 10 veces que errás la R apretás la T: el dedo se te corre a la de al lado.",
-  },
-  {
-    icon: ArrowPathRoundedSquareIcon,
-    title: "Se te adelantan los dedos",
-    detail: "Invertís «ue» y te sale «eu». No es puntería sino ritmo entre las manos.",
-  },
-  {
-    icon: HandRaisedIcon,
-    title: "Tu anular izquierdo falla más",
-    detail:
-      "Errás el 11% de las teclas que le tocan (S, W y X) contra el 4% de un dedo típico tuyo.",
-  },
-];
+const SESSION_CHIPS = computed(() => t("landing.showcase.stats.sessionChips"));
+
+const PATTERN_ICONS = [ArrowsPointingInIcon, ArrowPathRoundedSquareIcon, HandRaisedIcon];
+const PATTERNS = computed(() =>
+  t("landing.showcase.stats.patterns").map((pattern, i) => ({
+    ...pattern,
+    icon: PATTERN_ICONS[i],
+  }))
+);
 </script>

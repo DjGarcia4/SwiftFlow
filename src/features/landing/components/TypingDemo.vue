@@ -43,11 +43,11 @@
     </div>
 
     <p class="min-h-[6.5rem] font-mono text-xl leading-relaxed sm:text-2xl">
-      <span v-for="(char, index) in TEXT" :key="index" :class="charClass(index)">{{
+      <span v-for="(char, index) in text" :key="index" :class="charClass(index)">{{
         char
       }}</span
       ><span
-        v-if="typed.length >= TEXT.length"
+        v-if="typed.length >= text.length"
         class="inline-block w-0.5 animate-pulse bg-primary"
         >&nbsp;</span
       >
@@ -56,14 +56,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { FireIcon } from "@heroicons/vue/24/solid";
 import { prefersReducedMotion } from "@/shared/utils/motion";
 import { comboProgress } from "@/features/typing-test/utils/comboMilestones";
+import { t } from "@/shared/i18n";
 
-const TEXT = "la práctica constante cambia tu forma de escribir";
+// The sentence, in the language being used
+const text = computed(() => t("landing.features.demo.typed"));
 // Where the demo slips: types this instead, notices, and fixes it
-const SLIP_AT = TEXT.indexOf("constante") + 4;
+const slipAt = computed(
+  () => text.value.indexOf(t("landing.features.demo.slipWord")) + 4
+);
 const SLIP_CHAR = "s";
 // Around 70 wpm: quick, but a pace a visitor can believe
 const KEY_MS = 150;
@@ -78,7 +82,7 @@ const elapsed = ref(0);
 
 const wpm = computed(() => {
   if (!elapsed.value) return 0;
-  const correct = [...typed.value].filter((c, i) => c === TEXT[i]).length;
+  const correct = [...typed.value].filter((c, i) => c === text.value[i]).length;
   return Math.round(correct / 5 / (elapsed.value / 60000));
 });
 
@@ -90,7 +94,7 @@ const charClass = (index) => {
   const caret =
     index === typed.value.length ? "shadow-[inset_2px_0_0_var(--color-primary)]" : "";
   if (index >= typed.value.length) return `text-pencil-gray ${caret}`;
-  return typed.value[index] === TEXT[index]
+  return typed.value[index] === text.value[index]
     ? "font-bold text-success"
     : "rounded-sm bg-danger-tint text-danger";
 };
@@ -104,7 +108,7 @@ const wait = (ms) =>
 let running = true;
 const type = async (char) => {
   typed.value += char;
-  if (char === TEXT[typed.value.length - 1]) {
+  if (char === text.value[typed.value.length - 1]) {
     streak.value++;
     broke.value = false;
   } else {
@@ -125,14 +129,16 @@ const play = async () => {
     elapsed.value = 0;
     await wait(600);
 
-    for (let i = 0; i < TEXT.length && running; i++) {
-      if (i === SLIP_AT) {
+    // A change of language mid-sentence starts the new one over
+    const sentence = text.value;
+    for (let i = 0; i < sentence.length && running && sentence === text.value; i++) {
+      if (i === slipAt.value) {
         await type(SLIP_CHAR);
         await wait(350);
         typed.value = typed.value.slice(0, -1);
         await wait(200);
       }
-      await type(TEXT[i]);
+      await type(sentence[i]);
     }
     await wait(HOLD_END_MS);
   }
@@ -140,8 +146,12 @@ const play = async () => {
 
 onMounted(() => {
   if (prefersReducedMotion()) {
-    typed.value = TEXT;
-    streak.value = TEXT.length;
+    const showFinished = (sentence) => {
+      typed.value = sentence;
+      streak.value = sentence.length;
+    };
+    showFinished(text.value);
+    watch(text, showFinished);
     elapsed.value = 9000;
     return;
   }

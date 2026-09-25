@@ -7,6 +7,7 @@
 // Progress is never stored: like the achievements, it's read off the
 // history, from the lessons' own results.
 import { layoutById } from "@/features/typing-test/utils/keyboardLayouts";
+import { t } from "@/shared/i18n";
 
 // Rows as keyboardLayouts.js counts them
 const TOP = 1;
@@ -16,21 +17,16 @@ const BOTTOM = 3;
 // The same order on every row: index fingers first, outward to the
 // pinkies, then the index fingers' stretch toward the middle
 const PAIRS = [
-  { columns: [3, 6], fingers: "los índices" },
-  { columns: [2, 7], fingers: "los medios" },
-  { columns: [1, 8], fingers: "los anulares" },
-  { columns: [0, 9], fingers: "los meñiques" },
-  { columns: [4, 5], fingers: "los índices, que se estiran" },
+  { columns: [3, 6], fingers: "index" },
+  { columns: [2, 7], fingers: "middle" },
+  { columns: [1, 8], fingers: "ring" },
+  { columns: [0, 9], fingers: "pinky" },
+  { columns: [4, 5], fingers: "stretch" },
 ];
 const WHOLE_ROW = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-const ROW_TIPS = {
-  [HOME]:
-    "Es tu base: los dedos descansan acá y vuelven acá después de cada tecla. Buscá el relieve de la F y la J sin mirar.",
-  [TOP]:
-    "Subí solo el dedo que hace falta y volvé enseguida a la fila del medio: la mano no se mueve.",
-  [BOTTOM]: "Bajá el dedo curvado, sin arrastrar la muñeca, y volvé a la fila del medio.",
-};
+const ROW_IDS = { [HOME]: "home", [TOP]: "top", [BOTTOM]: "bottom" };
+const rowTip = (row) => t(`course.rowTips.${ROW_IDS[row]}`);
 
 const rowLessons = (stage, row, idPrefix, wpm) => [
   ...PAIRS.map((pair, index) => ({
@@ -40,7 +36,12 @@ const rowLessons = (stage, row, idPrefix, wpm) => [
     row,
     columns: pair.columns,
     fingers: pair.fingers,
-    tip: index === 0 ? ROW_TIPS[row] : `Con ${pair.fingers}. ${ROW_TIPS[row]}`,
+    // Read when shown, so it's in the current language
+    get tip() {
+      return index === 0
+        ? rowTip(row)
+        : t("course.withFingers", t(`course.fingers.${pair.fingers}`), rowTip(row));
+    },
     goalWpm: wpm,
   })),
   {
@@ -50,16 +51,38 @@ const rowLessons = (stage, row, idPrefix, wpm) => [
     row,
     columns: WHOLE_ROW,
     review: true,
-    tip: "Toda la fila junta. Despacio y sin errores rinde más que rápido y corrigiendo.",
+    get tip() {
+      return t("course.reviewTip");
+    },
     goalWpm: wpm + 2,
   },
 ];
 
 export const STAGES = [
-  { id: "home", title: "Fila del medio" },
-  { id: "top", title: "Fila de arriba" },
-  { id: "bottom", title: "Fila de abajo" },
-  { id: "beyond", title: "Más allá de las letras" },
+  {
+    id: "home",
+    get title() {
+      return t("course.stages.home");
+    },
+  },
+  {
+    id: "top",
+    get title() {
+      return t("course.stages.top");
+    },
+  },
+  {
+    id: "bottom",
+    get title() {
+      return t("course.stages.bottom");
+    },
+  },
+  {
+    id: "beyond",
+    get title() {
+      return t("course.stages.beyond");
+    },
+  },
 ];
 
 export const LESSONS = [
@@ -70,16 +93,24 @@ export const LESSONS = [
     id: "shift",
     stage: "beyond",
     kind: "shift",
-    title: "Mayúsculas",
-    tip: "Shift con el meñique de la mano contraria a la letra: para la A, el Shift derecho; para la L, el izquierdo.",
+    get title() {
+      return t("course.lessons.shift.title");
+    },
+    get tip() {
+      return t("course.lessons.shift.tip");
+    },
     goalWpm: 14,
   },
   {
     id: "accents",
     stage: "beyond",
     kind: "accents",
-    title: "Tildes",
-    tip: "La tecla del acento primero, soltala, y después la vocal. El teclado en pantalla te muestra dónde está en el tuyo.",
+    get title() {
+      return t("course.lessons.accents.title");
+    },
+    get tip() {
+      return t("course.lessons.accents.tip");
+    },
     goalWpm: 14,
   },
   {
@@ -87,8 +118,12 @@ export const LESSONS = [
     stage: "beyond",
     kind: "numbers",
     columns: [0, 1, 2, 3, 4],
-    title: "Números del 1 al 5",
-    tip: "Cada número va con el mismo dedo que la letra de abajo: el 4 con el índice, igual que la R.",
+    get title() {
+      return t("course.lessons.numbers-left.title");
+    },
+    get tip() {
+      return t("course.lessons.numbers-left.tip");
+    },
     goalWpm: 10,
   },
   {
@@ -96,24 +131,36 @@ export const LESSONS = [
     stage: "beyond",
     kind: "numbers",
     columns: [5, 6, 7, 8, 9],
-    title: "Números del 6 al 0",
-    tip: "El 6 y el 7 con el índice derecho, y así hacia afuera hasta el 0 con el meñique.",
+    get title() {
+      return t("course.lessons.numbers-right.title");
+    },
+    get tip() {
+      return t("course.lessons.numbers-right.tip");
+    },
     goalWpm: 10,
   },
   {
     id: "signs",
     stage: "beyond",
     kind: "signs",
-    title: "Signos",
-    tip: "En español las preguntas y exclamaciones se abren y se cierran: ¿así? ¡Y así!",
+    get title() {
+      return t("course.lessons.signs.title");
+    },
+    get tip() {
+      return t("course.lessons.signs.tip");
+    },
     goalWpm: 14,
   },
   {
     id: "final",
     stage: "beyond",
     kind: "final",
-    title: "Examen final",
-    tip: "Texto de verdad, con todo lo aprendido. Tomate tu tiempo: la meta es no mirar el teclado.",
+    get title() {
+      return t("course.lessons.final.title");
+    },
+    get tip() {
+      return t("course.lessons.final.tip");
+    },
     goalWpm: 20,
   },
 ];
@@ -158,9 +205,11 @@ export const knownKeys = (lesson, layout) => {
 
 export const lessonTitle = (lesson, layout) => {
   if (lesson.title) return lesson.title;
-  if (lesson.review) return "Repaso";
-  const keys = lessonKeys(lesson, layout).map((key) => key.toUpperCase());
-  return keys.length > 1 ? `${keys.slice(0, -1).join(", ")} y ${keys.at(-1)}` : keys[0];
+  if (lesson.review) return t("course.review");
+  return t(
+    "course.keysTitle",
+    lessonKeys(lesson, layout).map((key) => key.toUpperCase())
+  );
 };
 
 // How a result did on its lesson: passed or not, and 0 to 3 stars

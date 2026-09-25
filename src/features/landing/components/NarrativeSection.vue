@@ -13,10 +13,10 @@
       <div class="w-full">
         <header class="mx-auto mb-10 max-w-2xl text-center">
           <p class="text-xs font-extrabold uppercase tracking-widest text-primary">
-            Cómo funciona
+            {{ t("landing.intro.narrative.kicker") }}
           </p>
           <h2 class="mt-2 font-display text-3xl font-black text-charcoal sm:text-5xl">
-            Tres pasos, y de nuevo
+            {{ t("landing.intro.narrative.title") }}
           </h2>
         </header>
 
@@ -24,8 +24,8 @@
         <div v-if="pinned" class="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
           <ol class="space-y-3">
             <li
-              v-for="(step, index) in STEPS"
-              :key="step.title"
+              v-for="(step, index) in steps"
+              :key="index"
               class="flex gap-4 rounded-card border-2 p-5 transition-[opacity,border-color,background-color,scale] duration-500 ease-smooth"
               :class="
                 index === active
@@ -69,8 +69,8 @@
         <!-- Stacked -->
         <ol v-else class="space-y-6">
           <li
-            v-for="(step, index) in STEPS"
-            :key="step.title"
+            v-for="(step, index) in steps"
+            :key="index"
             v-reveal
             class="rounded-card border-2 border-faded-gray bg-paper-white p-5"
           >
@@ -95,23 +95,13 @@
 </template>
 
 <script setup>
-import { h, ref, onMounted, onUnmounted } from "vue";
+import { h, ref, computed, onMounted, onUnmounted } from "vue";
 import { prefersReducedMotion } from "@/shared/utils/motion";
+import { t } from "@/shared/i18n";
 
-const STEPS = [
-  {
-    title: "Escribí",
-    text: "Elegí un modo y arrancá. Cada tecla queda anotada: cuál era, cuál apretaste y cuánto tardaste.",
-  },
-  {
-    title: "Mirá qué te frena",
-    text: "Al terminar ves dónde te trabaste, y con unas cuantas sesiones, tus teclas, dedos y palabras flojas.",
-  },
-  {
-    title: "Entrená justo eso",
-    text: "Un botón arma un entrenamiento con eso mismo, te dice cuándo alcanza por hoy y te lo repasa después.",
-  },
-];
+const N = "landing.intro.narrative.";
+const steps = computed(() => t(`${N}steps`));
+const STEP_COUNT = 3;
 
 const TYPED = "el pequeño pingüino baila con su";
 const REST = " sombrero";
@@ -173,9 +163,12 @@ const StepStage = (props) => {
         ])
       ),
       h("div", { class: "mt-4 flex flex-wrap gap-2" }, [
-        chip("Te trabaste en «pequeño»: 1,9 s", "border-danger/30 text-danger"),
-        chip("Tecla más lenta: Ñ"),
-        chip("88% consistencia"),
+        chip(
+          t(`${N}stuckOn`, "pequeño", t(`${N}stuckTime`)),
+          "border-danger/30 text-danger"
+        ),
+        chip(t(`${N}slowestKey`, "Ñ")),
+        chip(t(`${N}consistency`, 88)),
       ]),
     ]);
   }
@@ -184,7 +177,7 @@ const StepStage = (props) => {
       "div",
       { class: "mb-3 flex items-center gap-2 text-xs font-bold text-pencil-gray" },
       [
-        "Entrenando:",
+        t(`${N}training`),
         h(
           "kbd",
           {
@@ -209,8 +202,8 @@ const StepStage = (props) => {
       DRILL
     ),
     h("div", { class: "mt-4 flex flex-wrap gap-2" }, [
-      chip("¡Listo por hoy con la Ñ!", "border-success/40 text-success-dark"),
-      chip("Repaso en 3 días"),
+      chip(t(`${N}doneToday`, "Ñ"), "border-success/40 text-success-dark"),
+      chip(t(`${N}reviewIn`, 3)),
     ]),
   ]);
 };
@@ -230,10 +223,7 @@ const measure = () => {
   const view = scroller.getBoundingClientRect();
   const travel = rect.height - view.height;
   const progress = travel > 0 ? (view.top - rect.top) / travel : 0;
-  active.value = Math.min(
-    STEPS.length - 1,
-    Math.max(0, Math.floor(progress * STEPS.length))
-  );
+  active.value = Math.min(STEP_COUNT - 1, Math.max(0, Math.floor(progress * STEP_COUNT)));
 };
 const onScroll = () => {
   if (!frame) frame = requestAnimationFrame(measure);

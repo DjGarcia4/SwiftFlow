@@ -8,13 +8,13 @@
             v-reveal
             class="text-xs font-extrabold uppercase tracking-widest text-primary"
           >
-            Novedades
+            {{ t("landing.news.changelog.kicker") }}
           </p>
           <h2
             v-reveal="{ delay: 100 }"
             class="mt-2 font-display text-3xl font-black text-charcoal sm:text-4xl"
           >
-            Lo último que llegó
+            {{ t("landing.news.changelog.title") }}
           </h2>
         </div>
         <p v-reveal="{ delay: 150 }" class="text-sm font-bold text-pencil-gray">
@@ -26,7 +26,7 @@
         v-reveal.stagger="{ step: 70 }"
         class="relative space-y-3 border-l-2 border-faded-gray pl-6"
       >
-        <li v-for="(entry, index) in shown" :key="entry.title" class="relative">
+        <li v-for="(entry, index) in shown" :key="entry.id" class="relative">
           <!-- A dot on the line; the newest one pulses -->
           <span
             class="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-paper-white"
@@ -37,7 +37,7 @@
             <span
               v-if="index === 0"
               class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-extrabold uppercase text-white"
-              >Nuevo</span
+              >{{ t("landing.news.changelog.new") }}</span
             >
           </div>
           <p class="text-sm font-bold text-pencil-gray">{{ entry.text }}</p>
@@ -49,6 +49,7 @@
 
 <script setup>
 import { CHANGELOG, formatChangelogDate } from "../changelog";
+import { t } from "@/shared/i18n";
 
 const SHOWN = 6;
 const shown = CHANGELOG.slice(0, SHOWN);

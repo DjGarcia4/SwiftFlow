@@ -7,14 +7,13 @@
   <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
     <header class="mb-6 animate-rise">
       <p class="text-xs font-extrabold uppercase tracking-widest text-primary">
-        Curso desde cero
+        {{ t("course.page.kicker") }}
       </p>
       <h1 class="mt-1 font-display text-2xl font-extrabold text-charcoal sm:text-3xl">
-        Aprendé a escribir sin mirar
+        {{ t("course.page.title") }}
       </h1>
       <p class="mt-2 text-sm font-bold text-pencil-gray">
-        Una fila por vez, un par de dedos por vez. Cada lección se pasa con su velocidad y
-        un {{ PASS_ACCURACY }}% de precisión, y abre la siguiente.
+        {{ t("course.page.intro", PASS_ACCURACY) }}
       </p>
     </header>
 
@@ -25,10 +24,10 @@
       <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="font-display text-xl font-extrabold text-charcoal">
-            {{ progress.passedCount }} de {{ progress.total }} lecciones
+            {{ t("course.page.lessonsDone", progress.passedCount, progress.total) }}
           </div>
           <div class="text-xs font-bold text-pencil-gray">
-            {{ totalStars }} de {{ progress.total * 3 }} estrellas
+            {{ t("course.page.starsDone", totalStars, progress.total * 3) }}
           </div>
         </div>
         <button
@@ -36,8 +35,12 @@
           class="inline-flex items-center gap-2 rounded-xl border-b-4 border-primary-dark bg-primary px-4 py-2 text-sm font-extrabold text-white transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
           @click="start(progress.next)"
         >
-          {{ progress.passedCount ? "Seguir" : "Empezar" }}: lección
-          {{ lessonIndex(progress.next.id) + 1 }}
+          {{
+            t(
+              progress.passedCount ? "course.page.continue" : "course.page.start",
+              lessonIndex(progress.next.id) + 1
+            )
+          }}
           <ArrowRightIcon class="h-4 w-4" />
         </button>
       </div>
@@ -47,7 +50,7 @@
         :aria-valuenow="progress.passedCount"
         aria-valuemin="0"
         :aria-valuemax="progress.total"
-        aria-label="Lecciones pasadas"
+        :aria-label="t('course.page.passedLessons')"
       >
         <div
           class="h-full rounded-full bg-primary transition-[width] duration-700 ease-smooth"
@@ -63,14 +66,15 @@
         class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-bold text-pencil-gray"
       >
         <span class="hidden items-center gap-1.5 sm:inline-flex"
-          ><span class="h-2.5 w-2.5 rounded-sm bg-success"></span> aprendidas</span
+          ><span class="h-2.5 w-2.5 rounded-sm bg-success"></span>
+          {{ t("course.page.learned") }}</span
         >
         <span class="hidden items-center gap-1.5 sm:inline-flex"
-          ><span class="h-2.5 w-2.5 rounded-sm bg-primary"></span> la próxima
-          lección</span
+          ><span class="h-2.5 w-2.5 rounded-sm bg-primary"></span>
+          {{ t("course.page.nextLesson") }}</span
         >
         <span class="inline-flex items-center gap-1.5">
-          Para tu teclado:
+          {{ t("course.page.forYourKeyboard") }}
           <KeyboardLayoutPicker />
         </span>
       </div>
@@ -99,7 +103,14 @@
                   : 'border-faded-gray hover:border-primary/50'
             "
             :disabled="!progress.unlocked[lesson.id]"
-            :aria-label="`Lección ${lessonIndex(lesson.id) + 1}: ${lessonTitle(lesson, configStore.keyboardLayout)}. ${describe(lesson)}`"
+            :aria-label="
+              t(
+                'course.page.lessonAria',
+                lessonIndex(lesson.id) + 1,
+                lessonTitle(lesson, configStore.keyboardLayout),
+                describe(lesson)
+              )
+            "
             @click="start(lesson)"
           >
             <span
@@ -139,6 +150,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { ArrowRightIcon, LockClosedIcon } from "@heroicons/vue/24/outline";
@@ -167,9 +179,9 @@ const totalStars = computed(() =>
 );
 
 const describe = (lesson) => {
-  if (!progress.value.unlocked[lesson.id]) return "Bloqueada";
+  if (!progress.value.unlocked[lesson.id]) return t("course.page.locked");
   const stars = progress.value.stars[lesson.id];
-  return stars ? `${stars} de 3 estrellas` : "Sin hacer";
+  return stars ? t("course.result.stars", stars) : t("course.page.notDone");
 };
 
 // Keys from lessons already passed, and the ones the next lesson brings

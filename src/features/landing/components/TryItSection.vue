@@ -8,13 +8,13 @@
     <div class="mx-auto max-w-3xl">
       <header class="mb-6 text-center">
         <p v-reveal class="text-xs font-extrabold uppercase tracking-widest text-primary">
-          Probalo acá
+          {{ t("landing.news.tryIt.kicker") }}
         </p>
         <h2
           v-reveal="{ delay: 100 }"
           class="mt-2 font-display text-3xl font-black text-charcoal sm:text-4xl"
         >
-          Una frase, y te decimos algo de tu forma de escribir
+          {{ t("landing.news.tryIt.title") }}
         </h2>
       </header>
 
@@ -29,7 +29,7 @@
             class="mb-3 flex items-center justify-between text-xs font-bold text-pencil-gray"
           >
             <span>{{
-              started ? "Seguí hasta el final" : "Tocá la frase y empezá a escribir"
+              t(started ? "landing.news.tryIt.keepGoing" : "landing.news.tryIt.start")
             }}</span>
             <span class="tabular-nums">{{ input.length }}/{{ text.length }}</span>
           </div>
@@ -47,7 +47,7 @@
             :value="input"
             type="text"
             class="absolute inset-0 h-full w-full cursor-text opacity-0"
-            aria-label="Escribí la frase"
+            :aria-label="t('landing.news.tryIt.field')"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
@@ -86,7 +86,7 @@
               to="/"
               class="inline-flex items-center gap-2 rounded-xl border-b-4 border-primary-dark bg-primary px-5 py-2.5 font-extrabold text-white transition-[scale,background-color] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
             >
-              Seguí en SwiftFlow
+              {{ t("landing.news.tryIt.continue") }}
               <ArrowRightIcon class="h-5 w-5" />
             </router-link>
             <button
@@ -95,25 +95,26 @@
               @click="another"
             >
               <ArrowPathIcon class="h-5 w-5" />
-              Otra frase
+              {{ t("landing.news.tryIt.another") }}
             </button>
           </div>
         </div>
       </div>
       <p v-reveal class="mt-3 text-center text-xs font-bold text-pencil-gray">
-        Esta prueba no se guarda en tu historial.
+        {{ t("landing.news.tryIt.notSaved") }}
       </p>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, watch } from "vue";
 import { LightBulbIcon, ArrowRightIcon, ArrowPathIcon } from "@heroicons/vue/24/outline";
-import { TRY_SENTENCES, summarizeTry } from "../tryIt";
+import { trySentences, summarizeTry } from "../tryIt";
+import { t, locale, localeTag } from "@/shared/i18n";
 
-let sentenceIndex = Math.floor(Math.random() * TRY_SENTENCES.length);
-const text = ref(TRY_SENTENCES[sentenceIndex]);
+let sentenceIndex = Math.floor(Math.random() * trySentences().length);
+const text = ref(trySentences()[sentenceIndex]);
 const input = ref("");
 const strokes = ref([]);
 const startedAt = ref(null);
@@ -163,17 +164,30 @@ const onInput = (event) => {
 
 const resultStats = computed(() => [
   { label: "wpm", value: result.value.wpm },
-  { label: "precisión", value: `${result.value.accuracy}%` },
-  { label: "segundos", value: result.value.seconds.toLocaleString("es") },
+  { label: t("landing.news.tryIt.accuracy"), value: `${result.value.accuracy}%` },
+  {
+    label: t("landing.news.tryIt.seconds"),
+    value: result.value.seconds.toLocaleString(localeTag()),
+  },
 ]);
 
-const another = () => {
-  sentenceIndex = (sentenceIndex + 1) % TRY_SENTENCES.length;
-  text.value = TRY_SENTENCES[sentenceIndex];
+const reset = () => {
   input.value = "";
   strokes.value = [];
   startedAt.value = null;
   result.value = null;
+};
+
+const another = () => {
+  sentenceIndex = (sentenceIndex + 1) % trySentences().length;
+  text.value = trySentences()[sentenceIndex];
+  reset();
   nextTick(focus);
 };
+
+// A change of language brings a sentence in that language
+watch(locale, () => {
+  text.value = trySentences()[sentenceIndex % trySentences().length];
+  reset();
+});
 </script>

@@ -1,4 +1,6 @@
+import { watch } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
+import { t, locale } from "@/shared/i18n";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,52 +14,45 @@ const router = createRouter({
       path: "/historial",
       name: "history",
       component: () => import("@/views/HistoryView.vue"),
-      meta: { title: "Historial" },
+      meta: { page: "history" },
     },
     {
       path: "/curso",
       name: "course",
       component: () => import("@/views/CourseView.vue"),
-      meta: {
-        title: "Curso desde cero",
-        description:
-          "Aprendé a escribir sin mirar el teclado, en español: una fila por vez, con lecciones que se adaptan a tu teclado.",
-      },
+      meta: { page: "course" },
     },
     {
       path: "/resumen",
       name: "summary",
       component: () => import("@/views/SummaryView.vue"),
-      meta: {
-        title: "Tu resumen",
-        description:
-          "Tu mes o tu año de práctica en SwiftFlow: cuánto, qué tan rápido, qué mejoraste.",
-      },
+      meta: { page: "summary" },
     },
     {
       path: "/sobre",
       name: "about",
       component: () => import("@/views/AboutView.vue"),
-      meta: {
-        title: "Qué es SwiftFlow",
-        description:
-          "Un test de mecanografía en español que te dice en qué fallás, por qué, y te arma la práctica para arreglarlo. Sin cuenta, todo en tu navegador.",
-      },
+      meta: { page: "about" },
     },
     // Anything else (a mistyped or old link) lands on the test
     { path: "/:rest(.*)*", redirect: "/" },
   ],
 });
 
-// Each page names itself in the tab and in shared links
-const DEFAULT_DESCRIPTION =
-  "Practicá mecanografía en español: tus teclas débiles, tus palabras difíciles y un entrenamiento hecho para vos.";
-
-router.afterEach((to) => {
-  document.title = to.meta.title ? `${to.meta.title} · SwiftFlow` : "SwiftFlow";
+// Each page names itself in the tab and in shared links, in the language
+// being used -- and again when the language changes
+const nameThePage = (to) => {
+  const page = to.meta.page;
+  document.title = page ? `${t(`shared.pages.${page}.title`)} · SwiftFlow` : "SwiftFlow";
   document
     .querySelector('meta[name="description"]')
-    ?.setAttribute("content", to.meta.description ?? DEFAULT_DESCRIPTION);
-});
+    ?.setAttribute(
+      "content",
+      t(page ? `shared.pages.${page}.description` : "shared.pages.default")
+    );
+};
+
+router.afterEach(nameThePage);
+watch(locale, () => nameThePage(router.currentRoute.value));
 
 export default router;

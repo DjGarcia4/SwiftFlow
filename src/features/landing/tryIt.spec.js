@@ -1,5 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { summarizeTry, TRY_SENTENCES } from "./tryIt";
+import { describe, it, expect, afterEach } from "vitest";
+import { summarizeTry, TRY_SENTENCES, TRY_SENTENCES_EN, trySentences } from "./tryIt";
+import { setLocale } from "@/shared/i18n";
+import { CHANGELOG, formatChangelogDate } from "./changelog";
 
 // Strokes typing `text` at `msFor(i)` ms a character, with optional slips
 const strokesFor = (text, { msFor = () => 150, slips = {} } = {}) => {
@@ -52,5 +54,29 @@ describe("summarizeTry", () => {
       expect(sentence).toMatch(/[ñáéíóúü]/);
       expect(sentence.length).toBeLessThan(70);
     }
+  });
+});
+
+describe("in English", () => {
+  afterEach(() => setLocale("es"));
+
+  it("uses English sentences and says it in English", () => {
+    setLocale("en");
+    expect(trySentences()).toBe(TRY_SENTENCES_EN);
+    for (const sentence of TRY_SENTENCES_EN) expect(sentence.length).toBeLessThan(70);
+    const text = "la casa rara";
+    const strokes = strokesFor(text, { slips: { 8: "t", 10: "t" } });
+    expect(summarizeTry({ text, input: text, strokes }).insight.text).toBe(
+      "R slipped past you 2 times."
+    );
+  });
+
+  it("tells what's new, dated the English way", () => {
+    expect(CHANGELOG[0].title).toBe("SwiftFlow en inglés");
+    expect(formatChangelogDate("2026-09")).toBe("septiembre de 2026");
+    setLocale("en");
+    expect(CHANGELOG[0].title).toBe("SwiftFlow in English");
+    expect(formatChangelogDate("2026-09")).toBe("September 2026");
+    expect(CHANGELOG.every((entry) => !entry.text.startsWith("landing."))).toBe(true);
   });
 });

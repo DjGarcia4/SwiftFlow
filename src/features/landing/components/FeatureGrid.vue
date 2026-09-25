@@ -2,13 +2,13 @@
   <section id="que-tiene" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
     <header class="mx-auto mb-12 max-w-2xl text-center">
       <p v-reveal class="text-xs font-extrabold uppercase tracking-widest text-primary">
-        Todo lo que hace
+        {{ t("landing.features.kicker") }}
       </p>
       <h2
         v-reveal="{ delay: 100 }"
         class="mt-2 font-display text-3xl font-black text-charcoal sm:text-5xl"
       >
-        Un test de velocidad que además te entrena
+        {{ t("landing.features.title") }}
       </h2>
     </header>
 
@@ -17,8 +17,8 @@
       <article v-tilt="3" :class="[CARD, 'md:col-span-6']">
         <CardTitle
           :icon="Squares2X2Icon"
-          :title="`${MODE_COUNT_WORDS[MODES.length] ?? MODES.length} maneras de practicar`"
-          text="De 15 segundos a sin límite, con tu texto o el de todos."
+          :title="t('landing.features.modes.title', MODES.length)"
+          :text="t('landing.features.modes.text')"
         />
         <div class="marquee mt-5 overflow-hidden" aria-hidden="true">
           <div class="marquee-track flex w-max gap-3">
@@ -34,9 +34,7 @@
           </div>
         </div>
         <ul class="sr-only">
-          <li v-for="mode in MODES" :key="mode.name">
-            {{ mode.name }}: {{ mode.detail }}
-          </li>
+          <li v-for="mode in MODES" :key="mode.id">{{ mode.name }}: {{ mode.detail }}</li>
         </ul>
       </article>
 
@@ -46,19 +44,22 @@
           <div>
             <CardTitle
               :icon="AcademicCapIcon"
-              title="Un curso para empezar de cero"
-              :text="`${LESSONS.length} lecciones para aprender a escribir sin mirar: una fila por vez, un par de dedos por vez, hasta los números y los signos. Cada una se pasa con su velocidad y su precisión, y se adapta a tu teclado.`"
+              :title="t('landing.features.course.title')"
+              :text="t('landing.features.course.text', LESSONS.length)"
             />
             <RouterLink
               to="/curso"
               class="mt-4 inline-flex items-center gap-2 text-sm font-extrabold text-primary underline underline-offset-2"
-              >Ver el curso</RouterLink
+              >{{ t("landing.features.course.see") }}</RouterLink
             >
           </div>
-          <ol class="grid gap-2 sm:grid-cols-2" aria-label="Las etapas del curso">
+          <ol
+            class="grid gap-2 sm:grid-cols-2"
+            :aria-label="t('landing.features.course.stagesAria')"
+          >
             <li
               v-for="(stage, index) in COURSE_STAGES"
-              :key="stage.title"
+              :key="stage.id"
               class="rounded-xl border-2 border-faded-gray px-3 py-2"
             >
               <div class="flex items-center justify-between gap-2">
@@ -86,8 +87,8 @@
       <article v-tilt="3" :class="[CARD, 'md:col-span-4']">
         <CardTitle
           :icon="CursorArrowRaysIcon"
-          title="Mientras escribís"
-          text="El combo como barra que se llena, un coach que te avisa qué letra se te escapa, y un teclado en pantalla con el dedo que va en cada tecla."
+          :title="t('landing.features.typing.title')"
+          :text="t('landing.features.typing.text')"
         />
         <div class="mt-5 grid items-center gap-4 lg:grid-cols-[1fr_auto]">
           <div class="space-y-3">
@@ -102,12 +103,12 @@
               class="flex items-center gap-2 rounded-xl border-2 border-primary/40 bg-paper-white px-3 py-2"
             >
               <ViewfinderCircleIcon class="h-5 w-5 flex-shrink-0 text-primary" />
-              <span class="min-w-0 flex-1 text-xs font-extrabold text-charcoal"
-                >Se te escapa la R · 4 de 12</span
-              >
+              <span class="min-w-0 flex-1 text-xs font-extrabold text-charcoal">{{
+                t("landing.features.typing.coach")
+              }}</span>
               <span
                 class="rounded-md bg-primary px-2 py-0.5 text-[10px] font-extrabold text-white"
-                >Entrenar ahora</span
+                >{{ t("landing.features.typing.train") }}</span
               >
             </div>
           </div>
@@ -122,11 +123,11 @@
       <article v-tilt="3" :class="[CARD, 'md:col-span-2']">
         <CardTitle
           :icon="GhostIcon"
-          title="Corré contra alguien"
-          text="Tu propio récord como fantasma, o un marcapasos a ritmo fijo."
+          :title="t('landing.features.race.title')"
+          :text="t('landing.features.race.text')"
         />
         <div class="mt-5 space-y-3" aria-hidden="true">
-          <div v-for="lane in LANES" :key="lane.label">
+          <div v-for="lane in LANES" :key="lane.id">
             <div
               class="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-pencil-gray"
             >
@@ -148,25 +149,25 @@
       <article v-tilt="3" :class="[CARD, 'md:col-span-3']">
         <CardTitle
           :icon="MagnifyingGlassIcon"
-          title="¿Dónde te frenaste?"
-          text="Después de cada partida, tu texto palabra por palabra, coloreado por cuánto tardaste en cada una."
+          :title="t('landing.features.replay.title')"
+          :text="t('landing.features.replay.text')"
         />
         <p class="mt-5 font-mono text-lg leading-loose">
-          <template v-for="([word, tier], index) in demoReplay" :key="index">
+          <template v-for="([word, tier], index) in demoReplay()" :key="index">
             <span class="rounded px-0.5" :class="TIER_CLASSES[tier]">{{ word }}</span
             >{{ " " }}
           </template>
         </p>
         <div class="mt-3 flex flex-wrap gap-2 text-xs font-bold">
-          <span class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal"
-            >91% consistencia</span
-          >
-          <span class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal"
-            >64 wpm bruto</span
-          >
-          <span class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal"
-            >2 errores corregidos</span
-          >
+          <span class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal">{{
+            t("landing.features.replay.consistency", 91)
+          }}</span>
+          <span class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal">{{
+            t("landing.features.replay.raw", 64)
+          }}</span>
+          <span class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal">{{
+            t("landing.features.replay.corrected", 2)
+          }}</span>
         </div>
       </article>
 
@@ -174,13 +175,13 @@
       <article v-tilt="3" :class="[CARD, 'md:col-span-3']">
         <CardTitle
           :icon="ViewfinderCircleIcon"
-          title="Un entrenamiento que sabe cuándo parar"
-          text="Arma la práctica con tus teclas y palabras flojas, te dice si hace falta otra ronda, y te las vuelve a traer en el momento justo."
+          :title="t('landing.features.training.title')"
+          :text="t('landing.features.training.text')"
         />
         <ol class="mt-5 space-y-2">
           <li
-            v-for="(step, index) in TRAINING_STEPS"
-            :key="step.title"
+            v-for="(step, index) in t('landing.features.training.steps')"
+            :key="index"
             class="flex items-center gap-3"
           >
             <span
@@ -197,7 +198,7 @@
            otherwise leave one alone -->
       <article
         v-for="(small, index) in SMALL_CARDS"
-        :key="small.title"
+        :key="small.id"
         v-tilt="3"
         :class="[CARD, smallCardSpan(index)]"
       >
@@ -249,6 +250,7 @@ import { codeLanguages } from "@/features/typing-test/content/code";
 import { KEYBOARD_LAYOUTS } from "@/features/typing-test/utils/keyboardLayouts";
 import { useConfigStore } from "@/features/typing-test/store";
 import { demoReplay } from "../demoData";
+import { t } from "@/shared/i18n";
 
 // min-w-0: a grid item is otherwise as wide as its widest content, and
 // the modes strip is a few thousand pixels of it
@@ -271,46 +273,53 @@ const CardTitle = (props) =>
   ]);
 CardTitle.props = ["icon", "title", "text"];
 
+// Names and details read through getters, so they follow the language
 const MODES = [
-  { name: "Tiempo", detail: "15 a 120 s", icon: ClockIcon },
-  { name: "Palabras", detail: "con ¿? y ¡!", icon: DocumentTextIcon },
-  { name: "Números", detail: "decimales, horas, miles", icon: HashtagIcon },
-  { name: "Cita", detail: "frases con autor", icon: ChatBubbleBottomCenterTextIcon },
-  { name: "Clásicos", detail: "Cervantes, Bécquer, Martí…", icon: BookOpenIcon },
-  { name: "Dictado", detail: "escuchás y escribís", icon: SpeakerWaveIcon },
-  { name: "Código", detail: `${codeLanguages.length} lenguajes`, icon: CodeBracketIcon },
-  { name: "Zen", detail: "sin límite", icon: SparklesIcon },
-  {
-    name: "Entrenar",
-    detail: "tus teclas y palabras flojas",
-    icon: ViewfinderCircleIcon,
+  { id: "time", icon: ClockIcon },
+  { id: "words", icon: DocumentTextIcon },
+  { id: "numbers", icon: HashtagIcon },
+  { id: "quote", icon: ChatBubbleBottomCenterTextIcon },
+  { id: "classics", icon: BookOpenIcon },
+  { id: "dictation", icon: SpeakerWaveIcon },
+  { id: "code", icon: CodeBracketIcon },
+  { id: "zen", icon: SparklesIcon },
+  { id: "train", icon: ViewfinderCircleIcon },
+  { id: "custom", icon: PencilSquareIcon },
+  { id: "weekly", icon: TrophyIcon },
+].map((mode) => ({
+  ...mode,
+  get name() {
+    return t(`landing.features.modes.${mode.id}.name`);
   },
-  { name: "Mi texto", detail: "pegá lo que escribís", icon: PencilSquareIcon },
-  { name: "Semanal", detail: "el mismo texto para todos", icon: TrophyIcon },
-];
+  get detail() {
+    return t(`landing.features.modes.${mode.id}.detail`, codeLanguages.length);
+  },
+}));
 
 // The course's stages, with what each has you type and a made-up result:
 // the first ones done, as someone partway through would see it
 const COURSE_STAGES = [
-  { title: "Fila del medio", sample: "fjfj dkdk sala", demoStars: 3 },
-  { title: "Fila de arriba", sample: "ruta hielo pero", demoStars: 2 },
-  { title: "Fila de abajo", sample: "cama, ven.", demoStars: 1 },
-  { title: "Más allá de las letras", sample: "Árbol ¿124?", demoStars: 0 },
-];
-
-// "Diez maneras", in words, while it's a count that reads well that way
-const MODE_COUNT_WORDS = { 9: "Nueve", 10: "Diez", 11: "Once", 12: "Doce" };
+  { id: "home", sample: "fjfj dkdk sala", demoStars: 3 },
+  { id: "top", sample: "ruta hielo pero", demoStars: 2 },
+  { id: "bottom", sample: "cama, ven.", demoStars: 1 },
+  { id: "beyond", sample: "Árbol ¿124?", demoStars: 0 },
+].map((stage) => ({
+  ...stage,
+  get title() {
+    return t(`course.stages.${stage.id}`);
+  },
+}));
 
 const LANES = [
-  { label: "Vos", icon: CursorArrowRaysIcon, color: "bg-primary", duration: "4.2s" },
-  { label: "Tu fantasma", icon: GhostIcon, color: "bg-pencil-gray", duration: "4.6s" },
-  {
-    label: "Marcapasos 60 wpm",
-    icon: MetronomeIcon,
-    color: "bg-charcoal/60",
-    duration: "5s",
+  { id: "you", icon: CursorArrowRaysIcon, color: "bg-primary", duration: "4.2s" },
+  { id: "ghost", icon: GhostIcon, color: "bg-pencil-gray", duration: "4.6s" },
+  { id: "pacer", icon: MetronomeIcon, color: "bg-charcoal/60", duration: "5s" },
+].map((lane) => ({
+  ...lane,
+  get label() {
+    return t(`landing.features.race.${lane.id}`, 60);
   },
-];
+}));
 
 const TIER_CLASSES = {
   fast: "text-success",
@@ -319,59 +328,32 @@ const TIER_CLASSES = {
   stuck: "bg-danger/15 font-bold text-danger",
 };
 
-const TRAINING_STEPS = [
-  { title: "Detecta", detail: "teclas, dedos y palabras flojas" },
-  { title: "Entrena", detail: "texto armado alrededor de eso" },
-  { title: "Te frena", detail: "“listo por hoy” o “una ronda más”" },
-  { title: "Repasa", detail: "a 1, 3, 7, 14 y 30 días" },
-];
-
-// "Latinoamericano, Español (España), ... y Colemak"
-const layoutNames = KEYBOARD_LAYOUTS.map((layout) => layout.name.split(" (")[0]);
-const LAYOUTS_TEXT = `${layoutNames.slice(0, -1).join(", ")} o ${layoutNames.at(-1)}: el teclado en pantalla, los dedos y los consejos siguen al tuyo.`;
+// "Latinoamericano, Español (España), ... o Colemak"
+const layoutsText = () => {
+  const names = KEYBOARD_LAYOUTS.map((layout) => layout.name.split(" (")[0]);
+  return t("landing.features.small.layouts.text", names.slice(0, -1), names.at(-1));
+};
 
 const SMALL_CARDS = [
-  {
-    icon: LanguageIcon,
-    title: "Tu teclado",
-    text: LAYOUTS_TEXT,
+  { id: "layouts", icon: LanguageIcon },
+  { id: "appearance", icon: TextStyleIcon },
+  { id: "everyone", icon: UserGroupIcon },
+  { id: "blind", icon: EyeSlashIcon },
+  { id: "focus", icon: EyeIcon },
+  { id: "strict", icon: HeartIcon },
+  { id: "noAccount", icon: ShieldCheckIcon },
+  { id: "offline", icon: WifiIcon },
+].map((card) => ({
+  ...card,
+  get title() {
+    return t(`landing.features.small.${card.id}.title`);
   },
-  {
-    icon: TextStyleIcon,
-    title: "Texto a tu gusto",
-    text: "Tamaño, interlineado y fuente, con opciones pensadas para leer mejor como Atkinson Hyperlegible y OpenDyslexic.",
+  get text() {
+    return card.id === "layouts"
+      ? layoutsText()
+      : t(`landing.features.small.${card.id}.text`);
   },
-  {
-    icon: UserGroupIcon,
-    title: "Para todos",
-    text: "Alto contraste, todo usable con el teclado, y los resultados leídos en voz alta por tu lector de pantalla.",
-  },
-  {
-    icon: EyeSlashIcon,
-    title: "Sin red",
-    text: "Escribí sin ver tus errores hasta el final: entrena la confianza en tus dedos.",
-  },
-  {
-    icon: EyeIcon,
-    title: "Modo foco",
-    text: "Solo la palabra que estás escribiendo y la siguiente, grandes y en el centro. Nada más que mirar.",
-  },
-  {
-    icon: HeartIcon,
-    title: "Modos exigentes",
-    text: "Muerte súbita, corregir para avanzar o una precisión mínima: si no llegás, no cuenta.",
-  },
-  {
-    icon: ShieldCheckIcon,
-    title: "Sin cuenta",
-    text: "Todo queda en tu navegador. Exportá tu historial cuando quieras.",
-  },
-  {
-    icon: WifiIcon,
-    title: "Funciona sin internet",
-    text: "Instalala como app y practicá donde sea.",
-  },
-];
+}));
 
 // Rows of three; a leftover one or two share the last row(s) two by two
 const smallCardSpan = (index) => {

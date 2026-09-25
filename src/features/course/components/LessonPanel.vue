@@ -6,7 +6,7 @@
   >
     <div class="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-sm">
       <span class="text-xs font-extrabold uppercase tracking-wide text-primary">
-        Lección {{ number }} de {{ LESSONS.length }}
+        {{ t("course.panel.of", number, LESSONS.length) }}
       </span>
       <span class="font-display font-extrabold text-charcoal">{{ title }}</span>
       <kbd
@@ -16,10 +16,10 @@
         >{{ key }}</kbd
       >
       <span class="text-xs font-bold text-pencil-gray">
-        · Meta: {{ lesson.goalWpm }} wpm y {{ PASS_ACCURACY }}% ·
-        <RouterLink to="/curso" class="text-primary underline underline-offset-2"
-          >ver el curso</RouterLink
-        >
+        {{ t("course.panel.goal", lesson.goalWpm, PASS_ACCURACY) }}
+        <RouterLink to="/curso" class="text-primary underline underline-offset-2">{{
+          t("course.panel.seeCourse")
+        }}</RouterLink>
       </span>
     </div>
     <p class="text-xs font-bold text-pencil-gray">{{ lesson.tip }}</p>
@@ -27,6 +27,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
 import { useConfigStore } from "@/features/typing-test/store";

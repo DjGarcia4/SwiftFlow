@@ -8,13 +8,13 @@
     <div class="mx-auto max-w-4xl">
       <header class="mx-auto mb-10 max-w-2xl text-center">
         <p v-reveal class="text-xs font-extrabold uppercase tracking-widest text-primary">
-          La diferencia
+          {{ t("landing.intro.comparison.kicker") }}
         </p>
         <h2
           v-reveal="{ delay: 100 }"
           class="mt-2 font-display text-3xl font-black text-charcoal sm:text-5xl"
         >
-          Lo que un test de velocidad no te dice
+          {{ t("landing.intro.comparison.title") }}
         </h2>
       </header>
 
@@ -28,10 +28,10 @@
               class="border-b-2 border-faded-gray text-xs font-extrabold uppercase tracking-wide"
             >
               <th scope="col" class="px-4 py-3 text-pencil-gray sm:px-6">
-                Qué sabés después
+                {{ t("landing.intro.comparison.after") }}
               </th>
               <th scope="col" class="w-24 px-2 py-3 text-center text-pencil-gray sm:w-36">
-                Un test típico
+                {{ t("landing.intro.comparison.typical") }}
               </th>
               <th
                 scope="col"
@@ -43,8 +43,8 @@
           </thead>
           <tbody v-reveal.stagger="{ step: 60 }">
             <tr
-              v-for="row in ROWS"
-              :key="row.label"
+              v-for="(row, index) in rows"
+              :key="index"
               class="border-b border-faded-gray/60 last:border-b-0"
             >
               <th scope="row" class="px-4 py-3 text-sm font-bold text-charcoal sm:px-6">
@@ -53,11 +53,17 @@
               <td class="px-2 py-3 text-center">
                 <CheckIcon v-if="row.typical" class="mx-auto h-5 w-5 text-pencil-gray" />
                 <MinusIcon v-else class="mx-auto h-5 w-5 text-faded-gray" />
-                <span class="sr-only">{{ row.typical ? "sí" : "no" }}</span>
+                <span class="sr-only">{{
+                  t(
+                    row.typical
+                      ? "landing.intro.comparison.yes"
+                      : "landing.intro.comparison.no"
+                  )
+                }}</span>
               </td>
               <td class="bg-primary-tint/30 px-2 py-3 text-center">
                 <CheckIcon class="mx-auto h-5 w-5 text-primary" />
-                <span class="sr-only">sí</span>
+                <span class="sr-only">{{ t("landing.intro.comparison.yes") }}</span>
               </td>
             </tr>
           </tbody>
@@ -68,21 +74,16 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { CheckIcon, MinusIcon } from "@heroicons/vue/24/outline";
+import { t } from "@/shared/i18n";
 
-const ROWS = [
-  { label: "Cuántas palabras por minuto escribiste", typical: true },
-  { label: "Qué porcentaje de teclas acertaste", typical: true },
-  { label: "Qué teclas fallás más, en proporción", typical: false },
-  { label: "Qué teclas mejoraron y cuáles empeoraron", typical: false },
-  { label: "Qué tecla apretás cuando errás otra", typical: false },
-  { label: "Qué letras invertís por adelantarte", typical: false },
-  { label: "Qué teclas y combinaciones te frenan sin que las erres", typical: false },
-  { label: "Qué palabras enteras se te traban", typical: false },
-  { label: "Qué dedo falla más", typical: false },
-  { label: "En qué palabra de la partida te trabaste", typical: false },
-  { label: "Qué tan parejo es tu ritmo", typical: false },
-  { label: "Qué tan parejo sos de un día al otro", typical: false },
-  { label: "Cuándo parar de entrenar, y cuándo repasar", typical: false },
-];
+// Only the first ones -- speed and accuracy -- are what a typical test gives
+const TYPICAL_ROWS = 2;
+const rows = computed(() =>
+  t("landing.intro.comparison.rows").map((label, index) => ({
+    label,
+    typical: index < TYPICAL_ROWS,
+  }))
+);
 </script>

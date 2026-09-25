@@ -2,6 +2,7 @@
 // comes the wpm and one real thing about how you typed it -- the point of
 // SwiftFlow in fifteen seconds. Nothing here is saved to the history.
 import { computeWpm } from "@/features/typing-test/utils/typingMetrics";
+import { t, locale } from "@/shared/i18n";
 
 // Short, and with a Ñ, accents and a capital: the Spanish keyboard is the
 // thing being shown off
@@ -10,6 +11,17 @@ export const TRY_SENTENCES = [
   "La niña guardó su cañón de papel junto al búho del jardín.",
   "Mañana compraré café, pan dulce y un cuaderno de música.",
 ];
+
+// In English: short too, with capitals and a bit of punctuation
+export const TRY_SENTENCES_EN = [
+  "The quick brown fox jumps over the lazy dog by the river.",
+  "Pack my box with five dozen jugs of liquid, then take a break.",
+  "Jim quickly realized that the big fuzzy owls were waxing poetic.",
+];
+
+// The sentences for the language the page is in
+export const trySentences = () =>
+  locale.value === "en" ? TRY_SENTENCES_EN : TRY_SENTENCES;
 
 // A letter needs this many slips before it's the story
 const MIN_MISSES_TO_NAME = 2;
@@ -22,7 +34,11 @@ const median = (values) => {
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 };
 
-const label = (char) => (char === " " ? "el espacio" : `la ${char.toUpperCase()}`);
+const label = (char) =>
+  char === " "
+    ? t("landing.news.tryIt.space")
+    : t("landing.news.tryIt.key", char.toUpperCase());
+const capitalized = (text) => `${text[0].toUpperCase()}${text.slice(1)}`;
 
 // strokes: every character typed, in order: { index, expected, typed, ms }
 // with ms since the first one. Backspaces aren't strokes.
@@ -64,25 +80,27 @@ export const summarizeTry = ({ text, input, strokes }) => {
   if (missedKey && missedTimes >= MIN_MISSES_TO_NAME) {
     insight = {
       kind: "missed",
-      text: `${label(missedKey)[0].toUpperCase()}${label(missedKey).slice(1)} se te escapó ${missedTimes} veces.`,
-      detail:
-        "SwiftFlow junta esto partida a partida y te arma un entrenamiento con tus teclas flojas.",
+      text: t("landing.news.tryIt.missed", capitalized(label(missedKey)), missedTimes),
+      detail: t("landing.news.tryIt.missedDetail"),
     };
   } else if (slowest && typical && slowest.ms >= typical * SLOW_FACTOR) {
     insight = {
       kind: "slow",
-      text: `Tu letra más lenta fue ${label(slowest.key)}: ${Math.round(slowest.ms)} ms, contra los ${Math.round(typical)} ms del resto.`,
-      detail:
-        "No la erraste, pero te hizo dudar. SwiftFlow mide cada tecla y te muestra las que te frenan.",
+      text: t(
+        "landing.news.tryIt.slow",
+        label(slowest.key),
+        Math.round(slowest.ms),
+        Math.round(typical)
+      ),
+      detail: t("landing.news.tryIt.slowDetail"),
     };
   } else {
     insight = {
       kind: "clean",
-      text: wrong.length
-        ? "Casi sin tropiezos y con ritmo parejo."
-        : "Sin un error y con ritmo parejo.",
-      detail:
-        "Con unas partidas más, SwiftFlow encuentra hasta lo que no se nota a simple vista.",
+      text: t(
+        wrong.length ? "landing.news.tryIt.almostClean" : "landing.news.tryIt.clean"
+      ),
+      detail: t("landing.news.tryIt.cleanDetail"),
     };
   }
 

@@ -8,27 +8,31 @@
       v-if="!periods.months.length"
       class="rounded-card border-2 border-faded-gray p-8 text-center text-pencil-gray"
     >
-      Todavía no hay nada que resumir: jugá tu primera partida y volvé.
+      {{ t("history.summary.page.empty") }}
     </div>
 
     <template v-else>
       <header class="mb-6 flex flex-wrap items-end justify-between gap-3 animate-rise">
         <div>
           <p class="text-xs font-extrabold uppercase tracking-widest text-primary">
-            Tu resumen
+            {{ t("history.summary.page.kicker") }}
           </p>
           <h1 class="mt-1 font-display text-3xl font-extrabold text-charcoal sm:text-4xl">
-            {{ summary ? `Tu ${summary.label}` : "Sin partidas" }}
+            {{
+              summary
+                ? t("history.summary.page.title", summary.label)
+                : t("history.summary.page.noSessions")
+            }}
           </h1>
         </div>
         <label class="flex items-center gap-2 text-sm font-bold text-pencil-gray">
-          Período
+          {{ t("history.summary.page.period") }}
           <select
             :value="periodId(period)"
             class="cursor-pointer rounded-xl border-2 border-faded-gray bg-paper-white px-2.5 py-1.5 text-sm font-bold text-charcoal focus:border-primary focus:outline-none"
             @change="pickPeriod($event.target.value)"
           >
-            <optgroup label="Meses">
+            <optgroup :label="t('history.summary.page.months')">
               <option
                 v-for="month in periods.months"
                 :key="periodId(month)"
@@ -37,7 +41,7 @@
                 {{ periodLabel(month) }}
               </option>
             </optgroup>
-            <optgroup label="Años">
+            <optgroup :label="t('history.summary.page.years')">
               <option
                 v-for="year in periods.years"
                 :key="periodId(year)"
@@ -51,7 +55,7 @@
       </header>
 
       <p v-if="!summary" class="text-pencil-gray">
-        No jugaste en {{ periodLabel(period) }}.
+        {{ t("history.summary.page.nothingIn", periodLabel(period)) }}
       </p>
 
       <template v-else>
@@ -107,7 +111,7 @@
         >
           <div class="mb-2 text-xs font-extrabold uppercase tracking-wide text-primary">
             {{ summary.achievements.length }}
-            {{ summary.achievements.length === 1 ? "logro nuevo" : "logros nuevos" }}
+            {{ t("history.summary.page.newAchievements", summary.achievements.length) }}
           </div>
           <ul class="flex flex-wrap gap-2">
             <li
@@ -129,7 +133,7 @@
             @click="share"
           >
             <ShareIcon class="h-5 w-5" />
-            Compartir mi resumen
+            {{ t("history.summary.page.share") }}
           </button>
         </div>
       </template>
@@ -139,7 +143,7 @@
       :open="shareOpen"
       :image-url="imageUrl"
       :can-native-share="canNativeShare"
-      title="Compartir resumen"
+      :title="t('history.summary.page.shareTitle')"
       @close="closeShare"
       @download="download"
       @share="nativeShare"
@@ -175,6 +179,9 @@ import {
   parsePeriodId,
 } from "@/features/history/utils/summary";
 import { drawSummaryCard } from "@/features/history/utils/summaryCard";
+import { t, localeTag } from "@/shared/i18n";
+
+const P = "history.summary.page.";
 
 const route = useRoute();
 const router = useRouter();
@@ -195,19 +202,19 @@ const summary = computed(() =>
 const amounts = computed(() => [
   {
     value: summary.value.sessions,
-    label: summary.value.sessions === 1 ? "partida" : "partidas",
+    label: t("history.summary.sessions", summary.value.sessions),
   },
-  { value: summary.value.minutes, label: "minutos" },
+  { value: summary.value.minutes, label: t("history.summary.minutes") },
   {
     value: summary.value.daysPracticed,
-    label: summary.value.daysPracticed === 1 ? "día" : "días",
-    detail: `de ${summary.value.daysSoFar}`,
+    label: t("history.summary.days", summary.value.daysPracticed),
+    detail: t("history.summary.page.of", summary.value.daysSoFar),
   },
 ]);
 
 const percent = (rate) => `${Math.round(rate * 100)}%`;
 const formatDay = (date) =>
-  new Date(date).toLocaleDateString("es", {
+  new Date(date).toLocaleDateString(localeTag(), {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -219,26 +226,26 @@ const cards = computed(() => {
   if (s.best) {
     list.push({
       icon: BoltIcon,
-      title: s.best.record ? "Récord" : "Tu mejor partida",
+      title: t(s.best.record ? `${P}record` : `${P}best`),
       value: `${s.best.wpm} wpm`,
       detail: s.best.record
-        ? `Tu nuevo récord, en ${s.best.label}`
-        : `En ${s.best.label}`,
+        ? t(`${P}newRecordIn`, s.best.label)
+        : t(`${P}inMode`, s.best.label),
       highlight: s.best.record,
     });
   }
   if (s.averageWpm !== null) {
     const change =
       s.wpmChange === null
-        ? "Tu promedio del período"
+        ? t(`${P}periodAverage`)
         : s.wpmChange > 0
-          ? `${s.wpmChange}% más rápido que el período anterior`
+          ? t(`${P}faster`, s.wpmChange)
           : s.wpmChange < 0
-            ? `${Math.abs(s.wpmChange)}% más lento que el período anterior`
-            : "Igual que el período anterior";
+            ? t(`${P}slower`, Math.abs(s.wpmChange))
+            : t(`${P}same`);
     list.push({
       icon: BoltIcon,
-      title: "Velocidad promedio",
+      title: t(`${P}averageSpeed`),
       value: `${s.averageWpm} wpm`,
       detail: change,
       highlight: s.wpmChange > 0,
@@ -247,36 +254,36 @@ const cards = computed(() => {
   if (s.averageAccuracy !== null) {
     list.push({
       icon: CheckBadgeIcon,
-      title: "Precisión",
+      title: t(`${P}accuracy`),
       value: `${s.averageAccuracy}%`,
-      detail: "De promedio, contando cada tecla",
+      detail: t(`${P}accuracyDetail`),
     });
   }
   if (s.tamedKey) {
     list.push({
       icon: KeyIcon,
-      title: "La tecla que domaste",
+      title: t(`${P}tamedKey`),
       value: formatKeyLabel(s.tamedKey.key).toUpperCase(),
-      detail: `De ${percent(s.tamedKey.before)} a ${percent(s.tamedKey.after)} de error`,
+      detail: t(`${P}tamedDetail`, percent(s.tamedKey.before), percent(s.tamedKey.after)),
       highlight: true,
     });
   }
   list.push({
     icon: HeartIcon,
-    title: "Tu modo favorito",
+    title: t(`${P}favoriteMode`),
     value: s.favoriteMode.name,
-    detail: `${s.favoriteMode.sessions} ${s.favoriteMode.sessions === 1 ? "partida" : "partidas"}`,
+    detail: `${s.favoriteMode.sessions} ${t("history.summary.sessions", s.favoriteMode.sessions)}`,
   });
   list.push({
     icon: FireIcon,
-    title: "Tu racha más larga",
-    value: `${s.longestStreak} ${s.longestStreak === 1 ? "día" : "días"}`,
-    detail: "Seguidos, en este período",
+    title: t(`${P}longestStreak`),
+    value: `${s.longestStreak} ${t("history.summary.days", s.longestStreak)}`,
+    detail: t(`${P}streakDetail`),
   });
   list.push({
     icon: CalendarDaysIcon,
-    title: "Tu día con más partidas",
-    value: `${s.busiestDay.sessions} ${s.busiestDay.sessions === 1 ? "partida" : "partidas"}`,
+    title: t(`${P}busiestDay`),
+    value: `${s.busiestDay.sessions} ${t("history.summary.sessions", s.busiestDay.sessions)}`,
     detail: formatDay(s.busiestDay.date),
   });
   return list;
@@ -287,7 +294,7 @@ const shareOpen = ref(false);
 const imageUrl = ref(null);
 const blob = ref(null);
 const canNativeShare = ref(false);
-const FILE_NAME = "swiftflow-resumen.png";
+const fileName = () => t(`${P}fileName`);
 
 const share = () => {
   const canvas = drawSummaryCard(document.createElement("canvas"), summary.value);
@@ -295,7 +302,7 @@ const share = () => {
     if (!result) return;
     blob.value = result;
     imageUrl.value = URL.createObjectURL(result);
-    const file = new File([result], FILE_NAME, { type: "image/png" });
+    const file = new File([result], fileName(), { type: "image/png" });
     canNativeShare.value = Boolean(navigator.canShare?.({ files: [file] }));
     shareOpen.value = true;
   }, "image/png");
@@ -310,7 +317,7 @@ const download = () => {
   if (!imageUrl.value) return;
   const link = document.createElement("a");
   link.href = imageUrl.value;
-  link.download = FILE_NAME;
+  link.download = fileName();
   link.click();
   closeShare();
 };
@@ -318,9 +325,14 @@ const nativeShare = async () => {
   if (!blob.value) return;
   try {
     await navigator.share({
-      files: [new File([blob.value], FILE_NAME, { type: "image/png" })],
-      title: `Mi ${summary.value.label} en SwiftFlow`,
-      text: `Mi ${summary.value.label} en SwiftFlow: ${summary.value.sessions} partidas, ${summary.value.minutes} minutos ⚡`,
+      files: [new File([blob.value], fileName(), { type: "image/png" })],
+      title: `${t("history.summary.cardTitle", summary.value.label)} · SwiftFlow`,
+      text: t(
+        `${P}shareText`,
+        summary.value.label,
+        summary.value.sessions,
+        summary.value.minutes
+      ),
     });
     closeShare();
   } catch {

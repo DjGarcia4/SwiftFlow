@@ -83,3 +83,53 @@ test.describe("the history in English", () => {
     await expect(page.getByText("30s").first()).toBeVisible();
   });
 });
+
+test.describe("the course and the summary in English", () => {
+  test.use({ locale: "en-US" });
+
+  test("the course speaks English, and so does the tab", async ({ page }) => {
+    await page.goto("/curso");
+    await expect(page).toHaveTitle("Course from scratch · SwiftFlow");
+    await expect(
+      page.getByRole("heading", { name: "Learn to type without looking" })
+    ).toBeVisible();
+    await expect(page.getByText("0 of 24 lessons")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Lesson 2:.*Locked/ })).toBeDisabled();
+    await page.getByRole("button", { name: /Start: lesson 1/ }).click();
+    await expect(page.getByText("Lesson 1 of 24")).toBeVisible();
+  });
+
+  test("the summary speaks English", async ({ page }) => {
+    await page.addInitScript(() => {
+      const day = 24 * 60 * 60 * 1000;
+      const results = Array.from({ length: 5 }, (_, i) => ({
+        id: `s${i}`,
+        date: new Date(Date.now() - i * day).toISOString(),
+        metricsVersion: 3,
+        mode: "time",
+        modeValue: 30,
+        wpm: 50 + i,
+        accuracy: 95,
+        errors: 1,
+        timeElapsed: 30,
+      }));
+      localStorage.setItem("swiftflow_results", JSON.stringify(results));
+    });
+    await page.goto("/resumen");
+    await expect(page).toHaveTitle("Your summary · SwiftFlow");
+    await expect(page.getByRole("heading", { name: /^Your \w+ \d{4}$/ })).toBeVisible();
+    await expect(page.getByText("Average speed")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Share my summary" })).toBeVisible();
+  });
+});
+
+test.describe("the landing in English", () => {
+  test.use({ locale: "en-US" });
+
+  test("tells what SwiftFlow is, and what's new, in English", async ({ page }) => {
+    await page.goto("/sobre");
+    await expect(page).toHaveTitle("What is SwiftFlow · SwiftFlow");
+    await expect(page.getByText("SwiftFlow in English")).toBeVisible();
+    await expect(page.getByText("Qué es SwiftFlow")).toHaveCount(0);
+  });
+});

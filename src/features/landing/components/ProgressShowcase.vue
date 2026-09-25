@@ -9,19 +9,19 @@
     <div class="mx-auto max-w-6xl">
       <header class="mx-auto mb-12 max-w-2xl text-center">
         <p v-reveal class="text-xs font-extrabold uppercase tracking-widest text-primary">
-          Para volver mañana
+          {{ t("landing.showcase.progress.kicker") }}
         </p>
         <h2
           v-reveal="{ delay: 100 }"
           class="mt-2 font-display text-3xl font-black text-charcoal sm:text-5xl"
         >
-          Cada partida te lleva a algún lado
+          {{ t("landing.showcase.progress.title") }}
         </h2>
       </header>
 
       <!-- The ranks, Novato to the top -->
       <div v-reveal class="mb-4 text-center text-sm font-bold text-pencil-gray">
-        {{ MAX_LEVEL }} niveles en {{ LEVEL_TIERS.length }} rangos
+        {{ t("landing.showcase.progress.ranks", MAX_LEVEL, LEVEL_TIERS.length) }}
       </div>
       <ol
         v-reveal.stagger="{ step: 70 }"
@@ -43,7 +43,11 @@
             {{ tier.title }}
           </div>
           <div class="text-[11px] font-bold text-pencil-gray">
-            {{ tier.from === tier.to ? `Nivel ${tier.from}` : `${tier.from}–${tier.to}` }}
+            {{
+              tier.from === tier.to
+                ? t("landing.showcase.progress.level", tier.from)
+                : `${tier.from}–${tier.to}`
+            }}
           </div>
         </li>
       </ol>
@@ -52,11 +56,10 @@
         <!-- Rewards -->
         <article v-reveal v-tilt="3" :class="[CARD, 'md:col-span-3']">
           <h3 class="font-display text-xl font-extrabold text-charcoal">
-            Los niveles desbloquean cosas
+            {{ t("landing.showcase.progress.rewardsTitle") }}
           </h3>
           <p class="mt-1 text-sm font-bold text-pencil-gray">
-            Colores para toda la app, estilos de cursor y sonidos de teclado. Tocá un
-            color para probarlo en esta página.
+            {{ t("landing.showcase.progress.rewardsText") }}
           </p>
           <!-- Trying a color on: the whole page takes it, for this visit only -->
           <div class="mt-5 flex flex-wrap gap-3">
@@ -72,17 +75,18 @@
                 backgroundColor: ACCENT_SWATCHES[reward.id],
                 animationDelay: `${i * 0.35}s`,
               }"
-              :aria-label="`Probar el color ${reward.label}`"
+              :aria-label="t('landing.showcase.progress.tryColor', reward.label)"
               :aria-pressed="previewing?.id === reward.id"
               @click="preview(reward)"
             ></button>
           </div>
           <p class="mt-2 h-5 text-xs font-bold text-pencil-gray">
             <template v-if="previewing">
-              Probando <span class="text-primary">{{ previewing.label }}</span>
+              {{ t("landing.showcase.progress.trying") }}
+              <span class="text-primary">{{ previewing.label }}</span>
               {{
                 previewing.level > 1
-                  ? `· se desbloquea en el nivel ${previewing.level}`
+                  ? t("landing.showcase.progress.unlocksAt", previewing.level)
                   : ""
               }}
               ·
@@ -91,7 +95,7 @@
                 class="underline underline-offset-2 hover:text-charcoal"
                 @click="restore"
               >
-                volver a mi color
+                {{ t("landing.showcase.progress.restore") }}
               </button>
             </template>
           </p>
@@ -101,8 +105,10 @@
               :key="reward.id"
               class="rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal"
             >
-              Cursor {{ reward.label.toLowerCase() }}
-              <span class="text-pencil-gray">· nv {{ reward.level }}</span>
+              {{ t("landing.showcase.progress.caret", reward.label.toLowerCase()) }}
+              <span class="text-pencil-gray">{{
+                t("landing.showcase.progress.levelShort", reward.level)
+              }}</span>
             </span>
             <!-- Sounds can be heard right here -->
             <button
@@ -110,12 +116,14 @@
               :key="reward.id"
               type="button"
               class="inline-flex items-center gap-1 rounded-lg border-2 border-faded-gray px-2 py-1 text-charcoal transition-[border-color] duration-200 hover:border-primary/50"
-              :aria-label="`Escuchar el sonido ${reward.label}`"
+              :aria-label="t('landing.showcase.progress.listen', reward.label)"
               @click="listen(reward.id)"
             >
               <PlayIcon class="h-3 w-3 text-primary" />
-              Sonido {{ reward.label.toLowerCase() }}
-              <span class="text-pencil-gray">· nv {{ reward.level }}</span>
+              {{ t("landing.showcase.progress.sound", reward.label.toLowerCase()) }}
+              <span class="text-pencil-gray">{{
+                t("landing.showcase.progress.levelShort", reward.level)
+              }}</span>
             </button>
           </div>
         </article>
@@ -123,10 +131,10 @@
         <!-- Achievements -->
         <article v-reveal="{ delay: 100 }" v-tilt="3" :class="[CARD, 'md:col-span-3']">
           <h3 class="font-display text-xl font-extrabold text-charcoal">
-            {{ ACHIEVEMENTS.length }} logros para desbloquear
+            {{ t("landing.showcase.progress.achievementsTitle", ACHIEVEMENTS.length) }}
           </h3>
           <p class="mt-1 text-sm font-bold text-pencil-gray">
-            Velocidad, precisión, rachas, combos, horarios raros y alguno escondido.
+            {{ t("landing.showcase.progress.achievementsText") }}
           </p>
           <div class="mt-5 grid grid-cols-2 gap-2">
             <div
@@ -148,10 +156,10 @@
         <article v-reveal v-tilt="3" :class="[CARD, 'md:col-span-2']">
           <FlagIcon class="h-6 w-6 text-primary" />
           <h3 class="mt-3 font-display text-lg font-extrabold text-charcoal">
-            Retos diarios
+            {{ t("landing.showcase.progress.dailyTitle") }}
           </h3>
           <p class="mt-1 text-sm font-bold text-pencil-gray">
-            Tres por día, a tu medida: un poco más allá de tu promedio.
+            {{ t("landing.showcase.progress.dailyText") }}
           </p>
           <ul class="mt-4 space-y-2">
             <li
@@ -174,10 +182,10 @@
         <article v-reveal="{ delay: 100 }" v-tilt="3" :class="[CARD, 'md:col-span-2']">
           <CalendarDaysIcon class="h-6 w-6 text-primary" />
           <h3 class="mt-3 font-display text-lg font-extrabold text-charcoal">
-            Meta semanal
+            {{ t("landing.showcase.progress.weeklyGoalTitle") }}
           </h3>
           <p class="mt-1 text-sm font-bold text-pencil-gray">
-            Minutos por semana, que se ajustan solos a tu costumbre.
+            {{ t("landing.showcase.progress.weeklyGoalText") }}
           </p>
           <div class="mt-4 grid h-16 grid-cols-7 items-end gap-1.5" aria-hidden="true">
             <div
@@ -197,12 +205,11 @@
         <article v-reveal="{ delay: 200 }" v-tilt="3" :class="[CARD, 'md:col-span-2']">
           <TrophyIcon class="h-6 w-6 text-primary" />
           <h3 class="mt-3 font-display text-lg font-extrabold text-charcoal">
-            Reto semanal · {{ thisWeek }}
+            {{ t("landing.showcase.progress.weeklyTitle", thisWeek) }}
           </h3>
           <p class="mt-1 text-sm font-bold text-pencil-gray">
-            El mismo texto para todos durante la semana. Jugalo y pasale tu marca a
-            alguien:
-            <span class="text-charcoal">«¿Me ganás?»</span>
+            {{ t("landing.showcase.progress.weeklyText") }}
+            <span class="text-charcoal">{{ t("landing.showcase.progress.beatMe") }}</span>
           </p>
         </article>
 
@@ -221,15 +228,16 @@
           </div>
           <div class="flex-1">
             <h3 class="font-display text-xl font-extrabold text-charcoal">
-              Una racha que no querés cortar
+              {{ t("landing.showcase.progress.streakTitle") }}
             </h3>
             <p class="mt-1 text-sm font-bold text-pencil-gray">
-              Cada día que practicás suma. Si todavía no jugaste hoy, SwiftFlow te avisa
-              cuántas horas te quedan, y si querés, te recuerda a la noche.
+              {{ t("landing.showcase.progress.streakText") }}
             </p>
           </div>
           <div class="font-display text-5xl font-black text-primary">
-            12<span class="ml-1 text-base font-extrabold text-pencil-gray">días</span>
+            12<span class="ml-1 text-base font-extrabold text-pencil-gray">{{
+              t("landing.showcase.progress.days")
+            }}</span>
           </div>
         </article>
 
@@ -243,19 +251,19 @@
         >
           <div>
             <h3 class="font-display text-xl font-extrabold text-charcoal">
-              Tu mes, contado
+              {{ t("landing.showcase.progress.summaryTitle") }}
             </h3>
             <p class="mt-1 text-sm font-bold text-pencil-gray">
-              Cada mes y cada año, un resumen: cuánto practicaste, tu récord, cuánto más
-              rápido vas que antes, la tecla que domaste y los logros del camino. Listo
-              para compartir como imagen.
+              {{ t("landing.showcase.progress.summaryText") }}
             </p>
           </div>
           <div
             class="rounded-card bg-night-ink px-5 py-4 text-center text-white"
             aria-hidden="true"
           >
-            <div class="text-sm font-extrabold text-primary">Mi septiembre</div>
+            <div class="text-sm font-extrabold text-primary">
+              {{ t("landing.showcase.progress.summaryDemo") }}
+            </div>
             <div class="mt-2 grid grid-cols-3 gap-2">
               <div v-for="stat in SUMMARY_DEMO" :key="stat.label">
                 <div class="font-display text-3xl font-black">{{ stat.value }}</div>
@@ -263,8 +271,8 @@
               </div>
             </div>
             <div class="mt-3 space-y-0.5 text-xs font-bold">
-              <div>🏆 Récord: 71 WPM · 30s</div>
-              <div>Tecla domada: Ñ 12% → 4%</div>
+              <div>{{ t("history.summary.record", 71, "30s") }}</div>
+              <div>{{ t("history.summary.tamed", "Ñ", "12%", "4%") }}</div>
             </div>
           </div>
         </article>
@@ -281,7 +289,8 @@ import {
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import { FireIcon, PlayIcon } from "@heroicons/vue/24/solid";
-import { ref, onUnmounted } from "vue";
+import { ref, computed, onUnmounted } from "vue";
+import { t } from "@/shared/i18n";
 import { useCustomizationStore } from "@/shared/stores/customization";
 import { playKeystrokeSound } from "@/shared/utils/sound";
 import { LEVEL_TIERS, MAX_LEVEL } from "@/features/history/utils/experience";
@@ -293,11 +302,11 @@ import {
 } from "@/features/history/achievementPresentation";
 import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
 
-const SUMMARY_DEMO = [
-  { value: 64, label: "partidas" },
-  { value: 212, label: "minutos" },
-  { value: 21, label: "días" },
-];
+const SUMMARY_DEMO = computed(() => [
+  { value: 64, label: t("history.summary.sessions", 64) },
+  { value: 212, label: t("history.summary.minutes") },
+  { value: 21, label: t("history.summary.days", 21) },
+]);
 
 // min-w-0: a grid item is otherwise as wide as its widest content, and
 // the modes strip is a few thousand pixels of it
@@ -332,16 +341,15 @@ const SAMPLE_ACHIEVEMENTS = [
   .map((id) => ACHIEVEMENTS.find((a) => a.id === id))
   .filter(Boolean);
 
-const CHALLENGES = [
-  { title: "Llegá a 62 wpm en una sesión", done: true },
-  { title: "Hacé un combo de 80 sin errores", done: true },
-  { title: "Completá una partida de Código", done: false },
-];
+// The first two already done
+const CHALLENGES = computed(() =>
+  t("landing.showcase.progress.challenges").map((title, i) => ({ title, done: i < 2 }))
+);
 
 // A week on its way to the goal: the full ones are days at pace or better
 const WEEK = [1.2, 0.6, 1, 0.9, 0.3, 0, 0];
 
-const thisWeek = weeklyLabel(weeklyKey());
+const thisWeek = computed(() => weeklyLabel(weeklyKey()));
 
 // Trying a color: set straight on the root, where the stylesheet reads it,
 // and put back to the visitor's own when they're done or they leave

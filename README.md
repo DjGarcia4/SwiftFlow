@@ -83,6 +83,11 @@ teclado.
   período anterior, la tecla que domaste y los logros nuevos, para compartir como imagen
 - Exportar e importar el historial como archivo JSON
 
+### En inglés también
+- Toda la interfaz en español o en inglés: la app, el historial, el curso, el resumen y la
+  landing. Arranca en el idioma del navegador y se cambia desde el menú de sonido e idioma
+- Los textos para practicar siguen en español por ahora
+
 Todo se guarda en el navegador (localStorage). No hay cuenta, servidor ni telemetría.
 Funciona instalada como PWA y sin conexión.
 
@@ -132,11 +137,15 @@ src/
 │       ├── store.js
 │       └── resultsRepository.js # Persistencia de las sesiones
 ├── shared/                      # Componentes, stores y utilidades comunes
+│   └── i18n/                    # t(), el idioma elegido y el catálogo de mensajes
 ├── views/                       # HomeView, HistoryView
 └── style.css                    # Tokens de color, tipografía y animaciones
 ```
 
-Dos convenciones que conviene respetar al tocar el código:
+Tres convenciones que conviene respetar al tocar el código:
+
+- **Ningún texto de la interfaz va escrito en el componente.** Cada feature tiene su
+  `messages.js` con `es` y `en` (misma forma: un test lo verifica), y se lee con `t()`.
 
 - **La lógica pura vive en `utils/` y se testea sola.** Los stores y los componentes la
   llaman, no la reimplementan. Por eso casi todos los tests son de funciones puras y no

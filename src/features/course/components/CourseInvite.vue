@@ -15,16 +15,16 @@
       <AcademicCapIcon class="h-6 w-6 flex-shrink-0 text-primary" />
       <RouterLink to="/curso" class="min-w-0 flex-1 group">
         <span class="block text-sm font-extrabold text-charcoal group-hover:text-primary">
-          ¿Recién empezás?
+          {{ t("course.invite.title") }}
         </span>
         <span class="block text-xs font-bold text-pencil-gray">
-          Aprendé a escribir sin mirar, una fila por vez →
+          {{ t("course.invite.detail") }}
         </span>
       </RouterLink>
       <button
         type="button"
         class="flex-shrink-0 rounded-md p-1 text-pencil-gray hover:text-charcoal"
-        aria-label="No, gracias"
+        :aria-label="t('course.invite.dismiss')"
         @click="emit('dismiss')"
       >
         <XMarkIcon class="h-5 w-5" />
@@ -34,6 +34,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { RouterLink } from "vue-router";
 import { AcademicCapIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 

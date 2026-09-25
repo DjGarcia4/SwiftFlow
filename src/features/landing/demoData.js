@@ -4,6 +4,7 @@
 import { randomFrom } from "@/shared/utils/seededRandom";
 import { computeDailyActivity } from "@/features/history/utils/historyStats";
 import { DAY_PARTS } from "@/features/history/utils/timeOfDay";
+import { t } from "@/shared/i18n";
 
 // Per-key error rates for the keyboard heatmap: a typist who slips on
 // the R, the Ñ and the Q, and is solid on the home row
@@ -83,25 +84,32 @@ export const demoTimeOfDay = {
   worst: parts.find((p) => p.id === "night"),
 };
 
-// "¿Dónde te frenaste?": a sentence, word by word, by how long each took
-export const demoReplay = [
-  ["la", "normal"],
-  ["práctica", "slow"],
-  ["constante", "normal"],
-  ["es", "fast"],
-  ["lo", "fast"],
-  ["que", "normal"],
-  ["realmente", "stuck"],
-  ["cambia", "normal"],
-  ["tu", "fast"],
-  ["velocidad", "slow"],
+// "¿Dónde te frenaste?": a sentence, word by word, by how long each took.
+// The words come in the language being used; the tiers are the same.
+const REPLAY_TIERS = [
+  "normal",
+  "slow",
+  "normal",
+  "fast",
+  "fast",
+  "normal",
+  "stuck",
+  "normal",
+  "fast",
+  "slow",
 ];
+export const demoReplay = () =>
+  t("landing.features.demo.replay").map((word, i) => [word, REPLAY_TIERS[i]]);
 
-export const demoProblemWords = [
-  { word: "desarrollo", reason: "5 de 7 con error" },
-  { word: "exactamente", reason: "62% más lenta" },
-  { word: "siguiente", reason: "4 de 6 con error" },
-];
+// Getters, so the words and reasons follow a change of language
+export const demoProblemWords = [0, 1, 2].map((i) => ({
+  get word() {
+    return t("landing.features.demo.problemWords")[i].word;
+  },
+  get reason() {
+    return t("landing.features.demo.problemWords")[i].reason;
+  },
+}));
 
 // "Cómo van tus teclas": a few keys that clearly moved, both ways
 export const demoKeyTrends = {
@@ -135,7 +143,9 @@ export const demoDayConsistency = (() => {
   );
   return {
     score: Math.round((1 - sd / mean) * 100),
-    level: "Muy parejo",
+    get level() {
+      return t("history.consistencyLevels.veryEven");
+    },
     label: "30s",
     days,
     mean,

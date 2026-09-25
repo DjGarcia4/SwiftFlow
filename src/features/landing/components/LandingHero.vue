@@ -22,18 +22,23 @@
           v-reveal
           class="mb-6 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border-2 border-primary/30 bg-primary-tint/40 px-4 py-2.5 text-sm font-bold text-charcoal lg:justify-start"
         >
-          <span class="font-extrabold text-primary">¡Hola de nuevo!</span>
-          <span>{{ historyStore.sessionsCount }} sesiones</span>
+          <span class="font-extrabold text-primary">{{
+            t("landing.intro.hero.hello")
+          }}</span>
+          <span>{{ t("landing.intro.hero.sessions", historyStore.sessionsCount) }}</span>
           <span v-if="historyStore.dailyStreak" class="inline-flex items-center gap-1">
             <FireIcon class="h-4 w-4 text-primary" />
-            racha de {{ historyStore.dailyStreak }}
-            {{ historyStore.dailyStreak === 1 ? "día" : "días" }}
+            {{ t("landing.intro.hero.streak", historyStore.dailyStreak) }}
           </span>
-          <span
-            >nivel {{ historyStore.level.level }} · {{ historyStore.level.title }}</span
-          >
+          <span>{{
+            t(
+              "landing.intro.hero.level",
+              historyStore.level.level,
+              historyStore.level.title
+            )
+          }}</span>
           <span v-if="weakKey">
-            tu tecla a mejorar:
+            {{ t("landing.intro.hero.weakKey") }}
             <kbd
               class="rounded-md border-2 border-danger/30 bg-danger-tint px-1.5 font-mono font-extrabold uppercase text-danger"
               >{{ weakKey }}</kbd
@@ -46,21 +51,20 @@
           class="mb-5 inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary-tint/50 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary"
         >
           <BoltIcon class="h-4 w-4" />
-          Mecanografía en español
+          {{ t("landing.intro.hero.badge") }}
         </p>
         <h1
           v-reveal="{ delay: 100 }"
           class="font-display text-4xl font-black leading-[1.05] text-charcoal sm:text-6xl"
         >
-          Escribí más rápido.<br />
-          <span class="text-primary">Entendé por qué te equivocás.</span>
+          {{ t("landing.intro.hero.titleTop") }}<br />
+          <span class="text-primary">{{ t("landing.intro.hero.titleBottom") }}</span>
         </h1>
         <p
           v-reveal="{ delay: 200 }"
           class="mx-auto mt-6 max-w-xl text-base font-bold text-pencil-gray sm:text-lg lg:mx-0"
         >
-          SwiftFlow no solo te mide: te dice qué teclas, qué palabras y qué momentos te
-          frenan, y te arma la práctica para arreglarlo. Sin cuenta, todo en tu navegador.
+          {{ t("landing.intro.hero.intro") }}
         </p>
         <div
           v-reveal="{ delay: 300 }"
@@ -70,7 +74,9 @@
             to="/"
             class="inline-flex items-center gap-2 rounded-xl border-b-4 border-primary-dark bg-primary px-6 py-3 font-extrabold text-white transition-[scale,background-color] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
           >
-            {{ returning ? "Seguir practicando" : "Empezar a escribir" }}
+            {{
+              t(returning ? "landing.intro.hero.continue" : "landing.intro.hero.start")
+            }}
             <ArrowRightIcon class="h-5 w-5" />
           </router-link>
           <!-- Only where the browser offers it, and not once installed -->
@@ -81,14 +87,14 @@
             @click="promptInstall"
           >
             <ArrowDownTrayIcon class="h-5 w-5" />
-            Instalar app
+            {{ t("landing.intro.hero.install") }}
           </button>
           <a
             href="#que-tiene"
             class="inline-flex items-center gap-2 rounded-xl border-2 border-faded-gray px-6 py-3 font-extrabold text-charcoal transition-[border-color,scale] duration-200 ease-spring hover:border-primary/50 active:scale-95"
             @click.prevent="emit('explore')"
           >
-            Ver qué tiene
+            {{ t("landing.intro.hero.explore") }}
             <ArrowDownIcon class="h-5 w-5" />
           </a>
         </div>
@@ -96,12 +102,12 @@
           v-reveal="{ variant: 'fade-in', delay: 500 }"
           class="mt-4 hidden text-xs font-bold text-pencil-gray sm:block"
         >
-          o apretá
+          {{ t("landing.intro.hero.orPress") }}
           <kbd
             class="rounded-md border-2 border-faded-gray bg-paper-white px-1.5 py-0.5 font-mono text-charcoal"
-            >ESPACIO</kbd
+            >{{ t("landing.intro.hero.space") }}</kbd
           >
-          para empezar ya
+          {{ t("landing.intro.hero.toStart") }}
         </p>
       </div>
 
@@ -117,7 +123,7 @@
       <dl class="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <div
           v-for="(stat, index) in STATS"
-          :key="stat.label"
+          :key="stat.id"
           class="flex flex-col-reverse rounded-card border-2 border-faded-gray bg-paper-white/70 px-3 py-4 text-center backdrop-blur-sm animate-rise"
           :class="{ 'col-span-2 sm:col-span-1': index === STATS.length - 1 }"
           :style="staggerStyle(index, { step: 80 })"
@@ -155,6 +161,7 @@ import { ACHIEVEMENTS } from "@/features/history/achievements";
 import { MAX_LEVEL } from "@/features/history/utils/experience";
 import TypingDemo from "./TypingDemo.vue";
 import InView from "./InView.vue";
+import { t } from "@/shared/i18n";
 
 defineProps({
   // How far the page has scrolled, for the background's slow drift
@@ -170,12 +177,17 @@ const weakKey = computed(() => suggestedDrillKeys(historyStore.results)[0] ?? nu
 
 // Counted from the app itself, so the page never falls behind it
 const STATS = [
-  { label: "modos", value: useConfigStore().types.length },
-  { label: "lenguajes de código", value: codeLanguages.length },
-  { label: "logros", value: ACHIEVEMENTS.length },
-  { label: "niveles", value: MAX_LEVEL },
-  { label: "cuentas que crear", value: 0 },
-];
+  { id: "modes", value: useConfigStore().types.length },
+  { id: "codeLanguages", value: codeLanguages.length },
+  { id: "achievements", value: ACHIEVEMENTS.length },
+  { id: "levels", value: MAX_LEVEL },
+  { id: "accounts", value: 0 },
+].map((stat) => ({
+  ...stat,
+  get label() {
+    return t(`landing.intro.hero.stats.${stat.id}`);
+  },
+}));
 </script>
 
 <style scoped>
