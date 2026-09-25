@@ -6,6 +6,7 @@ import {
   toLocalDayKey,
 } from "@/features/history/utils/historyStats";
 import { computeChallengeStats } from "@/features/history/dailyChallenges";
+import { classics } from "@/features/typing-test/content/classics";
 
 // MODES_COUNT stays at 5 even though there are now 6 modes (numbers was
 // added later), so nobody loses "Explorador" after having earned it.
@@ -204,12 +205,62 @@ export const ACHIEVEMENTS = [
     check: (ctx) => ctx.hasLongSuddenDeath,
   },
   {
+    id: "must_correct_5",
+    category: "accuracy",
+    icon: "shield",
+    title: "Paciencia",
+    description: "Completá 5 partidas con corregir para avanzar",
+    check: (ctx) => ctx.mustCorrectCount >= 5,
+  },
+  {
     id: "min_accuracy_98",
     category: "accuracy",
     icon: "shield",
     title: "Pulso firme",
     description: "Completá una partida exigiéndote un 98% de precisión",
     check: (ctx) => ctx.hasStrictAccuracy98,
+  },
+
+  // Reading — the classics, and the rest of the Spanish that isn't loose words
+  {
+    id: "classics_1",
+    category: "reading",
+    icon: "book",
+    title: "Buen lector",
+    description: "Completá un clásico",
+    check: (ctx) => ctx.classicsRead >= 1,
+  },
+  {
+    id: "classics_5",
+    category: "reading",
+    icon: "book",
+    title: "Alma de poeta",
+    description: "Completá 5 clásicos distintos",
+    check: (ctx) => ctx.classicsRead >= 5,
+  },
+  {
+    id: "classics_all",
+    category: "reading",
+    icon: "book",
+    title: "Biblioteca completa",
+    description: "Completá todos los clásicos",
+    check: (ctx) => ctx.classicsRead >= classics.length,
+  },
+  {
+    id: "punctuated_words_100",
+    category: "reading",
+    icon: "document",
+    title: "Signos en su lugar",
+    description: "Completá 100 palabras con puntuación: mayúsculas, comas, ¿? y ¡!",
+    check: (ctx) => ctx.hasPunctuated100,
+  },
+  {
+    id: "focus_10",
+    category: "reading",
+    icon: "eye",
+    title: "En la zona",
+    description: "Completá 10 partidas en modo foco",
+    check: (ctx) => ctx.focusCount >= 10,
   },
 
   // Combo — longest run of correct characters in a single session
@@ -653,6 +704,19 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
         (r.mode === "words" && r.modeValue >= 50)
     ),
     hasStrictAccuracy98: results.some((r) => r.minAccuracy >= 98),
+    mustCorrectCount: results.filter((r) => r.strict === "must-correct").length,
+    // Passages still in the bank: one taken out later doesn't count twice
+    classicsRead: new Set(
+      results
+        .filter(
+          (r) => r.mode === "classics" && classics.some((c) => c.id === r.modeValue)
+        )
+        .map((r) => r.modeValue)
+    ).size,
+    hasPunctuated100: results.some(
+      (r) => r.mode === "words" && r.modeValue >= 100 && r.punctuation
+    ),
+    focusCount: results.filter((r) => r.focus).length,
     longestStreak: computeLongestDailyStreak(results),
     modesPlayed: new Set(results.map((r) => r.mode)).size,
     codeLanguagesPlayed: new Set(

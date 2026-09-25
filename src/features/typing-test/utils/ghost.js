@@ -10,6 +10,7 @@ const GHOST_MODES = new Set([
   "words",
   "numbers",
   "quote",
+  "classics",
   "code",
   "weekly",
   "custom",

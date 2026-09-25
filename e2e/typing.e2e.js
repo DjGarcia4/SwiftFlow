@@ -62,7 +62,15 @@ test("the chosen mode and length survive a reload", async ({ page }) => {
 });
 
 test("every mode has something to type", async ({ page }) => {
-  for (const mode of ["Tiempo", "Palabras", "Números", "Cita", "Código", "Zen"]) {
+  for (const mode of [
+    "Tiempo",
+    "Palabras",
+    "Números",
+    "Cita",
+    "Clásicos",
+    "Código",
+    "Zen",
+  ]) {
     await openSettings(page);
     await choose(page, "Modo", mode);
     await closeSettings(page);
@@ -73,4 +81,18 @@ test("every mode has something to type", async ({ page }) => {
       expect((await referenceText(page)).length).toBeGreaterThan(0);
     }
   }
+});
+
+test("a classic is typed line by line, with Enter at each break", async ({ page }) => {
+  await openSettings(page);
+  await choose(page, "Modo", "Clásicos");
+  await closeSettings(page);
+
+  const text = await referenceText(page);
+  expect(text).toContain("\n");
+  await page.locator("textarea").focus();
+  // Playwright types "\n" as Enter
+  await page.keyboard.type(text);
+  await expect(restartHint(page)).toBeVisible();
+  await expect(page.locator("cite")).toBeVisible();
 });

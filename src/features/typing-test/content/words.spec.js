@@ -26,3 +26,16 @@ describe("generateRandomWords", () => {
     expect(generateRandomWords(0)).toBe("");
   });
 });
+
+describe("spanishWords", () => {
+  it("lists every word once", () => {
+    expect(new Set(spanishWords).size).toBe(spanishWords.length);
+  });
+
+  it("has plenty of ñ, ü and accents to practice", () => {
+    const count = (pattern) => spanishWords.filter((word) => pattern.test(word)).length;
+    expect(count(/ñ/)).toBeGreaterThanOrEqual(40);
+    expect(count(/ü/)).toBeGreaterThanOrEqual(10);
+    expect(count(/[áéíóú]/)).toBeGreaterThanOrEqual(150);
+  });
+});

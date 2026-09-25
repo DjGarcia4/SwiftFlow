@@ -14,6 +14,9 @@ El desafío por enlace queda en pausa (ver `docs/ideas.md`).
       análisis ahora puede decirte
 - [ ] `README.md`: la sección "Qué tiene"
 - [ ] `build/routePages.js`: si hay una ruta nueva
+- [ ] Logros (`achievements.js`) y retos diarios (`dailyChallenges.js`) para lo nuevo. Un reto
+      nuevo lleva fecha de estreno (`since`, el día siguiente) y va al final de su lista: los
+      días pasados se recalculan del historial y no pueden cambiar
 
 ---
 

@@ -19,7 +19,13 @@ describe("formatReferenceText", () => {
 
   it("strips punctuation and symbols", () => {
     expect(formatReferenceText('¡Hola, "mundo"! (test) [100%] #tag @user')).toBe(
-      "¡hola mundo test 100 tag user"
+      "hola mundo test 100 tag user"
+    );
+  });
+
+  it("strips Spanish's opening marks and quotes along with the closing ones", () => {
+    expect(formatReferenceText("¿Qué hora es? ¡Ya! «Bueno»… vale")).toBe(
+      "que hora es ya bueno vale"
     );
   });
 

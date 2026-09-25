@@ -178,7 +178,7 @@
         @click="configStore.handleContentTypes('punctuation')"
       >
         <AtSymbolIcon class="w-4 h-4" />
-        <span class="hidden lg:inline">Puntuación</span>
+        <span class="hidden 2xl:inline">Puntuación</span>
       </button>
 
       <!-- "Sin red": mistakes stay hidden until the results -->
@@ -195,7 +195,7 @@
         @click="configStore.toggleBlindMode"
       >
         <EyeSlashIcon class="w-4 h-4" />
-        <span class="hidden lg:inline">Sin red</span>
+        <span class="hidden 2xl:inline">Sin red</span>
       </button>
 
       <!-- Sudden death, must-correct, minimum accuracy -->
@@ -389,6 +389,7 @@ import {
   ClockIcon,
   HashtagIcon,
   ChatBubbleBottomCenterTextIcon,
+  BookOpenIcon,
   CodeBracketIcon,
   SparklesIcon,
   ViewfinderCircleIcon,
@@ -414,6 +415,7 @@ const typeMeta = {
   words: { icon: "letter", component: "A", label: "Palabras" },
   numbers: { icon: "number", component: HashtagIcon, label: "Números" },
   quote: { icon: "quote", component: ChatBubbleBottomCenterTextIcon, label: "Cita" },
+  classics: { icon: "book", component: BookOpenIcon, label: "Clásicos" },
   code: { icon: "code", component: CodeBracketIcon, label: "Código" },
   zen: { icon: "zen", component: SparklesIcon, label: "Zen" },
   drill: { icon: "target", component: ViewfinderCircleIcon, label: "Entrenar" },

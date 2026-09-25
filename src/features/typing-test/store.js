@@ -55,6 +55,7 @@ export const useConfigStore = defineStore("config", () => {
     "words",
     "numbers",
     "quote",
+    "classics",
     "code",
     "zen",
     "drill",

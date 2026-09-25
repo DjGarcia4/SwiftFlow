@@ -17,7 +17,7 @@
       <article v-tilt="3" :class="[CARD, 'md:col-span-6']">
         <CardTitle
           :icon="Squares2X2Icon"
-          title="Nueve maneras de practicar"
+          :title="`${MODE_COUNT_WORDS[MODES.length] ?? MODES.length} maneras de practicar`"
           text="De 15 segundos a sin límite, con tu texto o el de todos."
         />
         <div class="marquee mt-5 overflow-hidden" aria-hidden="true">
@@ -188,6 +188,7 @@ import {
   UserGroupIcon,
   HeartIcon,
   EyeIcon,
+  BookOpenIcon,
 } from "@heroicons/vue/24/outline";
 import TextStyleIcon from "@/shared/components/icons/TextStyleIcon";
 import { FireIcon } from "@heroicons/vue/24/solid";
@@ -227,9 +228,10 @@ CardTitle.props = ["icon", "title", "text"];
 
 const MODES = [
   { name: "Tiempo", detail: "15 a 120 s", icon: ClockIcon },
-  { name: "Palabras", detail: "10 a 100", icon: DocumentTextIcon },
+  { name: "Palabras", detail: "con ¿? y ¡!", icon: DocumentTextIcon },
   { name: "Números", detail: "decimales, horas, miles", icon: HashtagIcon },
   { name: "Cita", detail: "frases con autor", icon: ChatBubbleBottomCenterTextIcon },
+  { name: "Clásicos", detail: "Cervantes, Bécquer, Martí…", icon: BookOpenIcon },
   { name: "Código", detail: `${codeLanguages.length} lenguajes`, icon: CodeBracketIcon },
   { name: "Zen", detail: "sin límite", icon: SparklesIcon },
   {
@@ -240,6 +242,9 @@ const MODES = [
   { name: "Mi texto", detail: "pegá lo que escribís", icon: PencilSquareIcon },
   { name: "Semanal", detail: "el mismo texto para todos", icon: TrophyIcon },
 ];
+
+// "Diez maneras", in words, while it's a count that reads well that way
+const MODE_COUNT_WORDS = { 9: "Nueve", 10: "Diez", 11: "Once", 12: "Doce" };
 
 const LANES = [
   { label: "Vos", icon: CursorArrowRaysIcon, color: "bg-primary", duration: "4.2s" },

@@ -1,6 +1,7 @@
 // Pure helpers over a list of history results (most-recent-first), kept
 // separate from the store so they're trivial to unit test.
 import { weeklyLabel } from "@/features/typing-test/content/weekly";
+import { classicById } from "@/features/typing-test/content/classics";
 
 // Bumped whenever how wpm/accuracy are measured changes. v1 (unversioned)
 // counted whole words over whole seconds and accuracy on the final text
@@ -57,6 +58,10 @@ const MODE_LABELS = {
   numbers: (value) => `${value} números`,
   code: (value) => (value ? `Código · ${value}` : "Código"),
   quote: () => "Cita",
+  classics: (value) => {
+    const work = classicById(value)?.work;
+    return work ? `Clásicos · ${work}` : "Clásicos";
+  },
   zen: () => "Zen",
   // Sessions saved before the drill reported its word count have no value
   drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
@@ -71,6 +76,7 @@ const MODE_NAMES = {
   words: "Palabras",
   numbers: "Números",
   quote: "Cita",
+  classics: "Clásicos",
   code: "Código",
   zen: "Zen",
   drill: "Entrenar",

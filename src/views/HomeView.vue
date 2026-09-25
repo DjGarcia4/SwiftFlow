@@ -6,7 +6,7 @@
       Fades out while typing instead of unmounting, so nothing shifts.
     -->
     <div
-      class="hidden sm:block fixed top-20 left-1/2 z-20 max-w-[95vw] -translate-x-1/2 transition-[opacity,translate] duration-500 ease-smooth"
+      class="hidden sm:block fixed top-20 inset-x-0 mx-auto w-fit z-20 max-w-[95vw] transition-[opacity,translate] duration-500 ease-smooth"
       :class="
         hideConfig
           ? 'opacity-0 -translate-y-3 pointer-events-none select-none duration-300'

@@ -16,7 +16,11 @@ export const formatReferenceText = (text) => {
 
   formattedText = formattedText.replace(/[̀-ͯ]/g, "");
 
-  formattedText = formattedText.replace(/[.,?!;:\-—"“”‘’'()[\]{}/&*@#$%^+=_~`<>]/g, "");
+  // Spanish opens questions and exclamations too: ¿ and ¡ go with ? and !
+  formattedText = formattedText.replace(
+    /[.,?!¿¡;:\-—–…«»"“”‘’'()[\]{}/&*@#$%^+=_~`<>]/g,
+    ""
+  );
 
   formattedText = formattedText.replaceAll(N_TILDE, "ñ");
 

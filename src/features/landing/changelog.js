@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Clásicos, y más español",
+    text: "Un modo con Cervantes, Bécquer, Machado, Martí y más, verso por verso. El modo Palabras ahora arma oraciones, con ¿? y ¡!. Y logros y retos nuevos para la lectura, el modo foco y los modos exigentes.",
+  },
+  {
+    date: "2026-09",
     title: "Modo foco",
     text: "Solo la palabra que estás escribiendo y la siguiente, grandes y en el centro.",
   },

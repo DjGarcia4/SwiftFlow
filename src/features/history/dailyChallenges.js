@@ -51,9 +51,25 @@ const computeBaseline = (before) => {
 const best = (results, field) =>
   results.reduce((top, r) => Math.max(top, r[field] || 0), 0);
 
+// Every past day's challenges are worked out again from the history (see
+// computeChallengeStats), so the list for a day that's gone must never
+// change: anything added comes in on a day of its own, from then on, and
+// always at the end of its list so the days before draw exactly as they did.
+const since = (year, month, day) => new Date(year, month - 1, day).getTime();
+const availableOn = (items, dayStart) =>
+  items.filter((item) => (item.since ?? 0) <= dayStart);
+
 // The modes a "play this one" challenge can send you to. Time is left out:
 // it's where most people already spend their sessions.
-const CHALLENGE_MODES = ["words", "quote", "code", "numbers", "zen", "drill"];
+const CHALLENGE_MODES = [
+  { mode: "words" },
+  { mode: "quote" },
+  { mode: "code" },
+  { mode: "numbers" },
+  { mode: "zen" },
+  { mode: "drill" },
+  { mode: "classics", since: since(2026, 9, 26) },
+];
 
 // Each template turns the baseline into a concrete goal plus a measure of
 // how far the day's sessions got toward it. `icon` is a string key, mapped
@@ -140,8 +156,8 @@ const TEMPLATES = [
   {
     kind: "mode",
     icon: "map",
-    build: (baseline, random) => {
-      const mode = pick(random, CHALLENGE_MODES);
+    build: (baseline, random, dayStart) => {
+      const { mode } = pick(random, availableOn(CHALLENGE_MODES, dayStart));
       return {
         title: `Completá una partida de ${formatModeName(mode)}`,
         target: 1,
@@ -149,6 +165,37 @@ const TEMPLATES = [
         action: { mode },
       };
     },
+  },
+  // The demanding modes and focus mode (September 2026)
+  {
+    kind: "sudden-death",
+    icon: "heart",
+    since: since(2026, 9, 26),
+    build: () => ({
+      title: "Completá una partida con muerte súbita",
+      target: 1,
+      measure: (day) => (day.some((r) => r.strict === "sudden-death") ? 1 : 0),
+    }),
+  },
+  {
+    kind: "min-accuracy",
+    icon: "shield",
+    since: since(2026, 9, 26),
+    build: () => ({
+      title: "Completá una partida exigiéndote un 95% de precisión o más",
+      target: 1,
+      measure: (day) => (day.some((r) => r.minAccuracy >= 95) ? 1 : 0),
+    }),
+  },
+  {
+    kind: "focus",
+    icon: "eye",
+    since: since(2026, 9, 26),
+    build: () => ({
+      title: "Completá una partida en modo foco",
+      target: 1,
+      measure: (day) => (day.some((r) => r.focus) ? 1 : 0),
+    }),
   },
 ];
 
@@ -169,10 +216,10 @@ export const buildDailyChallenges = (results, day = new Date()) => {
   const baseline = computeBaseline(before);
   const random = seededRandom(hashString(dayKey));
 
-  return shuffled(random, TEMPLATES)
+  return shuffled(random, availableOn(TEMPLATES, start))
     .slice(0, DAILY_CHALLENGES_COUNT)
     .map((template) => {
-      const { measure, ...challenge } = template.build(baseline, random);
+      const { measure, ...challenge } = template.build(baseline, random, start);
       const value = measure(played);
       return {
         id: `${dayKey}:${template.kind}`,

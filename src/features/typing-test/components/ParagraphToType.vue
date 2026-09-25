@@ -37,6 +37,12 @@
           — {{ currentQuoteAuthor }}
         </p>
         <p
+          v-else-if="isCompleted && configStore.type === 'classics' && currentClassic"
+          class="text-center text-sm sm:text-base font-bold text-pencil-gray"
+        >
+          — {{ currentClassic.author }}, <cite>{{ currentClassic.work }}</cite>
+        </p>
+        <p
           v-else-if="isCompleted && configStore.type === 'code' && currentCodeLanguage"
           class="text-center text-sm sm:text-base font-bold text-pencil-gray"
         >
@@ -676,10 +682,15 @@
                     >{{ c.char }}</span
                   >
                 </span>
+                <!-- A line break shows as ↵: typed with Enter, and otherwise
+                     invisible at the end of its line -->
                 <span
                   v-else
                   :data-char-index="group.index"
-                  :class="getCharacterClass(group.index)"
+                  :class="[
+                    getCharacterClass(group.index),
+                    { 'newline-mark': group.char === '\n' },
+                  ]"
                   >{{ group.char }}</span
                 >
               </span>
@@ -904,8 +915,10 @@ import {
 } from "@heroicons/vue/24/outline";
 import { paragraphs } from "@/features/typing-test/content/paragraphs";
 import { generateRandomWords } from "@/features/typing-test/content/words";
+import { punctuateWords } from "@/features/typing-test/content/punctuate";
 import { generateRandomNumbers } from "@/features/typing-test/content/numbers";
 import { getRandomQuote } from "@/features/typing-test/content/quotes";
+import { getRandomClassic } from "@/features/typing-test/content/classics";
 import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
 import {
   weeklyKey,
@@ -965,6 +978,8 @@ const soundStore = useSoundStore();
 // Local component state
 const lastParagraph = ref(null);
 const lastQuoteText = ref(null);
+// The "Clásicos" passage on screen: its author and work go under the results
+const currentClassic = ref(null);
 const currentQuoteAuthor = ref("");
 const lastCodeText = ref(null);
 const currentCodeLanguage = ref("");
@@ -1169,7 +1184,10 @@ const refreshReferenceText = () => {
         ? { kind: "pacer", wpm: pacerTarget.value }
         : null;
   if (configStore.type === "words") {
-    configStore.setReferenceText(generateRandomWords(configStore.selectedWords));
+    // As sentences; with "Puntuación" off the formatter takes it all back out
+    configStore.setReferenceText(
+      punctuateWords(generateRandomWords(configStore.selectedWords))
+    );
     return;
   }
 
@@ -1203,6 +1221,13 @@ const refreshReferenceText = () => {
 
   if (configStore.type === "numbers") {
     configStore.setReferenceText(generateRandomNumbers(configStore.selectedWords));
+    return;
+  }
+
+  if (configStore.type === "classics") {
+    const passage = getRandomClassic(currentClassic.value?.id);
+    currentClassic.value = passage;
+    configStore.setReferenceText(passage.text);
     return;
   }
 
@@ -1393,6 +1418,8 @@ const currentModeValue = () => {
   }
   if (configStore.type === "code") return currentCodeLanguage.value;
   if (configStore.type === "weekly") return currentWeeklyKey.value;
+  // Which passage: the history names it, and the achievements count them
+  if (configStore.type === "classics") return currentClassic.value?.id ?? null;
   // By name, which is what the history and the personal bests show
   if (configStore.type === "custom") return configStore.selectedCustomText?.name ?? null;
   return null;
@@ -1460,6 +1487,9 @@ watch(isCompleted, (completed) => {
         consistency: sessionConsistency.value,
         // Only when on: a result without it was played with the net
         blind: configStore.blindMode || undefined,
+        // How it was played, only when so: what some achievements count
+        focus: textAppearance.focusMode || undefined,
+        punctuation: configStore.selectedContentTypes === "punctuation" || undefined,
         // The demanding modes it was played under, only when on
         strict: configStore.strictMode ?? undefined,
         minAccuracy: configStore.minAccuracy ?? undefined,
@@ -2162,6 +2192,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.newline-mark::before {
+  content: "↵";
+  opacity: 0.5;
+}
+
 @keyframes key-pop {
   0% {
     transform: scale(1);

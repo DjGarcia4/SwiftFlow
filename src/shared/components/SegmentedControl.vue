@@ -33,7 +33,7 @@
         >
         <component :is="option.icon" v-else class="w-4 h-4 flex-shrink-0" />
       </template>
-      <span :class="{ 'hidden lg:inline': compactLabels && option.icon }">{{
+      <span :class="{ 'hidden xl:inline': compactLabels && option.icon }">{{
         option.label
       }}</span>
     </button>

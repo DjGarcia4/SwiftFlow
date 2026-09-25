@@ -113,6 +113,54 @@ describe("buildDailyChallenges", () => {
   });
 });
 
+describe("challenges added later", () => {
+  const LAUNCH = new Date(2026, 8, 26, 12);
+  const NEW_KINDS = ["sudden-death", "min-accuracy", "focus"];
+  const daysFrom = (start, count, step) =>
+    Array.from(
+      { length: count },
+      (_, i) =>
+        new Date(start.getFullYear(), start.getMonth(), start.getDate() + i * step, 12)
+    );
+
+  it("never show up on a day before theirs", () => {
+    for (const day of daysFrom(LAUNCH, 400, -1).slice(1)) {
+      for (const challenge of buildDailyChallenges([], day)) {
+        expect(NEW_KINDS).not.toContain(challenge.kind);
+        expect(challenge.action?.mode).not.toBe("classics");
+      }
+    }
+  });
+
+  it("come up from their day on, and count the right sessions", () => {
+    const seen = new Map();
+    for (const day of daysFrom(LAUNCH, 400, 1)) {
+      for (const challenge of buildDailyChallenges([], day)) {
+        if (NEW_KINDS.includes(challenge.kind) && !seen.has(challenge.kind)) {
+          seen.set(challenge.kind, day);
+        }
+        if (challenge.action?.mode === "classics" && !seen.has("classics")) {
+          seen.set("classics", day);
+        }
+      }
+    }
+    expect([...seen.keys()].sort()).toEqual([...NEW_KINDS, "classics"].sort());
+
+    const doneBy = {
+      "sudden-death": { strict: "sudden-death" },
+      "min-accuracy": { minAccuracy: 98 },
+      focus: { focus: true },
+    };
+    for (const kind of NEW_KINDS) {
+      const day = seen.get(kind);
+      const challenge = buildDailyChallenges([session(day, doneBy[kind])], day).find(
+        (c) => c.kind === kind
+      );
+      expect(challenge.completed, kind).toBe(true);
+    }
+  });
+});
+
 describe("computeChallengeStats", () => {
   it("adds up the challenges completed on every day", () => {
     expect(computeChallengeStats([])).toEqual({ completed: 0, fullDays: 0 });

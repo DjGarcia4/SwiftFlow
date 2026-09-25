@@ -21,6 +21,8 @@ import {
   AcademicCapIcon,
   ShieldCheckIcon,
   HeartIcon,
+  BookOpenIcon,
+  EyeIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -48,6 +50,8 @@ export const ACHIEVEMENT_ICONS = {
   "academic-cap": AcademicCapIcon,
   shield: ShieldCheckIcon,
   heart: HeartIcon,
+  book: BookOpenIcon,
+  eye: EyeIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {
@@ -62,6 +66,7 @@ export const ACHIEVEMENT_CATEGORY_RGB = {
   special: [192, 38, 211], // fuchsia
   challenge: [79, 70, 229], // indigo
   level: [202, 138, 4], // gold
+  reading: [180, 83, 9], // amber, like old paper
 };
 
 const FALLBACK_RGB = [100, 116, 139]; // slate, shouldn't normally hit this

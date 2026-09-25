@@ -14,9 +14,10 @@ te arma la práctica para arreglarlo.
 | Modo         | Qué es                                                        |
 | ------------ | ------------------------------------------------------------- |
 | **Tiempo**   | 15, 30, 60 o 120 segundos de texto continuo                   |
-| **Palabras** | 10, 25, 50 o 100 palabras de un banco curado en español       |
+| **Palabras** | 10, 25, 50 o 100 palabras, armadas en oraciones con ¿? y ¡!   |
 | **Números**  | Enteros, decimales, porcentajes, horas y miles                |
 | **Cita**     | Frases reales con su autor                                    |
+| **Clásicos** | Cervantes, Bécquer, Machado, Martí y más, verso por verso     |
 | **Código**   | Fragmentos de JavaScript, TypeScript, Python, Java, Go y Rust |
 | **Zen**      | Sin límite: terminás cuando querés                            |
 | **Entrenar** | Texto armado alrededor de tus teclas más flojas               |
@@ -52,7 +53,7 @@ Y combinables con cualquier modo:
 
 - Gráfico de WPM y errores a lo largo de la sesión
 - Tarjeta para compartir el resultado, con un diseño distinto si fue récord
-- 68 logros en 10 categorías, con aviso al desbloquearlos
+- 74 logros en 11 categorías, con aviso al desbloquearlos
 
 ### En el historial
 

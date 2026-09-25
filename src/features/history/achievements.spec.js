@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ACHIEVEMENTS, computeAchievements } from "./achievements";
+import { classics } from "@/features/typing-test/content/classics";
 
 const isUnlocked = (achievements, id) => achievements.find((a) => a.id === id).unlocked;
 
@@ -84,6 +85,56 @@ describe("computeAchievements", () => {
         "min_accuracy_98"
       )
     ).toBe(false);
+  });
+
+  it("unlocks the reading achievements", () => {
+    const read = (ids) =>
+      ids.map((modeValue) => ({ mode: "classics", modeValue, wpm: 40, accuracy: 97 }));
+    const one = computeAchievements(read(["becquer-liii", "becquer-liii"]));
+    expect(isUnlocked(one, "classics_1")).toBe(true);
+    expect(isUnlocked(one, "classics_5")).toBe(false);
+
+    const five = computeAchievements(
+      read(["becquer-liii", "becquer-xxi", "marti-rosa", "dario-sonatina", "lazarillo"])
+    );
+    expect(isUnlocked(five, "classics_5")).toBe(true);
+    expect(isUnlocked(five, "classics_all")).toBe(false);
+
+    const all = computeAchievements(read(classics.map((c) => c.id)));
+    expect(isUnlocked(all, "classics_all")).toBe(true);
+
+    // A passage no longer in the bank doesn't count toward the collection
+    expect(isUnlocked(computeAchievements(read(["gone"])), "classics_1")).toBe(false);
+  });
+
+  it("unlocks punctuated words, focus and must-correct achievements", () => {
+    const words100 = { mode: "words", modeValue: 100, wpm: 40, accuracy: 97 };
+    expect(isUnlocked(computeAchievements([words100]), "punctuated_words_100")).toBe(
+      false
+    );
+    expect(
+      isUnlocked(
+        computeAchievements([{ ...words100, punctuation: true }]),
+        "punctuated_words_100"
+      )
+    ).toBe(true);
+
+    const focused = Array.from({ length: 10 }, () => ({
+      mode: "time",
+      wpm: 40,
+      accuracy: 97,
+      focus: true,
+    }));
+    expect(isUnlocked(computeAchievements(focused.slice(1)), "focus_10")).toBe(false);
+    expect(isUnlocked(computeAchievements(focused), "focus_10")).toBe(true);
+
+    const corrected = Array.from({ length: 5 }, () => ({
+      mode: "time",
+      wpm: 40,
+      accuracy: 90,
+      strict: "must-correct",
+    }));
+    expect(isUnlocked(computeAchievements(corrected), "must_correct_5")).toBe(true);
   });
 
   it("unlocks explorer only once all 5 modes have been played", () => {
