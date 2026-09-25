@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ACHIEVEMENTS, computeAchievements } from "./achievements";
 import { classics } from "@/features/typing-test/content/classics";
+import { LESSONS } from "@/features/course/course";
 
 const isUnlocked = (achievements, id) => achievements.find((a) => a.id === id).unlocked;
 
@@ -105,6 +106,32 @@ describe("computeAchievements", () => {
 
     // A passage no longer in the bank doesn't count toward the collection
     expect(isUnlocked(computeAchievements(read(["gone"])), "classics_1")).toBe(false);
+  });
+
+  it("unlocks the course achievements from the lessons' results", () => {
+    const lesson = (id, wpm = 30, accuracy = 97) => ({
+      mode: "lesson",
+      modeValue: id,
+      wpm,
+      accuracy,
+    });
+    const first = computeAchievements([lesson("home-1")]);
+    expect(isUnlocked(first, "course_1")).toBe(true);
+    expect(isUnlocked(first, "course_home_row")).toBe(false);
+    expect(isUnlocked(first, "course_stars")).toBe(false);
+
+    const homeRow = LESSONS.filter((l) => l.stage === "home").map((l) => lesson(l.id));
+    expect(isUnlocked(computeAchievements(homeRow), "course_home_row")).toBe(true);
+    expect(
+      isUnlocked(computeAchievements([lesson("home-1", 30, 99)]), "course_stars")
+    ).toBe(true);
+
+    const all = LESSONS.map((l) => lesson(l.id));
+    expect(isUnlocked(computeAchievements(all), "course_complete")).toBe(true);
+    // A lesson not passed doesn't count
+    expect(isUnlocked(computeAchievements([lesson("home-1", 2, 99)]), "course_1")).toBe(
+      false
+    );
   });
 
   it("unlocks the dictation achievements", () => {

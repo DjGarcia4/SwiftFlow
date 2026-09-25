@@ -62,6 +62,7 @@ export const useConfigStore = defineStore("config", () => {
     "drill",
     "custom",
     "weekly",
+    "lesson",
   ]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
@@ -91,7 +92,9 @@ export const useConfigStore = defineStore("config", () => {
   // shows it only in the drill -- the mode where looking at the keys is the
   // point.
   const showKeyboard = ref(savedConfig.showKeyboard);
-  const keyboardVisible = computed(() => showKeyboard.value ?? type.value === "drill");
+  const keyboardVisible = computed(
+    () => showKeyboard.value ?? (type.value === "drill" || type.value === "lesson")
+  );
   // The on-screen keyboard colored by which finger types each key
   const fingerColors = ref(savedConfig.fingerColors);
   // The keyboard being typed on: the one picked, or else a guess from the
@@ -117,6 +120,8 @@ export const useConfigStore = defineStore("config", () => {
   const dictationSentences = ref(savedConfig.dictationSentences);
   const dictationRate = ref(savedConfig.dictationRate);
   const dictation = ref(null);
+  // The course lesson being played ("lesson" mode), or null for the next
+  const lessonId = ref(savedConfig.lessonId);
 
   // "Mi texto": your own saved texts, the one picked, and the editor for
   // them (null when closed, { id } -- null id for a new one -- when open)
@@ -148,6 +153,7 @@ export const useConfigStore = defineStore("config", () => {
       minAccuracy: minAccuracy.value,
       dictationSentences: dictationSentences.value,
       dictationRate: dictationRate.value,
+      lessonId: lessonId.value,
       selectedCustomTextId: selectedCustomTextId.value,
     });
   };
@@ -364,6 +370,16 @@ export const useConfigStore = defineStore("config", () => {
     dictationRate.value = rate;
     persistConfig();
   };
+  // Starts a course lesson (the next one for null)
+  const startLesson = (id) => {
+    lessonId.value = id;
+    if (type.value !== "lesson") {
+      type.value = "lesson";
+    }
+    persistConfig();
+    resetTypingSession();
+  };
+
   const setDictation = (value) => {
     dictation.value = value;
   };
@@ -844,6 +860,8 @@ export const useConfigStore = defineStore("config", () => {
       type.value === "custom" ||
       // Already as it's dictated: plain, but keeping its accents
       type.value === "dictation" ||
+      // A lesson's text is exactly what it teaches
+      type.value === "lesson" ||
       selectedContentTypes.value === "punctuation"
     ) {
       referenceText.value = text; // Show original when selected
@@ -933,6 +951,8 @@ export const useConfigStore = defineStore("config", () => {
     setDictationRate,
     dictation,
     setDictation,
+    lessonId,
+    startLesson,
     strictMode,
     setStrictMode,
     minAccuracy,

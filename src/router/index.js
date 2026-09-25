@@ -15,6 +15,16 @@ const router = createRouter({
       meta: { title: "Historial" },
     },
     {
+      path: "/curso",
+      name: "course",
+      component: () => import("@/views/CourseView.vue"),
+      meta: {
+        title: "Curso desde cero",
+        description:
+          "Aprendé a escribir sin mirar el teclado, en español: una fila por vez, con lecciones que se adaptan a tu teclado.",
+      },
+    },
+    {
       path: "/sobre",
       name: "about",
       component: () => import("@/views/AboutView.vue"),

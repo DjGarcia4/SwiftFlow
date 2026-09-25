@@ -127,7 +127,7 @@ describe("challenges added later", () => {
     for (const day of daysFrom(LAUNCH, 400, -1).slice(1)) {
       for (const challenge of buildDailyChallenges([], day)) {
         expect(NEW_KINDS).not.toContain(challenge.kind);
-        expect(["classics", "dictation"]).not.toContain(challenge.action?.mode);
+        expect(["classics", "dictation", "lesson"]).not.toContain(challenge.action?.mode);
       }
     }
   });
@@ -139,13 +139,13 @@ describe("challenges added later", () => {
         if (NEW_KINDS.includes(challenge.kind) && !seen.has(challenge.kind)) {
           seen.set(challenge.kind, day);
         }
-        for (const mode of ["classics", "dictation"]) {
+        for (const mode of ["classics", "dictation", "lesson"]) {
           if (challenge.action?.mode === mode && !seen.has(mode)) seen.set(mode, day);
         }
       }
     }
     expect([...seen.keys()].sort()).toEqual(
-      [...NEW_KINDS, "classics", "dictation"].sort()
+      [...NEW_KINDS, "classics", "dictation", "lesson"].sort()
     );
 
     const doneBy = {

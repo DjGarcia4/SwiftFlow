@@ -50,6 +50,17 @@
           </router-link>
         </Transition>
 
+        <!-- The course; on a phone it's reached from the home screen and the
+             landing, where there's room -->
+        <router-link
+          to="/curso"
+          class="hidden sm:flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
+          aria-label="Curso desde cero"
+          title="Curso desde cero"
+        >
+          <AcademicCapIcon class="w-5 h-5" />
+        </router-link>
+
         <router-link
           to="/historial"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
@@ -103,6 +114,7 @@ import {
   ChartBarIcon,
   FireIcon,
   InformationCircleIcon,
+  AcademicCapIcon,
 } from "@heroicons/vue/24/outline";
 import { useThemeStore } from "@/shared/stores/theme";
 import { useHistoryStore } from "@/features/history/store";

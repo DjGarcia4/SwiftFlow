@@ -50,11 +50,19 @@ Y combinables con cualquier modo:
 - Accesible: todo se maneja con el teclado, los diálogos atrapan y devuelven el foco, y
   los resultados, logros y consejos se anuncian al lector de pantalla
 
+### Curso desde cero
+
+24 lecciones para aprender a escribir sin mirar, en `/curso`: la fila del medio, la de
+arriba y la de abajo, un par de dedos por vez, y después mayúsculas, tildes, números y
+signos. Cada lección usa solo las teclas ya aprendidas, se pasa con su velocidad y un 94 %
+de precisión, da hasta tres estrellas y abre la siguiente. Se adapta a tu distribución de
+teclado.
+
 ### Cuando terminás
 
 - Gráfico de WPM y errores a lo largo de la sesión
 - Tarjeta para compartir el resultado, con un diseño distinto si fue récord
-- 77 logros en 11 categorías, con aviso al desbloquearlos
+- 81 logros en 12 categorías, con aviso al desbloquearlos
 
 ### En el historial
 
@@ -110,6 +118,7 @@ src/
 │   │   ├── utils/               # typingMetrics (wpm/precisión/pulsaciones), shareCard
 │   │   ├── store.js             # Config + estado de la sesión en curso
 │   │   └── configRepository.js  # Persistencia de la configuración
+│   ├── course/              # El curso: lecciones, su texto y el progreso
 │   └── history/
 │       ├── components/          # KeyErrorHeatmap, TimingBars, ActivityCalendar, ImprovementTips
 │       ├── utils/               # historyStats (agregados), improvementTips, historyBackup

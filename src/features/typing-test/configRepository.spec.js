@@ -32,6 +32,7 @@ describe("loadConfig", () => {
       minAccuracy: null,
       dictationSentences: 3,
       dictationRate: "normal",
+      lessonId: null,
     });
   });
 
@@ -60,6 +61,7 @@ describe("loadConfig", () => {
       minAccuracy: null,
       dictationSentences: 3,
       dictationRate: "normal",
+      lessonId: null,
     });
   });
 });
@@ -84,6 +86,7 @@ describe("sanitizeConfig", () => {
       minAccuracy: 95,
       dictationSentences: 5,
       dictationRate: "slow",
+      lessonId: "home-2",
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });
@@ -93,6 +96,7 @@ describe("sanitizeConfig", () => {
     expect(sanitizeConfig(config, options)).toMatchObject({
       dictationSentences: 3,
       dictationRate: "normal",
+      lessonId: null,
     });
   });
 
@@ -103,6 +107,7 @@ describe("sanitizeConfig", () => {
       minAccuracy: null,
       dictationSentences: 3,
       dictationRate: "normal",
+      lessonId: null,
     });
   });
 

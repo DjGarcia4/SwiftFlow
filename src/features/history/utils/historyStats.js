@@ -2,6 +2,7 @@
 // separate from the store so they're trivial to unit test.
 import { weeklyLabel } from "@/features/typing-test/content/weekly";
 import { classicById } from "@/features/typing-test/content/classics";
+import { lessonIndex } from "@/features/course/course";
 
 // Bumped whenever how wpm/accuracy are measured changes. v1 (unversioned)
 // counted whole words over whole seconds and accuracy on the final text
@@ -64,6 +65,10 @@ const MODE_LABELS = {
   },
   dictation: (value) =>
     value ? `Dictado · ${value} ${value === 1 ? "frase" : "frases"}` : "Dictado",
+  lesson: (value) => {
+    const index = lessonIndex(value);
+    return index === -1 ? "Curso" : `Curso · Lección ${index + 1}`;
+  },
   zen: () => "Zen",
   // Sessions saved before the drill reported its word count have no value
   drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
@@ -80,6 +85,7 @@ const MODE_NAMES = {
   quote: "Cita",
   classics: "Clásicos",
   dictation: "Dictado",
+  lesson: "Curso",
   code: "Código",
   zen: "Zen",
   drill: "Entrenar",

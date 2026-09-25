@@ -97,6 +97,7 @@ import {
   EyeSlashIcon,
   BookOpenIcon,
   SpeakerWaveIcon,
+  AcademicCapIcon,
 } from "@heroicons/vue/24/outline";
 import KeyboardIcon from "./icons/KeyboardIcon";
 import GhostIcon from "./icons/GhostIcon";
@@ -149,6 +150,7 @@ const props = defineProps({
         "text-style",
         "book",
         "speaker",
+        "academic-cap",
       ].includes(value),
   },
   variant: {
@@ -213,6 +215,7 @@ const iconMap = {
   "text-style": TextStyleIcon,
   book: BookOpenIcon,
   speaker: SpeakerWaveIcon,
+  "academic-cap": AcademicCapIcon,
 };
 
 // Computed icon component

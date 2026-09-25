@@ -4,7 +4,7 @@
     evening notification -- honest about only working with the app open.
   -->
   <div
-    class="fixed bottom-20 left-4 right-4 z-30 flex justify-center sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 transition-[opacity,translate] duration-500 ease-smooth"
+    class="fixed bottom-20 left-4 right-4 z-30 flex justify-center sm:bottom-6 sm:left-6 sm:right-auto sm:w-[28rem] transition-[opacity,translate] duration-500 ease-smooth"
     :class="
       hidden
         ? 'opacity-0 translate-y-3 pointer-events-none select-none duration-300'

@@ -69,6 +69,7 @@ export const ACHIEVEMENT_CATEGORY_RGB = {
   challenge: [79, 70, 229], // indigo
   level: [202, 138, 4], // gold
   reading: [180, 83, 9], // amber, like old paper
+  course: [101, 163, 13], // lime, like a fresh start
 };
 
 const FALLBACK_RGB = [100, 116, 139]; // slate, shouldn't normally hit this

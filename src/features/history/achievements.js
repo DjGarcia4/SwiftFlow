@@ -7,6 +7,7 @@ import {
 } from "@/features/history/utils/historyStats";
 import { computeChallengeStats } from "@/features/history/dailyChallenges";
 import { classics } from "@/features/typing-test/content/classics";
+import { courseProgress, LESSONS } from "@/features/course/course";
 
 // MODES_COUNT stays at 5 even though there are now 6 modes (numbers was
 // added later), so nobody loses "Explorador" after having earned it.
@@ -285,6 +286,43 @@ export const ACHIEVEMENTS = [
     title: "En la zona",
     description: "Completá 10 partidas en modo foco",
     check: (ctx) => ctx.focusCount >= 10,
+  },
+
+  // Course — learning to type without looking, from zero
+  {
+    id: "course_1",
+    category: "course",
+    icon: "academic-cap",
+    title: "Primera lección",
+    description: "Pasá tu primera lección del curso",
+    check: (ctx) => ctx.course.passedCount >= 1,
+  },
+  {
+    id: "course_home_row",
+    category: "course",
+    icon: "academic-cap",
+    title: "Fila del medio",
+    description: "Pasá todas las lecciones de la fila del medio",
+    check: (ctx) =>
+      LESSONS.filter((lesson) => lesson.stage === "home").every(
+        (lesson) => ctx.course.stars[lesson.id] > 0
+      ),
+  },
+  {
+    id: "course_stars",
+    category: "course",
+    icon: "star",
+    title: "Tres estrellas",
+    description: "Sacá tres estrellas en una lección",
+    check: (ctx) => Object.values(ctx.course.stars).some((stars) => stars === 3),
+  },
+  {
+    id: "course_complete",
+    category: "course",
+    icon: "academic-cap",
+    title: "Sin mirar",
+    description: "Pasá todas las lecciones del curso",
+    check: (ctx) => ctx.course.complete,
   },
 
   // Combo — longest run of correct characters in a single session
@@ -741,6 +779,7 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
       (r) => r.mode === "words" && r.modeValue >= 100 && r.punctuation
     ),
     focusCount: results.filter((r) => r.focus).length,
+    course: courseProgress(results),
     dictationCount: results.filter((r) => r.mode === "dictation").length,
     hasCleanLongDictation: results.some(
       (r) => r.mode === "dictation" && r.modeValue >= 5 && r.accuracy >= 98

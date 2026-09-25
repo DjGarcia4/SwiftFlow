@@ -20,9 +20,16 @@
       aria-hidden="true"
     ></div>
 
+    <!-- While typing, when the window is short, this gives way rather than
+         running off the bottom: the text box shrinks (see typingContainer),
+         down to about two lines, and nothing else does -->
     <div
-      class="w-full max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 flex-shrink-0"
-      :class="isCompleted ? 'space-y-4' : 'space-y-6'"
+      class="w-full max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6"
+      :class="
+        isCompleted
+          ? 'space-y-4 flex-shrink-0'
+          : 'space-y-6 flex-shrink-0 sm:flex-shrink sm:min-h-0 sm:flex sm:flex-col'
+      "
     >
       <!-- Author attribution for quote mode -->
       <Transition
@@ -36,6 +43,15 @@
         >
           — {{ currentQuoteAuthor }}
         </p>
+        <!-- A course lesson: passed or not, and on to the next -->
+        <LessonResult
+          v-else-if="
+            isCompleted &&
+            configStore.type === 'lesson' &&
+            !configStore.endedEarly &&
+            !configStore.failure
+          "
+        />
         <!-- Dictation: the text at last, with what came out wrong marked -->
         <div
           v-else-if="isCompleted && configStore.type === 'dictation'"
@@ -369,7 +385,10 @@
         </div>
       </Transition>
 
-      <div v-if="!isCompleted" class="relative animate-fade-in">
+      <div
+        v-if="!isCompleted"
+        class="relative animate-fade-in sm:flex sm:min-h-0 sm:flex-col"
+      >
         <!-- Header row: WPM (left), combo bar stretched across the middle,
            record/counter (right). Always in normal flow, above the scrolling
            text, so it can never end up overlapping it once the paragraph
@@ -630,12 +649,15 @@
           </div>
         </div>
 
+        <!-- A course lesson: what it teaches and its goal -->
+        <LessonPanel v-if="configStore.type === 'lesson'" class="mb-2" />
+
         <!-- Dictation: what's heard comes from here, not the screen -->
         <DictationPanel v-if="configStore.type === 'dictation'" class="mb-2" />
 
         <div
           ref="typingContainer"
-          class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container overflow-hidden h-[210px] xs:h-[230px] [mask-image:linear-gradient(to_bottom,transparent_0,black_10%,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_10%,black_80%,transparent_100%)]"
+          class="px-2 py-6 sm:py-8 text-charcoal text-lg sm:text-xl leading-relaxed font-mono select-none relative typing-container overflow-hidden h-[210px] xs:h-[230px] sm:min-h-[150px] sm:flex-shrink [mask-image:linear-gradient(to_bottom,transparent_0,black_10%,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0,black_10%,black_80%,transparent_100%)]"
           :class="
             configStore.keyboardVisible
               ? 'sm:h-[240px] tall:sm:h-[300px]'
@@ -944,6 +966,10 @@ import {
   sentenceIndexAt,
 } from "@/features/typing-test/content/dictation";
 import DictationPanel from "./DictationPanel.vue";
+import LessonPanel from "@/features/course/components/LessonPanel.vue";
+import LessonResult from "@/features/course/components/LessonResult.vue";
+import { generateLessonText } from "@/features/course/lessonText";
+import { useCurrentLesson } from "@/features/course/useCourse";
 import { getRandomCodeSnippet } from "@/features/typing-test/content/code";
 import {
   weeklyKey,
@@ -1003,6 +1029,7 @@ const soundStore = useSoundStore();
 // Local component state
 const lastParagraph = ref(null);
 const lastQuoteText = ref(null);
+const currentLesson = useCurrentLesson();
 // The "Clásicos" passage on screen: its author and work go under the results
 const currentClassic = ref(null);
 const currentQuoteAuthor = ref("");
@@ -1249,6 +1276,16 @@ const refreshReferenceText = () => {
     return;
   }
 
+  if (configStore.type === "lesson") {
+    // Pinned once it starts, so space repeats this lesson rather than
+    // jumping ahead the moment it's passed
+    if (!configStore.lessonId) configStore.lessonId = currentLesson.value.id;
+    configStore.setReferenceText(
+      generateLessonText(currentLesson.value, configStore.keyboardLayout)
+    );
+    return;
+  }
+
   if (configStore.type === "dictation") {
     const dictation = buildDictation(configStore.dictationSentences);
     configStore.setDictation(dictation);
@@ -1451,6 +1488,7 @@ const currentModeValue = () => {
   if (configStore.type === "code") return currentCodeLanguage.value;
   if (configStore.type === "weekly") return currentWeeklyKey.value;
   if (configStore.type === "dictation") return configStore.dictationSentences;
+  if (configStore.type === "lesson") return currentLesson.value.id;
   // Which passage: the history names it, and the achievements count them
   if (configStore.type === "classics") return currentClassic.value?.id ?? null;
   // By name, which is what the history and the personal bests show
@@ -1956,6 +1994,9 @@ watch(
     configStore.strictMode,
     configStore.minAccuracy,
     configStore.dictationSentences,
+    configStore.lessonId,
+    // A lesson's keys are where they are on this keyboard
+    configStore.type === "lesson" && configStore.keyboardLayout,
   ],
   () => {
     refreshReferenceText();

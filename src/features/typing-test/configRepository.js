@@ -7,6 +7,7 @@ import {
 import { isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
 import { isStrictMode, isMinAccuracy } from "@/features/typing-test/utils/strictModes";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
+import { lessonById } from "@/features/course/course";
 
 // How fast the dictation's voice speaks
 export const DICTATION_RATES = { slow: 0.75, normal: 0.95, fast: 1.15 };
@@ -35,6 +36,7 @@ const DEFAULTS = {
   minAccuracy: null, // 90 | 95 | 98
   dictationSentences: 3,
   dictationRate: "normal",
+  lessonId: null, // null = the course's next lesson
 };
 
 export const loadConfig = () => {
@@ -94,4 +96,5 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
   dictationRate: Object.hasOwn(DICTATION_RATES, config.dictationRate)
     ? config.dictationRate
     : DEFAULTS.dictationRate,
+  lessonId: lessonById(config.lessonId) ? config.lessonId : null,
 });

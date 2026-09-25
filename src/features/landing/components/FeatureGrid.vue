@@ -40,6 +40,48 @@
         </ul>
       </article>
 
+      <!-- The course: its stages, lesson by lesson, the first ones done -->
+      <article v-tilt="3" :class="[CARD, 'md:col-span-6']">
+        <div class="grid items-center gap-6 lg:grid-cols-[1fr_1.4fr]">
+          <div>
+            <CardTitle
+              :icon="AcademicCapIcon"
+              title="Un curso para empezar de cero"
+              :text="`${LESSONS.length} lecciones para aprender a escribir sin mirar: una fila por vez, un par de dedos por vez, hasta los números y los signos. Cada una se pasa con su velocidad y su precisión, y se adapta a tu teclado.`"
+            />
+            <RouterLink
+              to="/curso"
+              class="mt-4 inline-flex items-center gap-2 text-sm font-extrabold text-primary underline underline-offset-2"
+              >Ver el curso</RouterLink
+            >
+          </div>
+          <ol class="grid gap-2 sm:grid-cols-2" aria-label="Las etapas del curso">
+            <li
+              v-for="(stage, index) in COURSE_STAGES"
+              :key="stage.title"
+              class="rounded-xl border-2 border-faded-gray px-3 py-2"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-extrabold text-charcoal">{{
+                  stage.title
+                }}</span>
+                <span class="flex" aria-hidden="true">
+                  <StarIcon
+                    v-for="star in 3"
+                    :key="star"
+                    class="h-3.5 w-3.5"
+                    :class="star <= stage.demoStars ? 'text-primary' : 'text-faded-gray'"
+                  />
+                </span>
+              </div>
+              <div class="mt-0.5 font-mono text-xs font-bold text-pencil-gray">
+                {{ index + 1 }}. {{ stage.sample }}
+              </div>
+            </li>
+          </ol>
+        </div>
+      </article>
+
       <!-- While typing -->
       <article v-tilt="3" :class="[CARD, 'md:col-span-4']">
         <CardTitle
@@ -131,7 +173,7 @@
       <!-- Smart training -->
       <article v-tilt="3" :class="[CARD, 'md:col-span-3']">
         <CardTitle
-          :icon="AcademicCapIcon"
+          :icon="ViewfinderCircleIcon"
           title="Un entrenamiento que sabe cuándo parar"
           text="Arma la práctica con tus teclas y palabras flojas, te dice si hace falta otra ronda, y te las vuelve a traer en el momento justo."
         />
@@ -192,7 +234,9 @@ import {
   SpeakerWaveIcon,
 } from "@heroicons/vue/24/outline";
 import TextStyleIcon from "@/shared/components/icons/TextStyleIcon";
-import { FireIcon } from "@heroicons/vue/24/solid";
+import { FireIcon, StarIcon } from "@heroicons/vue/24/solid";
+import { RouterLink } from "vue-router";
+import { LESSONS } from "@/features/course/course";
 import GhostIcon from "@/shared/components/icons/GhostIcon";
 import MetronomeIcon from "@/shared/components/icons/MetronomeIcon";
 import KeyboardLayout from "@/features/typing-test/components/KeyboardLayout.vue";
@@ -243,6 +287,15 @@ const MODES = [
   },
   { name: "Mi texto", detail: "pegá lo que escribís", icon: PencilSquareIcon },
   { name: "Semanal", detail: "el mismo texto para todos", icon: TrophyIcon },
+];
+
+// The course's stages, with what each has you type and a made-up result:
+// the first ones done, as someone partway through would see it
+const COURSE_STAGES = [
+  { title: "Fila del medio", sample: "fjfj dkdk sala", demoStars: 3 },
+  { title: "Fila de arriba", sample: "ruta hielo pero", demoStars: 2 },
+  { title: "Fila de abajo", sample: "cama, ven.", demoStars: 1 },
+  { title: "Más allá de las letras", sample: "Árbol ¿124?", demoStars: 0 },
 ];
 
 // "Diez maneras", in words, while it's a count that reads well that way

@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { mount } from "@vue/test-utils";
+import { mount, config, RouterLinkStub } from "@vue/test-utils";
 import { setActivePinia, createPinia } from "pinia";
 import ToolBar from "./ToolBar.vue";
 import { useConfigStore } from "@/features/typing-test/store";
+
+// The course's lesson chip links to the course
+config.global.stubs = { RouterLink: RouterLinkStub };
 
 // The mode buttons look their icon and label up in a plain map with no
 // fallback, so a mode added to the store and forgotten here takes the whole

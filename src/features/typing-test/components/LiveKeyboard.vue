@@ -11,10 +11,7 @@
          toggle couldn't be clicked -->
     <div class="relative z-10 flex items-center gap-3 text-xs font-bold text-pencil-gray">
       <!-- Which finger the next key is for -->
-      <span
-        v-if="configStore.fingerColors && nextFinger"
-        class="inline-flex items-center gap-1.5"
-      >
+      <span v-if="showFingers && nextFinger" class="inline-flex items-center gap-1.5">
         <span
           class="inline-block h-2.5 w-2.5 rounded-full"
           :style="{ backgroundColor: fingerColor(nextFinger) }"
@@ -73,6 +70,11 @@ const FINGER_RGB = {
 };
 const rgbOf = (finger) => FINGER_RGB[FINGERS[finger].kind];
 const fingerColor = (finger) => `rgb(${rgbOf(finger).join(" ")})`;
+
+// A course lesson is about which finger goes where: the colors are always on
+const showFingers = computed(
+  () => configStore.fingerColors || configStore.type === "lesson"
+);
 
 // Shift belongs to whichever pinky isn't pressing the key; drawn as a pinky
 const fingerFor = (key) =>
@@ -167,7 +169,7 @@ const keyClass = (key) => {
       : `${base} border-primary bg-primary-tint text-primary`;
   }
   // Finger colors come in through keyStyle
-  if (configStore.fingerColors) return base;
+  if (showFingers.value) return base;
   // At rest the keys stay in the background; the text is what's being read
   return `${base} border-faded-gray/50 text-pencil-gray/60`;
 };
@@ -198,7 +200,7 @@ const keyStyle = (key) => {
   // A mistake's flash is drawn by the classes, and wins over everything
   if (flash.value?.wanted === key || flash.value?.pressed === key) return {};
   const tint = missTint.value[key];
-  if (!tint || isNext(key)) return configStore.fingerColors ? fingerStyle(key) : {};
+  if (!tint || isNext(key)) return showFingers.value ? fingerStyle(key) : {};
   // 12%..45% of the danger color: a hint, never louder than the next key
   const strength = Math.round(12 + tint * 33);
   return {

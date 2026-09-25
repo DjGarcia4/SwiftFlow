@@ -32,7 +32,7 @@ export const ROUTES = [
       <h1>SwiftFlow: escribí más rápido y entendé por qué te equivocás</h1>
       <p>Un test de mecanografía en español que no solo te mide: te dice qué teclas, qué palabras y qué momentos te frenan, y te arma la práctica para arreglarlo. Sin cuenta, todo en tu navegador.</p>
       <h2>Modos</h2>
-      <p>Tiempo, Palabras, Números, Cita, Código, Zen, Entrenar, Mi texto y el reto Semanal.</p>
+      <p>Tiempo, Palabras, Números, Cita, Clásicos, Dictado, Código, Zen, Entrenar, Mi texto y el reto Semanal, más un curso desde cero para aprender a escribir sin mirar.</p>
       <h2>Mientras escribís</h2>
       <p>Combo, un coach que te avisa qué letra se te escapa, teclado en pantalla con colores por dedo, fantasma de tu récord, marcapasos y modo sin red.</p>
       <h2>Estadísticas</h2>
@@ -42,6 +42,12 @@ export const ROUTES = [
       <h2>Progreso</h2>
       <p>50 niveles en 8 rangos, recompensas, logros, retos diarios, meta semanal, reto semanal y racha.</p>
       <p><a href="/">Empezar a escribir</a></p>`,
+  },
+  {
+    path: "/curso",
+    title: "Curso desde cero · SwiftFlow",
+    description:
+      "Aprendé a escribir sin mirar el teclado, en español: una fila por vez, con lecciones que se adaptan a tu teclado.",
   },
   {
     path: "/historial",

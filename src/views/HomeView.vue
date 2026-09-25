@@ -95,6 +95,8 @@
 
     <!-- Today still needs a session to keep the streak -->
     <StreakRiskBanner v-if="streakReminder.bannerVisible" />
+    <!-- A first-timer: the course, if typing without looking is new -->
+    <CourseInvite v-else-if="showCourseInvite" @dismiss="dismissCourseInvite" />
   </div>
 </template>
 
@@ -108,6 +110,8 @@ import LiveCoach from "@/features/typing-test/components/LiveCoach.vue";
 import ChallengesWidget from "@/features/history/components/ChallengesWidget.vue";
 import CustomTextEditor from "@/features/typing-test/components/CustomTextEditor.vue";
 import StreakRiskBanner from "@/features/history/components/StreakRiskBanner.vue";
+import CourseInvite from "@/features/course/components/CourseInvite.vue";
+import { useHistoryStore } from "@/features/history/store";
 import { useStreakReminderStore } from "@/features/history/streakReminder";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
@@ -116,6 +120,32 @@ import { useModalFocus } from "@/shared/composables/useModalFocus";
 const configStore = useConfigStore();
 const streakReminder = useStreakReminderStore();
 const configOpen = ref(false);
+
+const historyStore = useHistoryStore();
+const COURSE_INVITE_KEY = "swiftflow_course_invite_dismissed";
+const readDismissed = () => {
+  try {
+    return localStorage.getItem(COURSE_INVITE_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+const courseInviteDismissed = ref(readDismissed());
+const dismissCourseInvite = () => {
+  courseInviteDismissed.value = true;
+  try {
+    localStorage.setItem(COURSE_INVITE_KEY, "1");
+  } catch {
+    // Storage blocked: gone for this visit
+  }
+};
+const showCourseInvite = computed(
+  () =>
+    !courseInviteDismissed.value &&
+    historyStore.sessionsCount === 0 &&
+    configStore.type !== "lesson" &&
+    configStore.userInput.length === 0
+);
 const configSheet = ref(null);
 useModalFocus({
   open: configOpen,

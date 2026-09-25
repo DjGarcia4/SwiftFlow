@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Curso desde cero",
+    text: "24 lecciones para aprender a escribir sin mirar: una fila por vez, hasta los números y los signos, con estrellas y en tu teclado.",
+  },
+  {
+    date: "2026-09",
     title: "Dictado",
     text: "Una voz en español te dicta frases y las escribís sin verlas, con tildes y todo. El texto aparece al final, con lo que se te escapó marcado.",
   },

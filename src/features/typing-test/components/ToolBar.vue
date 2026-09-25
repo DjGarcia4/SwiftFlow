@@ -66,7 +66,8 @@
           configStore.type === 'code' ||
           configStore.type === 'drill' ||
           configStore.type === 'custom' ||
-          configStore.type === 'dictation'
+          configStore.type === 'dictation' ||
+          configStore.type === 'lesson'
         "
       >
         <!-- Divisor -->
@@ -108,6 +109,7 @@
               @click="configStore.handleWords(word)"
             />
           </template>
+          <LessonChip v-if="configStore.type === 'lesson'" />
           <template v-if="configStore.type === 'dictation'">
             <IconButton
               v-for="count in DICTATION_SENTENCE_COUNTS"
@@ -241,6 +243,9 @@
 
       <!-- Your own texts: the one picked, opening the list -->
       <CustomTextPicker v-if="configStore.type === 'custom'" />
+
+      <!-- The course: which lesson, and the way to the whole course -->
+      <LessonChip v-if="configStore.type === 'lesson'" />
 
       <!-- Drill targets: a chip showing them, opening the picker -->
       <div
@@ -398,6 +403,7 @@
 import { isSpeechSupported } from "@/shared/utils/speech";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
 import StrictModePicker from "./StrictModePicker.vue";
+import LessonChip from "@/features/course/components/LessonChip.vue";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import {
   AtSymbolIcon,
@@ -407,6 +413,7 @@ import {
   ChatBubbleBottomCenterTextIcon,
   BookOpenIcon,
   SpeakerWaveIcon,
+  AcademicCapIcon,
   CodeBracketIcon,
   SparklesIcon,
   ViewfinderCircleIcon,
@@ -434,6 +441,7 @@ const typeMeta = {
   quote: { icon: "quote", component: ChatBubbleBottomCenterTextIcon, label: "Cita" },
   classics: { icon: "book", component: BookOpenIcon, label: "Clásicos" },
   dictation: { icon: "speaker", component: SpeakerWaveIcon, label: "Dictado" },
+  lesson: { icon: "academic-cap", component: AcademicCapIcon, label: "Curso" },
   code: { icon: "code", component: CodeBracketIcon, label: "Código" },
   zen: { icon: "zen", component: SparklesIcon, label: "Zen" },
   drill: { icon: "target", component: ViewfinderCircleIcon, label: "Entrenar" },
@@ -444,7 +452,7 @@ const typeMeta = {
 // Whether punctuation is a choice: code, the weekly text and your own
 // texts are typed exactly as written
 const punctuationApplies = computed(
-  () => !["code", "weekly", "custom", "dictation"].includes(configStore.type)
+  () => !["code", "weekly", "custom", "dictation", "lesson"].includes(configStore.type)
 );
 
 // Dictation needs a voice: a browser without speech doesn't offer it
@@ -455,7 +463,10 @@ const canSpeak = isSpeechSupported();
 const offeredTypes = computed(() =>
   configStore.types.filter(
     (type) =>
+      // Played from their own places (the challenges, the course): shown
+      // only while being played, as the way out of them too
       (type !== "weekly" || configStore.type === "weekly") &&
+      (type !== "lesson" || configStore.type === "lesson") &&
       (type !== "dictation" || canSpeak || configStore.type === "dictation")
   )
 );
