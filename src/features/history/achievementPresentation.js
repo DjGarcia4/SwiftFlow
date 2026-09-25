@@ -20,6 +20,7 @@ import {
   ChevronDoubleUpIcon,
   AcademicCapIcon,
   ShieldCheckIcon,
+  HeartIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -46,6 +47,7 @@ export const ACHIEVEMENT_ICONS = {
   "level-up": ChevronDoubleUpIcon,
   "academic-cap": AcademicCapIcon,
   shield: ShieldCheckIcon,
+  heart: HeartIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {

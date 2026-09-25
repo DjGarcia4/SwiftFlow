@@ -68,7 +68,9 @@ Landing: tarjeta chica "Accesible", novedades.
 - **Muerte súbita**: el primer error termina la partida
 - **Corregir para avanzar**: no te deja seguir hasta arreglar la letra
 - **Precisión mínima**: por debajo del umbral elegido (90/95/98 %) la sesión no cuenta
-- Se combinan con cualquier modo, como "Sin red"; los récords se guardan aparte
+- Se combinan con cualquier modo, como "Sin red". Una partida fallada no se guarda (como
+  cortarla con Esc); una que llega es una partida normal, marcada, así que no hacen falta
+  récords aparte
 
 Landing: tarjetas chicas o una tarjeta "Modos exigentes", novedades, logros nuevos si
 corresponde.

@@ -33,6 +33,11 @@
       <!-- Divisor -->
       <div class="h-px w-full bg-faded-gray"></div>
 
+      <StrictModePicker inline />
+
+      <!-- Divisor -->
+      <div class="h-px w-full bg-faded-gray"></div>
+
       <!-- Type selection -->
       <div
         role="group"
@@ -192,6 +197,9 @@
         <EyeSlashIcon class="w-4 h-4" />
         <span class="hidden lg:inline">Sin red</span>
       </button>
+
+      <!-- Sudden death, must-correct, minimum accuracy -->
+      <StrictModePicker />
 
       <SegmentedControl
         label="Modo"
@@ -373,6 +381,7 @@
 </template>
 
 <script setup>
+import StrictModePicker from "./StrictModePicker.vue";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import {
   AtSymbolIcon,

@@ -186,6 +186,7 @@ import {
   WifiIcon,
   LanguageIcon,
   UserGroupIcon,
+  HeartIcon,
 } from "@heroicons/vue/24/outline";
 import TextStyleIcon from "@/shared/components/icons/TextStyleIcon";
 import { FireIcon } from "@heroicons/vue/24/solid";
@@ -288,6 +289,11 @@ const SMALL_CARDS = [
     icon: EyeSlashIcon,
     title: "Sin red",
     text: "Escribí sin ver tus errores hasta el final: entrena la confianza en tus dedos.",
+  },
+  {
+    icon: HeartIcon,
+    title: "Modos exigentes",
+    text: "Muerte súbita, corregir para avanzar o una precisión mínima: si no llegás, no cuenta.",
   },
   {
     icon: ShieldCheckIcon,

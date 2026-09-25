@@ -54,6 +54,38 @@ describe("computeAchievements", () => {
     expect(isUnlocked(computeAchievements(fivePerfect), "accuracy_100_x5")).toBe(true);
   });
 
+  it("unlocks the demanding-mode achievements from runs that made it", () => {
+    const shortDeath = [
+      { mode: "words", modeValue: 25, wpm: 50, accuracy: 100, strict: "sudden-death" },
+    ];
+    expect(isUnlocked(computeAchievements(shortDeath), "sudden_death_1")).toBe(true);
+    expect(isUnlocked(computeAchievements(shortDeath), "sudden_death_long")).toBe(false);
+
+    const longDeath = [
+      { mode: "time", modeValue: 60, wpm: 50, accuracy: 100, strict: "sudden-death" },
+    ];
+    expect(isUnlocked(computeAchievements(longDeath), "sudden_death_long")).toBe(true);
+
+    // Must-correct isn't sudden death
+    const corrected = [
+      { mode: "words", modeValue: 50, wpm: 50, accuracy: 96, strict: "must-correct" },
+    ];
+    expect(isUnlocked(computeAchievements(corrected), "sudden_death_1")).toBe(false);
+
+    expect(
+      isUnlocked(
+        computeAchievements([{ mode: "time", wpm: 50, accuracy: 99, minAccuracy: 98 }]),
+        "min_accuracy_98"
+      )
+    ).toBe(true);
+    expect(
+      isUnlocked(
+        computeAchievements([{ mode: "time", wpm: 50, accuracy: 99, minAccuracy: 95 }]),
+        "min_accuracy_98"
+      )
+    ).toBe(false);
+  });
+
   it("unlocks explorer only once all 5 modes have been played", () => {
     const fourModes = ["time", "words", "quote", "code"].map((mode) => ({
       mode,

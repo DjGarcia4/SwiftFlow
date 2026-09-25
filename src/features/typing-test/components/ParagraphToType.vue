@@ -50,7 +50,16 @@
         enter-from-class="opacity-0 -translate-y-2 scale-95"
         enter-to-class="opacity-100 translate-y-0 scale-100"
       >
-        <div v-if="isCompleted && configStore.endedEarly" class="text-center">
+        <!-- A demanding mode's run that didn't make it -->
+        <div v-if="configStore.failure" class="text-center">
+          <div
+            class="inline-flex items-center gap-2 bg-danger-tint text-danger rounded-xl px-5 py-2.5 text-sm font-bold"
+          >
+            <XCircleIcon class="w-5 h-5 flex-shrink-0" />
+            {{ describeFailure(configStore.failure) }}
+          </div>
+        </div>
+        <div v-else-if="isCompleted && configStore.endedEarly" class="text-center">
           <div
             class="inline-flex items-center gap-2 bg-faded-gray/30 text-pencil-gray rounded-xl px-5 py-2.5 text-sm font-bold"
           >
@@ -424,6 +433,40 @@
                 <span class="text-xs font-extrabold text-white">Récord</span>
               </div>
             </Transition>
+
+            <!-- The demanding modes in play: what a mistake costs, and the
+                 accuracy against the bar as it stands -->
+            <div
+              v-if="configStore.strictMode || configStore.minAccuracy"
+              class="hidden xs:inline-flex items-center gap-2 rounded-xl border-2 border-faded-gray px-2.5 py-1.5 text-xs font-extrabold text-charcoal"
+              :title="strictTitle"
+            >
+              <span
+                v-if="configStore.strictMode === 'sudden-death'"
+                class="inline-flex items-center gap-1 text-danger"
+              >
+                <HeartIcon class="w-4 h-4" />
+                <span class="hidden sm:inline">1 vida</span>
+              </span>
+              <span
+                v-else-if="configStore.strictMode === 'must-correct'"
+                class="inline-flex items-center gap-1"
+              >
+                <ArrowUturnLeftIcon class="w-4 h-4" />
+                <span class="hidden sm:inline">Corregir</span>
+              </span>
+              <span
+                v-if="configStore.minAccuracy"
+                class="inline-flex items-center gap-1 tabular-nums"
+                :class="belowMinAccuracy ? 'text-danger' : ''"
+              >
+                <ScaleIcon class="w-4 h-4" />
+                <template v-if="configStore.keystrokes">
+                  {{ Math.floor(configStore.accuracy) }}/{{ configStore.minAccuracy }}%
+                </template>
+                <template v-else>mín. {{ configStore.minAccuracy }}%</template>
+              </span>
+            </div>
 
             <div
               class="inline-flex items-center gap-2 sm:gap-3 bg-paper-white rounded-xl px-4 py-2 sm:px-5 sm:py-2.5 border-2 border-faded-gray min-w-0"
@@ -833,6 +876,10 @@ import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import { levelFromXp } from "@/features/history/utils/experience";
 import { announce, spokenNumber } from "@/shared/utils/announcer";
+import {
+  describeFailure,
+  strictModeById,
+} from "@/features/typing-test/utils/strictModes";
 import DrillSummary from "@/features/history/components/DrillSummary.vue";
 import {
   ClockIcon,
@@ -842,6 +889,10 @@ import {
   FireIcon,
   TrophyIcon,
   StopIcon,
+  XCircleIcon,
+  HeartIcon,
+  ArrowUturnLeftIcon,
+  ScaleIcon,
   SparklesIcon,
   MagnifyingGlassIcon,
   EyeSlashIcon,
@@ -1236,7 +1287,27 @@ const resultCards = computed(() => {
 });
 
 // The results, read out: the cards say it only to whoever can see them
+const belowMinAccuracy = computed(
+  () =>
+    Boolean(configStore.minAccuracy) &&
+    configStore.keystrokes > 0 &&
+    configStore.accuracy < configStore.minAccuracy
+);
+const strictTitle = computed(() =>
+  [
+    strictModeById(configStore.strictMode)?.detail,
+    configStore.minAccuracy &&
+      `Por debajo del ${configStore.minAccuracy} % de precisión, la partida no cuenta`,
+  ]
+    .filter(Boolean)
+    .join(". ")
+);
+
 const announceResults = () => {
+  if (configStore.failure) {
+    announce(`${describeFailure(configStore.failure)}. Espacio para intentar de nuevo.`);
+    return;
+  }
   const parts = [
     `Terminaste: ${spokenNumber(configStore.wpm)} palabras por minuto`,
     `${spokenNumber(configStore.accuracy)} % de precisión`,
@@ -1345,7 +1416,7 @@ watch(isCompleted, (completed) => {
 
     // A session cut short with Esc still shows its results, but it isn't a
     // real attempt at the mode, so it doesn't touch records or history.
-    if (configStore.endedEarly) {
+    if (configStore.endedEarly || configStore.failure) {
       justBrokeRecord.value = false;
       perfectRound.value = null;
       xpGained.value = 0;
@@ -1385,6 +1456,9 @@ watch(isCompleted, (completed) => {
         consistency: sessionConsistency.value,
         // Only when on: a result without it was played with the net
         blind: configStore.blindMode || undefined,
+        // The demanding modes it was played under, only when on
+        strict: configStore.strictMode ?? undefined,
+        minAccuracy: configStore.minAccuracy ?? undefined,
         timeElapsed: configStore.timeElapsed,
         modeValue: currentModeValue(),
         // The letters a drill aimed at, so the review schedule knows which
@@ -1782,6 +1856,8 @@ watch(
     configStore.pacerWpm,
     configStore.selectedCustomText?.id,
     configStore.selectedCustomText?.text,
+    configStore.strictMode,
+    configStore.minAccuracy,
   ],
   () => {
     refreshReferenceText();

@@ -28,6 +28,8 @@ describe("loadConfig", () => {
       drillWords: [],
       fingerColors: false,
       keyboardLayout: null,
+      strictMode: null,
+      minAccuracy: null,
     });
   });
 
@@ -52,6 +54,8 @@ describe("loadConfig", () => {
       drillWords: [],
       fingerColors: false,
       keyboardLayout: null,
+      strictMode: null,
+      minAccuracy: null,
     });
   });
 });
@@ -72,8 +76,18 @@ describe("sanitizeConfig", () => {
       drillWords: ["desarrollo"],
       fingerColors: true,
       keyboardLayout: "es",
+      strictMode: "sudden-death",
+      minAccuracy: 95,
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
+  });
+
+  it("drops demanding modes and thresholds it doesn't know", () => {
+    const config = { type: "time", strictMode: "hardcore", minAccuracy: 97 };
+    expect(sanitizeConfig(config, options)).toMatchObject({
+      strictMode: null,
+      minAccuracy: null,
+    });
   });
 
   it("forgets a keyboard layout it doesn't know, so it's guessed again", () => {

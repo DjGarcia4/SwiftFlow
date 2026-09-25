@@ -545,6 +545,18 @@
                 >sin red</span
               >
               <span
+                v-if="strictModeById(result.strict)"
+                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                :title="strictModeById(result.strict).detail"
+                >{{ strictModeById(result.strict).label.toLowerCase() }}</span
+              >
+              <span
+                v-if="result.minAccuracy"
+                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                :title="`Jugada con una precisión mínima del ${result.minAccuracy} %`"
+                >≥{{ result.minAccuracy }}%</span
+              >
+              <span
                 v-if="!isCurrentMetrics(result)"
                 class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
                 title="Medida con la fórmula anterior de WPM: no cuenta para récords ni promedios"
@@ -634,6 +646,7 @@ import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
+import { strictModeById } from "@/features/typing-test/utils/strictModes";
 import KeyboardLayoutPicker from "@/features/typing-test/components/KeyboardLayoutPicker.vue";
 import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";

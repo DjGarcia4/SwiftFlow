@@ -5,6 +5,7 @@ import {
   normalizeDrillWords,
 } from "@/features/typing-test/content/drill";
 import { isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
+import { isStrictMode, isMinAccuracy } from "@/features/typing-test/utils/strictModes";
 
 const STORAGE_KEY = "swiftflow_config";
 
@@ -26,6 +27,8 @@ const DEFAULTS = {
   drillWords: [], // non-empty: the drill is on these words, not letters
   fingerColors: false,
   keyboardLayout: null, // null = guessed from the browser's language
+  strictMode: null, // "sudden-death" | "must-correct"
+  minAccuracy: null, // 90 | 95 | 98
 };
 
 export const loadConfig = () => {
@@ -77,4 +80,6 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
   drillWords: normalizeDrillWords(config.drillWords),
   fingerColors: config.fingerColors === true,
   keyboardLayout: isLayoutId(config.keyboardLayout) ? config.keyboardLayout : null,
+  strictMode: isStrictMode(config.strictMode) ? config.strictMode : null,
+  minAccuracy: isMinAccuracy(config.minAccuracy) ? config.minAccuracy : null,
 });

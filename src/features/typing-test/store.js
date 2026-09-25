@@ -26,6 +26,12 @@ import {
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
 import { guessLayoutId, isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
 import {
+  isStrictMode,
+  isMinAccuracy,
+  upToFirstMistake,
+  runFailure,
+} from "@/features/typing-test/utils/strictModes";
+import {
   loadConfig,
   saveConfig,
   sanitizeConfig,
@@ -99,6 +105,11 @@ export const useConfigStore = defineStore("config", () => {
   const pacerWpm = ref(savedConfig.pacerWpm);
   // "Sin red": nothing on screen gives a mistake away until the results
   const blindMode = ref(savedConfig.blindMode);
+  // What a mistake does, on top of any mode (strictModes.js): null, or
+  // "sudden-death" or "must-correct"
+  const strictMode = ref(savedConfig.strictMode);
+  // How accurate a run has to be to count: null, or 90/95/98
+  const minAccuracy = ref(savedConfig.minAccuracy);
 
   // "Mi texto": your own saved texts, the one picked, and the editor for
   // them (null when closed, { id } -- null id for a new one -- when open)
@@ -126,6 +137,8 @@ export const useConfigStore = defineStore("config", () => {
       keyboardLayout: chosenKeyboardLayout.value,
       pacerWpm: pacerWpm.value,
       blindMode: blindMode.value,
+      strictMode: strictMode.value,
+      minAccuracy: minAccuracy.value,
       selectedCustomTextId: selectedCustomTextId.value,
     });
   };
@@ -187,6 +200,16 @@ export const useConfigStore = defineStore("config", () => {
     customEditor.value = null;
   };
 
+  // Picking the one that's on turns it off
+  const setStrictMode = (id) => {
+    strictMode.value = strictMode.value === id || !isStrictMode(id) ? null : id;
+    persistConfig();
+  };
+  const setMinAccuracy = (value) => {
+    minAccuracy.value = isMinAccuracy(value) ? value : null;
+    persistConfig();
+  };
+
   const toggleFingerColors = () => {
     fingerColors.value = !fingerColors.value;
     persistConfig();
@@ -228,6 +251,11 @@ export const useConfigStore = defineStore("config", () => {
   const originalReferenceText = ref(""); // Keep track of original text
   const zenFinished = ref(false); // Manually ended a "zen" (no limit) session
   const endedEarly = ref(false); // Manually ended any other mode before its limit (Esc twice)
+  // Where sudden death struck, or null. The run ends there, as if by Esc.
+  const diedAt = ref(null);
+  // With "must-correct", where the last rejected mistake was: the combo
+  // starts over from there, as it would after any mistake
+  const comboBreakAt = ref(0);
   const pausedAt = ref(null); // When the current pause started, to exclude it from the clock
   const wpmHistory = ref([]); // { time, wpm, errors } samples for the results chart
   const INACTIVITY_TIMEOUT = 3000; // 3 seconds of inactivity
@@ -391,6 +419,15 @@ export const useConfigStore = defineStore("config", () => {
     return computeErrors(userInput.value, referenceText.value);
   });
 
+  // Why this finished run doesn't count (strictModes.js), or null. A run
+  // ended with Esc just ended early: that's its own story.
+  const failure = computed(() => {
+    if (!isCompleted.value) return null;
+    if (diedAt.value !== null) return runFailure({ diedAt: diedAt.value });
+    if (endedEarly.value) return null;
+    return runFailure({ minAccuracy: minAccuracy.value, accuracy: accuracy.value });
+  });
+
   const isBeatingBest = computed(() => {
     return bestWpm.value > 0 && wpm.value > bestWpm.value;
   });
@@ -403,7 +440,8 @@ export const useConfigStore = defineStore("config", () => {
   };
 
   const currentStreak = computed(() => {
-    return computeStreak(userInput.value, referenceText.value);
+    const streak = computeStreak(userInput.value, referenceText.value);
+    return Math.min(streak, Math.max(0, userInput.value.length - comboBreakAt.value));
   });
 
   const isCompleted = computed(() => {
@@ -558,6 +596,14 @@ export const useConfigStore = defineStore("config", () => {
 
         lastTyped.value = { ...stroke, elapsedMs: activeElapsed };
       }
+      // Sudden death: the first wrong key ends the run where it stands
+      if (strictMode.value === "sudden-death" && diedAt.value === null) {
+        const fatal = strokes.find((stroke) => !stroke.correct);
+        if (fatal) {
+          diedAt.value = fatal.index;
+          endedEarly.value = true;
+        }
+      }
       maxStreak.value = Math.max(maxStreak.value, currentStreak.value);
       if (next.length || prev)
         progressSamples.value.push([Math.round(activeElapsed), next.length]);
@@ -659,6 +705,16 @@ export const useConfigStore = defineStore("config", () => {
   };
 
   const handleTyping = (onCompleteCallback) => {
+    // "Must-correct": a wrong key was counted (the watcher above saw it) but
+    // doesn't stay in the text, so the next key is the same one again
+    if (strictMode.value === "must-correct" && !endedEarly.value) {
+      const kept = upToFirstMistake(userInput.value, referenceText.value);
+      if (kept.length < userInput.value.length) {
+        userInput.value = kept;
+        comboBreakAt.value = kept.length;
+      }
+    }
+
     // Don't start timer if session is already completed
     if (isCompleted.value) {
       return;
@@ -721,6 +777,8 @@ export const useConfigStore = defineStore("config", () => {
     pausedAt.value = null;
     zenFinished.value = false;
     endedEarly.value = false;
+    diedAt.value = null;
+    comboBreakAt.value = 0;
     wpmHistory.value = [];
     keystrokes.value = 0;
     errorKeystrokes.value = 0;
@@ -844,6 +902,12 @@ export const useConfigStore = defineStore("config", () => {
     pacerWpm,
     setPacerWpm,
     blindMode,
+    strictMode,
+    setStrictMode,
+    minAccuracy,
+    setMinAccuracy,
+    diedAt,
+    failure,
     toggleBlindMode,
     customTexts,
     selectedCustomText,

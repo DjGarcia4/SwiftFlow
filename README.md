@@ -23,6 +23,13 @@ te arma la práctica para arreglarlo.
 
 Con o sin puntuación y mayúsculas, salvo en código, que siempre se escribe tal cual.
 
+Y combinables con cualquier modo:
+
+- **Sin red**: los errores no se ven hasta el final
+- **Muerte súbita**: el primer error termina la partida
+- **Corregir para avanzar**: una letra equivocada no entra; hay que acertarla para seguir
+- **Precisión mínima** (90, 95 o 98 %): si no llegás, la partida no cuenta
+
 ### Mientras escribís
 
 - WPM neto en vivo (sólo cuentan las palabras completas y correctas, como Monkeytype) y WPM
@@ -44,7 +51,7 @@ Con o sin puntuación y mayúsculas, salvo en código, que siempre se escribe ta
 
 - Gráfico de WPM y errores a lo largo de la sesión
 - Tarjeta para compartir el resultado, con un diseño distinto si fue récord
-- 55 logros en 9 categorías, con aviso al desbloquearlos
+- 68 logros en 10 categorías, con aviso al desbloquearlos
 
 ### En el historial
 

@@ -82,8 +82,17 @@ describe("ToolBar", () => {
     const wrapper = mount(ToolBar);
 
     // The mode and its setting are one strip each, not a button per option
-    expect(wrapper.findAll("[role=radiogroup]")).toHaveLength(2);
-    expect(wrapper.find("[role=radio][aria-checked=true]").text()).toBe("Entrenar");
+    const strips = wrapper
+      .findAll("[role=radiogroup]")
+      .map((group) => group.attributes("aria-label"));
+    expect(strips.filter((name) => name === "Modo" || name === "Cantidad")).toHaveLength(
+      2
+    );
+    expect(
+      wrapper
+        .find("[role=radiogroup][aria-label=Modo] [role=radio][aria-checked=true]")
+        .text()
+    ).toBe("Entrenar");
   });
 
   it("says when the drill is on words, with a way back to letters", async () => {

@@ -186,6 +186,31 @@ export const ACHIEVEMENTS = [
     description: "Mantené un 95% de precisión promedio",
     check: (ctx) => ctx.averageAccuracy >= 95,
   },
+  // The demanding modes (strictModes.js): only runs that made it are saved
+  {
+    id: "sudden_death_1",
+    category: "accuracy",
+    icon: "heart",
+    title: "Una sola vida",
+    description: "Completá una partida con muerte súbita",
+    check: (ctx) => ctx.suddenDeathCount >= 1,
+  },
+  {
+    id: "sudden_death_long",
+    category: "accuracy",
+    icon: "heart",
+    title: "Intocable",
+    description: "Aguantá 60 segundos o 50 palabras con muerte súbita",
+    check: (ctx) => ctx.hasLongSuddenDeath,
+  },
+  {
+    id: "min_accuracy_98",
+    category: "accuracy",
+    icon: "shield",
+    title: "Pulso firme",
+    description: "Completá una partida exigiéndote un 98% de precisión",
+    check: (ctx) => ctx.hasStrictAccuracy98,
+  },
 
   // Combo — longest run of correct characters in a single session
   {
@@ -606,6 +631,7 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
   const wordsResults = results.filter((r) => r.mode === "words");
 
   const challengeStats = computeChallengeStats(results);
+  const suddenDeathResults = results.filter((r) => r.strict === "sudden-death");
 
   const context = {
     sessionsCount: results.length,
@@ -620,6 +646,13 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
     bestStreak: computeBestStreak(results),
     numbersSessionsCount: results.filter((r) => r.mode === "numbers").length,
     perfectAccuracyCount: results.filter((r) => r.accuracy === 100).length,
+    suddenDeathCount: suddenDeathResults.length,
+    hasLongSuddenDeath: suddenDeathResults.some(
+      (r) =>
+        (r.mode === "time" && r.modeValue >= 60) ||
+        (r.mode === "words" && r.modeValue >= 50)
+    ),
+    hasStrictAccuracy98: results.some((r) => r.minAccuracy >= 98),
     longestStreak: computeLongestDailyStreak(results),
     modesPlayed: new Set(results.map((r) => r.mode)).size,
     codeLanguagesPlayed: new Set(
