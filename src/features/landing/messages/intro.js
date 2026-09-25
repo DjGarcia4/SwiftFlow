@@ -8,7 +8,7 @@ export default {
       streak: (n) => `racha de ${n} ${n === 1 ? "día" : "días"}`,
       level: (n, title) => `nivel ${n} · ${title}`,
       weakKey: "tu tecla a mejorar:",
-      badge: "Mecanografía en español",
+      badge: "Mecanografía en español e inglés",
       titleTop: "Escribí más rápido.",
       titleBottom: "Entendé por qué te equivocás.",
       intro:
@@ -97,7 +97,12 @@ export default {
         {
           question: "¿Qué distribución de teclado usa?",
           answer:
-            "La española: con Ñ, tildes y los signos de apertura. El teclado en pantalla y los colores por dedo siguen la digitación estándar al tacto.",
+            "La tuya: latinoamericano, español de España, inglés internacional, Dvorak o Colemak. El teclado en pantalla y los colores por dedo siguen la digitación estándar al tacto.",
+        },
+        {
+          question: "¿Puedo practicar en inglés?",
+          answer:
+            "Sí. En el menú de sonido e idioma elegís los textos para practicar, aparte del idioma de la app: palabras, citas, clásicos, dictado y el curso vienen también en inglés.",
         },
         {
           question: "¿Cómo se calcula el WPM?",
@@ -112,7 +117,7 @@ export default {
       ctaTitle: "Tu primera partida tarda 15 segundos",
       ctaText: "Sin registrarte, sin instalar nada. Escribí y mirá qué te dice.",
       ctaButton: "Empezar ahora",
-      tagline: "· mecanografía en español",
+      tagline: "· mecanografía en español e inglés",
       footer: "Pie de página",
       write: "Escribir",
       history: "Historial",
@@ -126,7 +131,7 @@ export default {
       streak: (n) => `${n}-day streak`,
       level: (n, title) => `level ${n} · ${title}`,
       weakKey: "your key to work on:",
-      badge: "Typing practice in Spanish",
+      badge: "Typing practice in Spanish and English",
       titleTop: "Type faster.",
       titleBottom: "Understand why you slip.",
       intro:
@@ -215,7 +220,12 @@ export default {
         {
           question: "Which keyboard layout does it use?",
           answer:
-            "The Spanish one: with Ñ, accents and opening marks. The on-screen keyboard and finger colors follow standard touch-typing fingering.",
+            "Yours: Latin American, Spanish (Spain), US International, Dvorak or Colemak. The on-screen keyboard and finger colors follow standard touch-typing fingering.",
+        },
+        {
+          question: "Can I practice in English?",
+          answer:
+            "Yes. In the sound and language menu you pick the practice texts, apart from the app's language: words, quotes, classics, dictation and the course all come in English too.",
         },
         {
           question: "How is WPM calculated?",
@@ -230,7 +240,7 @@ export default {
       ctaTitle: "Your first run takes 15 seconds",
       ctaText: "No sign-up, nothing to install. Type and see what it tells you.",
       ctaButton: "Start now",
-      tagline: "· typing practice in Spanish",
+      tagline: "· typing practice in Spanish and English",
       footer: "Footer",
       write: "Type",
       history: "History",

@@ -211,6 +211,7 @@
 <script setup>
 import { h } from "vue";
 import {
+  GlobeAltIcon,
   Squares2X2Icon,
   CursorArrowRaysIcon,
   MagnifyingGlassIcon,
@@ -335,6 +336,7 @@ const layoutsText = () => {
 };
 
 const SMALL_CARDS = [
+  { id: "english", icon: GlobeAltIcon },
   { id: "layouts", icon: LanguageIcon },
   { id: "appearance", icon: TextStyleIcon },
   { id: "everyone", icon: UserGroupIcon },

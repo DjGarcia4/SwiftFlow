@@ -4,7 +4,8 @@
 // with a friend's.
 import { t } from "@/shared/i18n";
 
-import { spanishWords } from "@/features/typing-test/content/words";
+import { practiceWords } from "@/features/typing-test/content/words";
+import { practiceLanguage } from "@/features/typing-test/content/practiceLanguage";
 import { randomFrom } from "@/shared/utils/seededRandom";
 
 export const WEEKLY_WORD_COUNT = 40;
@@ -36,11 +37,17 @@ export const weeklyLabel = (key) => {
 };
 
 export const generateWeeklyText = (key, count = WEEKLY_WORD_COUNT) => {
-  const random = randomFrom(`weekly:${key}`);
+  // The same for everyone practicing the same language. Spanish keeps the
+  // seed it had before there was a choice.
+  const bank = practiceWords();
+  const language = practiceLanguage.value;
+  const random = randomFrom(
+    language === "es" ? `weekly:${key}` : `weekly:${language}:${key}`
+  );
   const words = [];
   let last = null;
   while (words.length < count) {
-    const word = spanishWords[Math.floor(random() * spanishWords.length)];
+    const word = bank[Math.floor(random() * bank.length)];
     if (word === last) continue;
     words.push(word);
     last = word;

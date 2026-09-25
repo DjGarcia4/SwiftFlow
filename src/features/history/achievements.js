@@ -8,6 +8,8 @@ import {
 } from "@/features/history/utils/historyStats";
 import { computeChallengeStats } from "@/features/history/dailyChallenges";
 import { classics } from "@/features/typing-test/content/classics";
+import { englishClassics } from "@/features/typing-test/content/en/classics";
+import { LANGUAGE_MODES } from "@/features/typing-test/content/practiceLanguage";
 import { courseProgress, LESSONS } from "@/features/course/course";
 import { hasTamedKey } from "@/features/history/utils/keyTrends";
 import { computeDayConsistency } from "@/features/history/utils/dayConsistency";
@@ -45,6 +47,22 @@ const mostDaysInAMonth = (results) => {
 // `category` groups achievements for a shared color; `icon` is a string key
 // (mapped to an actual icon component in the view) so this file stays
 // framework-agnostic.
+
+// A day with a run in each language: English ones say so, and a text mode
+// that doesn't was played in Spanish
+const hasBilingualDay = (results) => {
+  const days = new Map();
+  for (const r of results) {
+    if (!LANGUAGE_MODES.has(r.mode)) continue;
+    const day = toLocalDayKey(r.date);
+    const languages = days.get(day) ?? new Set();
+    languages.add(r.textLanguage ?? "es");
+    if (languages.size > 1) return true;
+    days.set(day, languages);
+  }
+  return false;
+};
+
 export const ACHIEVEMENTS = [
   // Sessions — sticking with it
   {
@@ -287,6 +305,32 @@ export const ACHIEVEMENTS = [
     category: "course",
     icon: "academic-cap",
     check: (ctx) => ctx.course.complete,
+  },
+
+  // Languages — practicing English too
+  {
+    id: "english_1",
+    category: "languages",
+    icon: "language",
+    check: (ctx) => ctx.englishCount >= 1,
+  },
+  {
+    id: "english_25",
+    category: "languages",
+    icon: "language",
+    check: (ctx) => ctx.englishCount >= 25,
+  },
+  {
+    id: "bilingual_day",
+    category: "languages",
+    icon: "language",
+    check: (ctx) => ctx.bilingualDay,
+  },
+  {
+    id: "english_classics_all",
+    category: "languages",
+    icon: "book",
+    check: (ctx) => ctx.englishClassicsRead >= englishClassics.length,
   },
 
   // Combo — longest run of correct characters in a single session
@@ -665,6 +709,16 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
       (r) => r.mode === "words" && r.modeValue >= 100 && r.punctuation
     ),
     focusCount: results.filter((r) => r.focus).length,
+    englishCount: results.filter((r) => r.textLanguage === "en").length,
+    bilingualDay: hasBilingualDay(results),
+    englishClassicsRead: new Set(
+      results
+        .filter(
+          (r) =>
+            r.mode === "classics" && englishClassics.some((c) => c.id === r.modeValue)
+        )
+        .map((r) => r.modeValue)
+    ).size,
     mostDaysInAMonth: mostDaysInAMonth(results),
     course: courseProgress(results),
     hasTamedKey: hasTamedKey(results),

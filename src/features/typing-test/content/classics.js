@@ -4,6 +4,9 @@
 // every character can be typed on a keyboard: the dialogue dash (—) is a
 // hyphen, and there are no «» quotes. Spelling follows modern editions.
 
+import { englishClassics } from "./en/classics";
+import { inPracticeLanguage } from "./practiceLanguage";
+
 export const classics = [
   {
     id: "quijote-1",
@@ -79,14 +82,19 @@ export const classics = [
   },
 ];
 
-export const classicById = (id) => classics.find((passage) => passage.id === id) ?? null;
+const ALL_CLASSICS = [...classics, ...englishClassics];
 
-// Picks a passage, never the one just typed
+// Any language's: a result names its passage whichever is practiced now
+export const classicById = (id) =>
+  ALL_CLASSICS.find((passage) => passage.id === id) ?? null;
+
+// Picks a passage in the language being practiced, never the one just typed
 export const getRandomClassic = (lastId, random = Math.random) => {
-  if (classics.length === 1) return classics[0];
+  const bank = inPracticeLanguage({ es: classics, en: englishClassics });
+  if (bank.length === 1) return bank[0];
   let passage;
   do {
-    passage = classics[Math.floor(random() * classics.length)];
+    passage = bank[Math.floor(random() * bank.length)];
   } while (passage.id === lastId);
   return passage;
 };

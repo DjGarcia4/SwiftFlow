@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { setUpShortWordsTest, typeAll } from "./helpers";
+import { setUpShortWordsTest, typeAll, referenceText, restartHint } from "./helpers";
 
 // The interface in English: a browser in English gets it on its own, and
 // anyone can switch from the sound and language menu
@@ -40,14 +40,20 @@ test("the language can be switched from the menu, and stays", async ({ page }) =
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "es");
   await page.getByRole("button", { name: /Sonido e idioma/ }).click();
-  await page.getByRole("radio", { name: "English" }).click();
+  await page
+    .getByRole("radiogroup", { name: "Idioma" })
+    .getByRole("radio", { name: "English" })
+    .click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("textbox", { name: "Type the text" })).toBeAttached();
 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.getByRole("button", { name: /Sound and language/ }).click();
-  await page.getByRole("radio", { name: "Español" }).click();
+  await page
+    .getByRole("radiogroup", { name: "Language" })
+    .getByRole("radio", { name: "Español" })
+    .click();
   await expect(page.getByRole("textbox", { name: "Escribí el texto" })).toBeAttached();
 });
 
@@ -132,4 +138,31 @@ test.describe("the landing in English", () => {
     await expect(page.getByText("SwiftFlow in English")).toBeVisible();
     await expect(page.getByText("Qué es SwiftFlow")).toHaveCount(0);
   });
+});
+
+test("the texts can be practiced in English with the app in Spanish", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await setUpShortWordsTest(page);
+  await page.getByRole("button", { name: /Sonido e idioma/ }).click();
+  await page
+    .getByRole("radiogroup", { name: "Textos para practicar" })
+    .getByRole("radio", { name: "English" })
+    .click();
+  await page.keyboard.press("Escape");
+  // The app stays in Spanish; the text doesn't
+  await expect(page.getByRole("textbox", { name: "Escribí el texto" })).toBeAttached();
+  await expect.poll(async () => (await referenceText(page)).split(" ").length).toBe(10);
+  const text = await referenceText(page);
+  expect(text).not.toMatch(/[ñáéíóú¿¡]/);
+
+  await page.reload();
+  expect(await referenceText(page)).not.toMatch(/[ñáéíóú¿¡]/);
+  await typeAll(page);
+  await expect(restartHint(page)).toBeVisible();
+  const saved = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem("swiftflow_results"))
+  );
+  expect(saved[0].textLanguage).toBe("en");
 });

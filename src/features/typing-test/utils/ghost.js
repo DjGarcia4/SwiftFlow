@@ -20,13 +20,16 @@ const GHOST_MODES = new Set([
 // plus whether punctuation was on, since that changes the text itself.
 // Null for a kind that can't have one (and for code on "Todos", which
 // isn't one language).
-export const ghostKey = ({ mode, modeValue, punctuation }) => {
+// A language other than Spanish goes at the end, so the keys from before
+// there was a choice still find their ghosts.
+export const ghostKey = ({ mode, modeValue, punctuation, language }) => {
   if (!GHOST_MODES.has(mode)) return null;
   if (mode === "code" && !modeValue) return null;
   // Code and the weekly text are typed as they come, whatever the setting
   const punct =
     mode === "code" || mode === "weekly" || mode === "custom" || punctuation ? "p" : "-";
-  return `${mode}:${modeValue ?? ""}:${punct}`;
+  const key = `${mode}:${modeValue ?? ""}:${punct}`;
+  return language ? `${key}:${language}` : key;
 };
 
 // samples: [[activeMs, inputLength], ...] in time order, one per change.

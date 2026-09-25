@@ -3,6 +3,7 @@ export default {
   es: {
     close: "Cerrar",
     language: "Idioma",
+    practiceLanguage: "Textos para practicar",
     level: (n) => `Nivel ${n}`,
     levelUp: (n) => `¡Nivel ${n}!`,
     maxLevel: "nivel máximo",
@@ -68,6 +69,7 @@ export default {
   en: {
     close: "Close",
     language: "Language",
+    practiceLanguage: "Practice texts",
     level: (n) => `Level ${n}`,
     levelUp: (n) => `Level ${n}!`,
     maxLevel: "max level",

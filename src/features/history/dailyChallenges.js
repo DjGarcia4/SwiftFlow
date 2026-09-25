@@ -8,6 +8,7 @@ import {
 import { isPerfectRound } from "@/features/history/utils/perfectRounds";
 import { hashString, seededRandom } from "@/shared/utils/seededRandom";
 import { t } from "@/shared/i18n";
+import { LANGUAGE_MODES } from "@/features/typing-test/content/practiceLanguage";
 
 // Three small goals a day, derived entirely from the history the same way
 // the achievements are: nothing extra to store, and nothing to get out of
@@ -198,6 +199,31 @@ const TEMPLATES = [
       title: t("history.challenges.focus"),
       target: 1,
       measure: (day) => (day.some((r) => r.focus) ? 1 : 0),
+    }),
+  },
+  // Practicing English (September 2026)
+  {
+    kind: "english",
+    icon: "language",
+    since: since(2026, 9, 26),
+    build: () => ({
+      title: t("history.challenges.english"),
+      target: 1,
+      measure: (day) => (day.some((r) => r.textLanguage === "en") ? 1 : 0),
+    }),
+  },
+  {
+    kind: "bilingual",
+    icon: "language",
+    since: since(2026, 9, 26),
+    build: () => ({
+      title: t("history.challenges.bilingual"),
+      target: 2,
+      // One for each language played in a text mode
+      measure: (day) =>
+        new Set(
+          day.filter((r) => LANGUAGE_MODES.has(r.mode)).map((r) => r.textLanguage ?? "es")
+        ).size,
     }),
   },
 ];

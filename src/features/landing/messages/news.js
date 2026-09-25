@@ -7,6 +7,10 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        practiceEnglish: {
+          title: "Practicá en inglés",
+          text: "Palabras, citas, textos, clásicos de Austen, Dickens y Poe, dictado con voz en inglés y el curso: elegí el idioma de los textos aparte del de la app. Con logros y retos nuevos.",
+        },
         english: {
           title: "SwiftFlow en inglés",
           text: "Toda la interfaz también en inglés: la app, el historial, el curso, tu resumen y esta página. Se cambia desde el menú de sonido e idioma.",
@@ -122,6 +126,10 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        practiceEnglish: {
+          title: "Practice in English",
+          text: "Words, quotes, texts, classics by Austen, Dickens and Poe, dictation with an English voice, and the course: pick the texts' language apart from the app's. With new achievements and challenges.",
+        },
         english: {
           title: "SwiftFlow in English",
           text: "The whole interface in English too: the app, the history, the course, your summary and this page. Switch it from the sound and language menu.",

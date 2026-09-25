@@ -84,9 +84,13 @@ teclado.
 - Exportar e importar el historial como archivo JSON
 
 ### En inglés también
+
 - Toda la interfaz en español o en inglés: la app, el historial, el curso, el resumen y la
   landing. Arranca en el idioma del navegador y se cambia desde el menú de sonido e idioma
-- Los textos para practicar siguen en español por ahora
+- Los textos para practicar también, aparte de la interfaz: palabras, citas, párrafos,
+  clásicos de dominio público (Austen, Dickens, Melville, Poe, Shakespeare…), dictado con
+  voz en inglés, el reto semanal y el curso. Cada partida guarda en qué idioma se jugó, y
+  hay logros y retos diarios para practicar en los dos
 
 Todo se guarda en el navegador (localStorage). No hay cuenta, servidor ni telemetría.
 Funciona instalada como PWA y sin conexión.
@@ -156,14 +160,19 @@ Tres convenciones que conviene respetar al tocar el código:
 
 ## 🎨 Agregar contenido
 
-**Palabras**: sumalas a `spanishWords` en `src/features/typing-test/content/words.js`.
+**Palabras**: sumalas a `spanishWords` en `src/features/typing-test/content/words.js`
+(las de inglés, a `englishWords` en `content/en/words.js`).
 
-**Citas**: un objeto `{ text, author }` en `content/quotes.js`.
+**Citas**: un objeto `{ text, author }` en `content/quotes.js` (o `content/en/quotes.js`).
+
+**Clásicos**: un objeto `{ id, author, work, text }` en `content/classics.js` (o
+`content/en/classics.js`), solo de autores en dominio público en todo el mundo.
 
 **Código**: un objeto `{ language, code }` en `content/code.js`. El lenguaje aparece solo
 en la barra de modos — la lista se deriva de los fragmentos que haya.
 
-**Párrafos**: un string más en `content/paragraphs.js`.
+**Párrafos**: un string más en `content/paragraphs.js` (o `content/en/paragraphs.js`).
+Qué banco se usa lo decide `content/practiceLanguage.js`.
 
 **Un logro**: un objeto `{ id, category, icon, title, description, check }` en
 `achievements.js`. El `check` recibe un contexto ya calculado desde el historial completo,

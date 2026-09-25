@@ -188,9 +188,15 @@ export default {
       voiceSpeed: "Velocidad de la voz",
       rates: { slow: "Lenta", normal: "Normal", fast: "Rápida" },
       sentenceOf: (n, total) => `Frase ${n} de ${total}`,
-      lookingForVoice: "Buscando una voz en español…",
-      noVoice:
-        "Tu navegador no tiene una voz en español. Probá con otro navegador, o instalá una voz en español desde los ajustes de tu sistema.",
+      // By the language being practiced
+      lookingForVoice: {
+        es: "Buscando una voz en español…",
+        en: "Buscando una voz en inglés…",
+      },
+      noVoice: {
+        es: "Tu navegador no tiene una voz en español. Probá con otro navegador, o instalá una voz en español desde los ajustes de tu sistema.",
+        en: "Tu navegador no tiene una voz en inglés. Probá con otro navegador, o instalá una voz en inglés desde los ajustes de tu sistema.",
+      },
     },
     keyboard: {
       space: "espacio",
@@ -266,6 +272,8 @@ export default {
       allSmooth: "Ninguna palabra se te trabó: ritmo parejo de punta a punta.",
     },
     customText: {
+      tooMany: (n) => `Ya tenés ${n} textos: borrá alguno para agregar otro.`,
+      noRoom: "No hay espacio para guardarlo en este navegador.",
       new: "Nuevo texto",
       edit: "Editar texto",
       intro:
@@ -500,9 +508,14 @@ export default {
       voiceSpeed: "Voice speed",
       rates: { slow: "Slow", normal: "Normal", fast: "Fast" },
       sentenceOf: (n, total) => `Sentence ${n} of ${total}`,
-      lookingForVoice: "Looking for a Spanish voice…",
-      noVoice:
-        "Your browser has no Spanish voice. Try another browser, or install a Spanish voice from your system settings.",
+      lookingForVoice: {
+        es: "Looking for a Spanish voice…",
+        en: "Looking for an English voice…",
+      },
+      noVoice: {
+        es: "Your browser has no Spanish voice. Try another browser, or install a Spanish voice from your system settings.",
+        en: "Your browser has no English voice. Try another browser, or install an English voice from your system settings.",
+      },
     },
     keyboard: {
       space: "space",
@@ -570,6 +583,8 @@ export default {
       allSmooth: "No word held you up: an even pace from start to finish.",
     },
     customText: {
+      tooMany: (n) => `You already have ${n} texts: delete one to add another.`,
+      noRoom: "There's no room to save it in this browser.",
       new: "New text",
       edit: "Edit text",
       intro:

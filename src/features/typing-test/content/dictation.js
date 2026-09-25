@@ -1,9 +1,12 @@
 // "Dictado": sentences read out loud, to be typed without seeing them. They
-// come from the paragraphs bank, cut at their periods. A voice doesn't say
-// commas or capitals, so neither is asked for -- but it does say "está" and
-// "esta" differently, so the accents and the ñ stay: half the exercise is
-// spelling what you hear.
+// come from the paragraphs bank of the language being practiced, cut at
+// their periods. A voice doesn't say commas or capitals, so neither is
+// asked for -- but it does say "está" and "esta" differently, so the
+// accents and the ñ stay (and English keeps its "don't"): half the exercise
+// is spelling what you hear.
 import { paragraphs } from "./paragraphs";
+import { englishParagraphs } from "./en/paragraphs";
+import { inPracticeLanguage } from "./practiceLanguage";
 
 export const DICTATION_SENTENCE_COUNTS = [1, 3, 5];
 
@@ -15,13 +18,15 @@ const MAX_WORDS = 16;
 export const toDictation = (sentence) =>
   sentence
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/[^\p{L}\p{N}\s']/gu, " ")
+    // An apostrophe only inside a word: "don't" stays, 'quoted' doesn't
+    .replace(/(?<!\p{L})'|'(?!\p{L})/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 
-export const dictationSentences = [
+const sentencesOf = (bank) => [
   ...new Set(
-    paragraphs
+    bank
       .flatMap((paragraph) => paragraph.split(/(?<=[.!?])\s+/))
       .filter((sentence) => {
         const words = sentence.split(/\s+/).length;
@@ -31,10 +36,13 @@ export const dictationSentences = [
   ),
 ];
 
+export const dictationSentences = sentencesOf(paragraphs);
+const englishSentences = sentencesOf(englishParagraphs);
+
 // `count` different sentences, joined into one text, with where each one
 // starts in it
 export const buildDictation = (count, random = Math.random) => {
-  const pool = [...dictationSentences];
+  const pool = [...inPracticeLanguage({ es: dictationSentences, en: englishSentences })];
   const sentences = [];
   for (let i = 0; i < count && pool.length; i++) {
     sentences.push(pool.splice(Math.floor(random() * pool.length), 1)[0]);

@@ -26,17 +26,30 @@
         v-if="open"
         class="absolute right-0 top-full mt-2 w-64 origin-top-right bg-paper-white rounded-card border-2 border-faded-gray p-3 shadow-lg z-50"
       >
-        <!-- The app's language: the interface, not what's practiced -->
-        <div
-          class="mb-2 flex items-center justify-between gap-3 border-b-2 border-faded-gray/40 pb-3"
-        >
-          <span class="text-xs font-bold text-charcoal">{{ t("shared.language") }}</span>
-          <SegmentedControl
-            :label="t('shared.language')"
-            :options="LANGUAGE_OPTIONS"
-            :model-value="locale"
-            @select="setLocale"
-          />
+        <!-- The app's language, and apart from it, the texts' -->
+        <div class="mb-2 space-y-2 border-b-2 border-faded-gray/40 pb-3">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-xs font-bold text-charcoal">{{
+              t("shared.language")
+            }}</span>
+            <SegmentedControl
+              :label="t('shared.language')"
+              :options="LANGUAGE_OPTIONS"
+              :model-value="locale"
+              @select="setLocale"
+            />
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-xs font-bold text-charcoal">
+              {{ t("shared.practiceLanguage") }}
+            </span>
+            <SegmentedControl
+              :label="t('shared.practiceLanguage')"
+              :options="LANGUAGE_OPTIONS"
+              :model-value="configStore.textLanguage"
+              @select="configStore.setTextLanguage"
+            />
+          </div>
         </div>
         <div
           v-for="toggleItem in toggles"
@@ -77,8 +90,10 @@ import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { t, locale, setLocale, LOCALES } from "@/shared/i18n";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/vue/24/outline";
 import { useSoundStore } from "@/shared/stores/sound";
+import { useConfigStore } from "@/features/typing-test/store";
 
 const soundStore = useSoundStore();
+const configStore = useConfigStore();
 const open = ref(false);
 const rootEl = ref(null);
 

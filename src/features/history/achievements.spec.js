@@ -225,6 +225,30 @@ describe("computeAchievements", () => {
     expect(isUnlocked(computeAchievements(focused.slice(1)), "focus_10")).toBe(false);
     expect(isUnlocked(computeAchievements(focused), "focus_10")).toBe(true);
 
+    // English texts: runs in them, and a day in both languages
+    const day = "2026-09-26T12:00:00";
+    const inEnglish = Array.from({ length: 25 }, () => ({
+      mode: "words",
+      wpm: 40,
+      accuracy: 97,
+      date: day,
+      textLanguage: "en",
+    }));
+    expect(isUnlocked(computeAchievements(inEnglish.slice(0, 1)), "english_1")).toBe(
+      true
+    );
+    expect(isUnlocked(computeAchievements(inEnglish.slice(1)), "english_25")).toBe(false);
+    expect(isUnlocked(computeAchievements(inEnglish), "english_25")).toBe(true);
+    expect(isUnlocked(computeAchievements(inEnglish), "bilingual_day")).toBe(false);
+    // Code has no language: it doesn't make the day bilingual
+    const withCode = [...inEnglish, { mode: "code", wpm: 40, accuracy: 97, date: day }];
+    expect(isUnlocked(computeAchievements(withCode), "bilingual_day")).toBe(false);
+    const withSpanish = [
+      ...inEnglish,
+      { mode: "time", wpm: 40, accuracy: 97, date: day },
+    ];
+    expect(isUnlocked(computeAchievements(withSpanish), "bilingual_day")).toBe(true);
+
     const corrected = Array.from({ length: 5 }, () => ({
       mode: "time",
       wpm: 40,

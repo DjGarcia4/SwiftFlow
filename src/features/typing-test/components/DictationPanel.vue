@@ -37,10 +37,10 @@
       </span>
     </template>
     <p v-else-if="voiceState === 'loading'" class="text-sm font-bold text-pencil-gray">
-      {{ t("typing.dictation.lookingForVoice") }}
+      {{ t(`typing.dictation.lookingForVoice.${configStore.textLanguage}`) }}
     </p>
     <p v-else class="text-sm font-bold text-danger" role="alert">
-      {{ t("typing.dictation.noVoice") }}
+      {{ t(`typing.dictation.noVoice.${configStore.textLanguage}`) }}
     </p>
   </div>
 </template>
@@ -53,7 +53,7 @@ import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import { DICTATION_RATES } from "@/features/typing-test/configRepository";
 import { sentenceIndexAt } from "@/features/typing-test/content/dictation";
-import { loadVoices, pickSpanishVoice, speak, stopSpeaking } from "@/shared/utils/speech";
+import { loadVoices, pickVoice, speak, stopSpeaking } from "@/shared/utils/speech";
 
 const configStore = useConfigStore();
 
@@ -136,10 +136,21 @@ const onKeydown = (event) => {
   listen();
 };
 
+// A voice for the language being practiced; again if that changes
+const findVoice = async () => {
+  voiceState.value = "loading";
+  voice.value = pickVoice(
+    configStore.textLanguage,
+    await loadVoices(),
+    navigator.languages ?? []
+  );
+  voiceState.value = voice.value ? "ready" : "missing";
+};
+watch(() => configStore.textLanguage, findVoice);
+
 onMounted(async () => {
   document.addEventListener("keydown", onKeydown, true);
-  voice.value = pickSpanishVoice(await loadVoices(), navigator.languages ?? []);
-  voiceState.value = voice.value ? "ready" : "missing";
+  await findVoice();
   if (voice.value && listenedThisVisit) listen();
 });
 

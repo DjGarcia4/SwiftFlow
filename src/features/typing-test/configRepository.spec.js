@@ -28,6 +28,7 @@ describe("loadConfig", () => {
       drillWords: [],
       fingerColors: false,
       keyboardLayout: null,
+      textLanguage: null,
       strictMode: null,
       minAccuracy: null,
       dictationSentences: 3,
@@ -57,6 +58,7 @@ describe("loadConfig", () => {
       drillWords: [],
       fingerColors: false,
       keyboardLayout: null,
+      textLanguage: null,
       strictMode: null,
       minAccuracy: null,
       dictationSentences: 3,
@@ -82,6 +84,7 @@ describe("sanitizeConfig", () => {
       drillWords: ["desarrollo"],
       fingerColors: true,
       keyboardLayout: "es",
+      textLanguage: "en",
       strictMode: "sudden-death",
       minAccuracy: 95,
       dictationSentences: 5,
@@ -109,6 +112,11 @@ describe("sanitizeConfig", () => {
       dictationRate: "normal",
       lessonId: null,
     });
+  });
+
+  it("forgets a practice language it doesn't know, so it follows the app's", () => {
+    const config = { type: "time", textLanguage: "fr" };
+    expect(sanitizeConfig(config, options).textLanguage).toBeNull();
   });
 
   it("forgets a keyboard layout it doesn't know, so it's guessed again", () => {

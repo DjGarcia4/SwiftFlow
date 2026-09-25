@@ -34,6 +34,34 @@ export const pickSpanishVoice = (voices, languages = []) => {
   return [...spanish].sort((a, b) => score(b) - score(a))[0];
 };
 
+// The English voice closest to how you speak: your own variant if you
+// speak English (en-GB for en-GB), else the US one, else Britain's, else
+// any English at all
+export const pickEnglishVoice = (voices, languages = []) => {
+  const english = voices.filter((voice) => /^en([-_]|$)/i.test(voice.lang));
+  if (!english.length) return null;
+  const normalize = (lang) => lang.replace("_", "-").toLowerCase();
+  const wanted = normalize(languages.find((lang) => /^en-/i.test(lang)) ?? "en-us");
+
+  const score = (voice) => {
+    const lang = normalize(voice.lang);
+    let points = 0;
+    if (lang === wanted) points += 100;
+    else if (lang === "en-us") points += 50;
+    else if (lang === "en-gb") points += 20;
+    if (voice.localService) points += 5;
+    if (voice.default) points += 1;
+    return points;
+  };
+  return [...english].sort((a, b) => score(b) - score(a))[0];
+};
+
+// The voice for a language being practiced ("es" or "en")
+export const pickVoice = (language, voices, languages = []) =>
+  language === "en"
+    ? pickEnglishVoice(voices, languages)
+    : pickSpanishVoice(voices, languages);
+
 // The voices can arrive a moment after the page loads
 export const loadVoices = () =>
   new Promise((resolve) => {

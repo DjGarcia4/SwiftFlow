@@ -1,6 +1,5 @@
 // Landing: what it does (the feature grid) and the demos it shows, in both
-// languages. The practice itself is still in Spanish, so the samples of
-// what gets typed stay Spanish in both.
+// languages. The samples of what gets typed follow the page's language.
 const MODE_COUNT_ES = { 9: "Nueve", 10: "Diez", 11: "Once", 12: "Doce" };
 const MODE_COUNT_EN = { 9: "Nine", 10: "Ten", 11: "Eleven", 12: "Twelve" };
 
@@ -15,7 +14,7 @@ export default {
       words: { name: "Palabras", detail: "con ¿? y ¡!" },
       numbers: { name: "Números", detail: "decimales, horas, miles" },
       quote: { name: "Cita", detail: "frases con autor" },
-      classics: { name: "Clásicos", detail: "Cervantes, Bécquer, Martí…" },
+      classics: { name: "Clásicos", detail: "Cervantes, Bécquer, Austen, Poe…" },
       dictation: { name: "Dictado", detail: "escuchás y escribís" },
       code: { name: "Código", detail: (n) => `${n} lenguajes` },
       zen: { name: "Zen", detail: "sin límite" },
@@ -61,6 +60,10 @@ export default {
       ],
     },
     small: {
+      english: {
+        title: "En español o en inglés",
+        text: "Elegí en qué idioma practicás, aparte del de la app: palabras, citas, clásicos, dictado y el curso.",
+      },
       layouts: {
         title: "Tu teclado",
         text: (names, last) =>
@@ -126,10 +129,10 @@ export default {
       title: (n) => `${MODE_COUNT_EN[n] ?? n} ways to practice`,
       text: "From 15 seconds to no limit, with your own text or everyone's.",
       time: { name: "Time", detail: "15 to 120 s" },
-      words: { name: "Words", detail: "with ¿? and ¡!" },
+      words: { name: "Words", detail: "Spanish or English" },
       numbers: { name: "Numbers", detail: "decimals, times, thousands" },
       quote: { name: "Quote", detail: "sentences with an author" },
-      classics: { name: "Classics", detail: "Cervantes, Bécquer, Martí…" },
+      classics: { name: "Classics", detail: "Austen, Dickens, Poe, Cervantes…" },
       dictation: { name: "Dictation", detail: "listen and type" },
       code: { name: "Code", detail: (n) => `${n} languages` },
       zen: { name: "Zen", detail: "no limit" },
@@ -175,6 +178,10 @@ export default {
       ],
     },
     small: {
+      english: {
+        title: "In Spanish or English",
+        text: "Pick the language you practice in, apart from the app's: words, quotes, classics, dictation and the course.",
+      },
       layouts: {
         title: "Your keyboard",
         text: (names, last) =>

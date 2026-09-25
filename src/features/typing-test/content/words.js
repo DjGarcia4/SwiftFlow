@@ -1,6 +1,9 @@
 // Manually curated list of common Spanish words, used to build the "words"
 // mode text on the fly (the same approach monkeytype uses: pick random
 // words from a frequency list instead of reusing a fixed paragraph).
+import { englishWords } from "./en/words";
+import { inPracticeLanguage } from "./practiceLanguage";
+
 export const spanishWords = [
   // Function words / articles / prepositions / conjunctions
   "el",
@@ -1369,16 +1372,22 @@ export const spanishWords = [
   "vehículo",
 ];
 
+// The words of the language being practiced (see practiceLanguage.js)
+export const practiceWords = () =>
+  inPracticeLanguage({ es: spanishWords, en: englishWords });
+
 // Builds a random "words" mode text: `count` words picked from the list
-// above, joined with spaces, never repeating the same word twice in a row.
+// for the language being practiced, joined with spaces, never repeating the
+// same word twice in a row.
 export const generateRandomWords = (count) => {
+  const bank = practiceWords();
   const result = [];
   let lastWord = null;
 
   for (let i = 0; i < count; i++) {
     let word;
     do {
-      word = spanishWords[Math.floor(Math.random() * spanishWords.length)];
+      word = bank[Math.floor(Math.random() * bank.length)];
     } while (word === lastWord);
 
     result.push(word);

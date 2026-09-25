@@ -115,7 +115,7 @@ describe("buildDailyChallenges", () => {
 
 describe("challenges added later", () => {
   const LAUNCH = new Date(2026, 8, 26, 12);
-  const NEW_KINDS = ["sudden-death", "min-accuracy", "focus"];
+  const NEW_KINDS = ["sudden-death", "min-accuracy", "focus", "english", "bilingual"];
   const daysFrom = (start, count, step) =>
     Array.from(
       { length: count },
@@ -152,12 +152,13 @@ describe("challenges added later", () => {
       "sudden-death": { strict: "sudden-death" },
       "min-accuracy": { minAccuracy: 98 },
       focus: { focus: true },
+      english: { textLanguage: "en" },
+      bilingual: [{ mode: "time" }, { mode: "time", textLanguage: "en" }],
     };
     for (const kind of NEW_KINDS) {
       const day = seen.get(kind);
-      const challenge = buildDailyChallenges([session(day, doneBy[kind])], day).find(
-        (c) => c.kind === kind
-      );
+      const played = [doneBy[kind]].flat().map((extra) => session(day, extra));
+      const challenge = buildDailyChallenges(played, day).find((c) => c.kind === kind);
       expect(challenge.completed, kind).toBe(true);
     }
   });

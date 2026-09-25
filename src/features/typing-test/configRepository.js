@@ -5,6 +5,7 @@ import {
   normalizeDrillWords,
 } from "@/features/typing-test/content/drill";
 import { isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
+import { isPracticeLanguage } from "@/features/typing-test/content/practiceLanguage";
 import { isStrictMode, isMinAccuracy } from "@/features/typing-test/utils/strictModes";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
 import { lessonById } from "@/features/course/course";
@@ -32,6 +33,7 @@ const DEFAULTS = {
   drillWords: [], // non-empty: the drill is on these words, not letters
   fingerColors: false,
   keyboardLayout: null, // null = guessed from the browser's language
+  textLanguage: null, // null = the interface's
   strictMode: null, // "sudden-death" | "must-correct"
   minAccuracy: null, // 90 | 95 | 98
   dictationSentences: 3,
@@ -88,6 +90,7 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
   drillWords: normalizeDrillWords(config.drillWords),
   fingerColors: config.fingerColors === true,
   keyboardLayout: isLayoutId(config.keyboardLayout) ? config.keyboardLayout : null,
+  textLanguage: isPracticeLanguage(config.textLanguage) ? config.textLanguage : null,
   strictMode: isStrictMode(config.strictMode) ? config.strictMode : null,
   minAccuracy: isMinAccuracy(config.minAccuracy) ? config.minAccuracy : null,
   dictationSentences: DICTATION_SENTENCE_COUNTS.includes(config.dictationSentences)

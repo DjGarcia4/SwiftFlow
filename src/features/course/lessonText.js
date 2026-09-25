@@ -1,9 +1,12 @@
 // What each lesson has you type. Only keys already taught ever show up, and
 // the lesson's own keys the most: at first as short groups ("fjf jjf"),
-// and as soon as there are letters enough for it, as real Spanish words.
-import { spanishWords } from "@/features/typing-test/content/words";
+// and as soon as there are letters enough for it, as real words of the
+// language being practiced.
+import { practiceWords } from "@/features/typing-test/content/words";
+import { englishAccentedWords } from "@/features/typing-test/content/en/words";
 import { punctuateWords } from "@/features/typing-test/content/punctuate";
-import { paragraphs } from "@/features/typing-test/content/paragraphs";
+import { practiceParagraphs } from "@/features/typing-test/content/paragraphs";
+import { inPracticeLanguage } from "@/features/typing-test/content/practiceLanguage";
 import { knownKeys, lessonKeys } from "./course";
 
 export const LESSON_GROUPS = 20;
@@ -51,7 +54,7 @@ const lettersOnly = (keys) => keys.filter((key) => /^\p{L}$/u.test(key));
 // Words written only with these letters (plain ones: accents come later)
 const wordsWith = (letters) => {
   const allowed = new Set(letters);
-  return spanishWords.filter(
+  return practiceWords().filter(
     (word) => !hasAccent(word) && [...word].every((char) => allowed.has(char))
   );
 };
@@ -94,8 +97,13 @@ const keysText = (lesson, layout, random) => {
   return withSigns(groups, random, all).join(" ");
 };
 
-const plainWords = spanishWords.filter((word) => !hasAccent(word));
-const accentedWords = spanishWords.filter(hasAccent);
+const plainWords = () => practiceWords().filter((word) => !hasAccent(word));
+// English has few: the ones it borrowed with their accents on
+const accentedWords = () =>
+  inPracticeLanguage({
+    es: practiceWords().filter(hasAccent),
+    en: englishAccentedWords,
+  });
 
 const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
 
@@ -112,7 +120,7 @@ const numbersText = (lesson, random) => {
 
 // Real text from the paragraphs bank, a few sentences' worth
 const finalText = (random) => {
-  const sentences = paragraphs
+  const sentences = practiceParagraphs()
     .flatMap((paragraph) => paragraph.split(/(?<=[.!?])\s+/))
     .filter((sentence) => {
       const words = sentence.split(" ").length;
@@ -130,18 +138,18 @@ export const generateLessonText = (lesson, layout, random = Math.random) => {
     case "shift":
       // Half the words capitalized, so Shift comes up constantly
       return sequence(LESSON_GROUPS, () => {
-        const word = pick(random, plainWords);
+        const word = pick(random, plainWords());
         return random() < 0.5 ? capitalize(word) : word;
       }).join(" ");
     case "accents":
       return sequence(LESSON_GROUPS, () =>
-        random() < 0.7 ? pick(random, accentedWords) : pick(random, plainWords)
+        random() < 0.7 ? pick(random, accentedWords()) : pick(random, plainWords())
       ).join(" ");
     case "numbers":
       return numbersText(lesson, random);
     case "signs":
       return punctuateWords(
-        sequence(LESSON_GROUPS, () => pick(random, spanishWords)).join(" "),
+        sequence(LESSON_GROUPS, () => pick(random, practiceWords())).join(" "),
         random
       );
     default:

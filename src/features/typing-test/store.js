@@ -23,6 +23,11 @@ import {
   isTransposition,
   isUsableInterval,
 } from "@/features/typing-test/utils/typingMetrics";
+import {
+  isPracticeLanguage,
+  setPracticeLanguage,
+} from "@/features/typing-test/content/practiceLanguage";
+import { t, locale } from "@/shared/i18n";
 import { formatReferenceText } from "@/features/typing-test/utils/textFormat";
 import { guessLayoutId, isLayoutId } from "@/features/typing-test/utils/keyboardLayouts";
 import {
@@ -105,6 +110,11 @@ export const useConfigStore = defineStore("config", () => {
       chosenKeyboardLayout.value ??
       guessLayoutId(typeof navigator === "undefined" ? [] : navigator.languages)
   );
+  // The language the texts to practice come in: the one picked, or else
+  // the interface's
+  const chosenTextLanguage = ref(savedConfig.textLanguage);
+  const textLanguage = computed(() => chosenTextLanguage.value ?? locale.value);
+  watch(textLanguage, setPracticeLanguage, { immediate: true });
   // The pacer's speed in wpm, or null for "Auto" (a notch above your
   // recent average)
   const pacerWpm = ref(savedConfig.pacerWpm);
@@ -147,6 +157,7 @@ export const useConfigStore = defineStore("config", () => {
       showKeyboard: showKeyboard.value,
       fingerColors: fingerColors.value,
       keyboardLayout: chosenKeyboardLayout.value,
+      textLanguage: chosenTextLanguage.value,
       pacerWpm: pacerWpm.value,
       blindMode: blindMode.value,
       strictMode: strictMode.value,
@@ -184,7 +195,7 @@ export const useConfigStore = defineStore("config", () => {
     const problem = validateCustomText({ name, text });
     if (problem) return problem;
     if (!id && customTexts.value.length >= MAX_CUSTOM_TEXTS) {
-      return `Ya tenés ${MAX_CUSTOM_TEXTS} textos: borrá alguno para agregar otro.`;
+      return t("typing.customText.tooMany", MAX_CUSTOM_TEXTS);
     }
 
     const entry = {
@@ -196,7 +207,7 @@ export const useConfigStore = defineStore("config", () => {
       ? customTexts.value.map((existing) => (existing.id === id ? entry : existing))
       : [...customTexts.value, entry];
     if (!saveCustomTexts(next)) {
-      return "No hay espacio para guardarlo en este navegador.";
+      return t("typing.customText.noRoom");
     }
     customTexts.value = next;
     selectedCustomTextId.value = entry.id;
@@ -233,6 +244,12 @@ export const useConfigStore = defineStore("config", () => {
   const setKeyboardLayout = (id) => {
     if (!isLayoutId(id)) return;
     chosenKeyboardLayout.value = id;
+    persistConfig();
+  };
+
+  const setTextLanguage = (id) => {
+    if (!isPracticeLanguage(id)) return;
+    chosenTextLanguage.value = id;
     persistConfig();
   };
 
@@ -904,6 +921,8 @@ export const useConfigStore = defineStore("config", () => {
     fingerColors,
     toggleFingerColors,
     keyboardLayout,
+    textLanguage,
+    setTextLanguage,
     setKeyboardLayout,
     contentTypes,
     times,

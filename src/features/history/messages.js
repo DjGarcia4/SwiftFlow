@@ -218,6 +218,8 @@ export default {
       suddenDeath: "Completá una partida con muerte súbita",
       minAccuracy: "Completá una partida exigiéndote un 95% de precisión o más",
       focus: "Completá una partida en modo foco",
+      english: "Completá una partida con textos en inglés",
+      bilingual: "Jugá una partida en español y otra en inglés",
     },
     tiers: {
       1: "Novato",
@@ -537,6 +539,22 @@ export default {
       course_complete: {
         title: "Sin mirar",
         description: "Pasá todas las lecciones del curso",
+      },
+      english_1: {
+        title: "Hello, world",
+        description: "Completá tu primera partida con textos en inglés",
+      },
+      english_25: {
+        title: "Fluent",
+        description: "Completá 25 partidas con textos en inglés",
+      },
+      bilingual_day: {
+        title: "Bilingüe",
+        description: "Jugá en español y en inglés el mismo día",
+      },
+      english_classics_all: {
+        title: "Biblioteca inglesa",
+        description: "Leé todos los clásicos en inglés",
       },
       combo_50: {
         title: "Combo x50",
@@ -897,6 +915,8 @@ export default {
       suddenDeath: "Finish a run in sudden death",
       minAccuracy: "Finish a run holding yourself to 95% accuracy or more",
       focus: "Finish a run in focus mode",
+      english: "Finish a run with English texts",
+      bilingual: "Play one run in Spanish and another in English",
     },
     tiers: {
       1: "Rookie",
@@ -1191,6 +1211,22 @@ export default {
       course_complete: {
         title: "No looking",
         description: "Pass every lesson in the course",
+      },
+      english_1: {
+        title: "Hello, world",
+        description: "Finish your first run with English texts",
+      },
+      english_25: {
+        title: "Fluent",
+        description: "Finish 25 runs with English texts",
+      },
+      bilingual_day: {
+        title: "Bilingual",
+        description: "Play in Spanish and in English on the same day",
+      },
+      english_classics_all: {
+        title: "English library",
+        description: "Read every English classic",
       },
       combo_50: {
         title: "Combo x50",

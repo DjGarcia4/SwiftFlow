@@ -987,7 +987,8 @@ import {
   EyeSlashIcon,
   PencilSquareIcon,
 } from "@heroicons/vue/24/outline";
-import { paragraphs } from "@/features/typing-test/content/paragraphs";
+import { practiceParagraphs } from "@/features/typing-test/content/paragraphs";
+import { resultLanguage } from "@/features/typing-test/content/practiceLanguage";
 import { generateRandomWords } from "@/features/typing-test/content/words";
 import { punctuateWords } from "@/features/typing-test/content/punctuate";
 import { generateRandomNumbers } from "@/features/typing-test/content/numbers";
@@ -1176,6 +1177,7 @@ const referenceText = computed(() => {
 
 // Picks a random paragraph, avoiding immediately repeating the last one.
 const pickRandomParagraph = () => {
+  const paragraphs = practiceParagraphs();
   if (paragraphs.length === 1) return paragraphs[0];
 
   let text;
@@ -1220,6 +1222,7 @@ const raceKey = computed(() => {
     mode: type,
     modeValue,
     punctuation: configStore.selectedContentTypes === "punctuation",
+    language: resultLanguage(type, configStore.textLanguage),
   });
 });
 const availableGhost = computed(() => historyStore.ghostFor(raceKey.value));
@@ -1605,6 +1608,8 @@ watch(isCompleted, (completed) => {
         // How it was played, only when so: what some achievements count
         focus: textAppearance.focusMode || undefined,
         punctuation: configStore.selectedContentTypes === "punctuation" || undefined,
+        // The language of the text, only when it isn't Spanish
+        textLanguage: resultLanguage(configStore.type),
         // The demanding modes it was played under, only when on
         strict: configStore.strictMode ?? undefined,
         minAccuracy: configStore.minAccuracy ?? undefined,
@@ -1653,6 +1658,7 @@ watch(isCompleted, (completed) => {
           mode: configStore.type,
           modeValue: ghostModeValue(),
           punctuation: configStore.selectedContentTypes === "punctuation",
+          language: resultLanguage(configStore.type),
         }),
         mode: configStore.type,
         modeValue: currentModeValue(),
@@ -2041,6 +2047,8 @@ watch(
     configStore.lessonId,
     // A lesson's keys are where they are on this keyboard
     configStore.type === "lesson" && configStore.keyboardLayout,
+    // A new language, a new text -- for the modes that have one
+    resultLanguage(configStore.type, configStore.textLanguage),
   ],
   () => {
     refreshReferenceText();

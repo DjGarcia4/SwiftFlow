@@ -24,6 +24,7 @@ import {
   BookOpenIcon,
   EyeIcon,
   SpeakerWaveIcon,
+  LanguageIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -54,6 +55,7 @@ export const ACHIEVEMENT_ICONS = {
   book: BookOpenIcon,
   eye: EyeIcon,
   speaker: SpeakerWaveIcon,
+  language: LanguageIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {
@@ -70,6 +72,7 @@ export const ACHIEVEMENT_CATEGORY_RGB = {
   level: [202, 138, 4], // gold
   reading: [180, 83, 9], // amber, like old paper
   course: [101, 163, 13], // lime, like a fresh start
+  languages: [2, 132, 199], // sky, like somewhere else
 };
 
 const FALLBACK_RGB = [100, 116, 139]; // slate, shouldn't normally hit this

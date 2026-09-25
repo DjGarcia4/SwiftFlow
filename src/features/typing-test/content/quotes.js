@@ -1,6 +1,9 @@
 // Manually curated bank of quotes for "quote" mode: short, well-known
 // sayings (with their author) instead of a generic paragraph — each
 // session picks one at random and you type it start to finish.
+import { englishQuotes } from "./en/quotes";
+import { inPracticeLanguage } from "./practiceLanguage";
+
 export const quotes = [
   {
     text: "La vida es lo que pasa mientras estás ocupado haciendo otros planes.",
@@ -455,11 +458,12 @@ export const quotes = [
 
 // Picks a random quote, avoiding immediately repeating the last one.
 export const getRandomQuote = (lastText) => {
-  if (quotes.length === 1) return quotes[0];
+  const bank = inPracticeLanguage({ es: quotes, en: englishQuotes });
+  if (bank.length === 1) return bank[0];
 
   let quote;
   do {
-    quote = quotes[Math.floor(Math.random() * quotes.length)];
+    quote = bank[Math.floor(Math.random() * bank.length)];
   } while (quote.text === lastText);
 
   return quote;

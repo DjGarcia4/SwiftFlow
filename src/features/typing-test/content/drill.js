@@ -1,7 +1,7 @@
 // Builds practice text aimed at specific keys, for the training mode. Same
 // contract as the other content banks -- a count in, a space-separated
 // string out, never the same group twice in a row.
-import { spanishWords, generateRandomWords } from "@/features/typing-test/content/words";
+import { practiceWords, generateRandomWords } from "@/features/typing-test/content/words";
 
 const VOWELS = [..."aeiou"];
 // Consonants that pair cleanly with any vowel, so the made-up syllables stay
@@ -27,7 +27,7 @@ const countOf = (word, key) =>
 // show up at all.
 const buildPool = (key) => {
   const pool = [];
-  for (const word of spanishWords) {
+  for (const word of practiceWords()) {
     for (let i = countOf(word, key); i > 0; i--) pool.push(word);
   }
   return pool;

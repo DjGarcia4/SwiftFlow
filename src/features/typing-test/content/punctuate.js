@@ -1,8 +1,10 @@
-// Turns a run of loose words into sentences, the way Spanish writes them:
-// a capital to start, commas along the way, and questions and exclamations
-// opened as well as closed (¿...? ¡...!). With "Puntuación" off, the text
+// Turns a run of loose words into sentences, the way the language being
+// practiced writes them: a capital to start, commas along the way, and
+// questions and exclamations -- opened as well as closed in Spanish
+// (¿...? ¡...!), only closed in English. With "Puntuación" off, the text
 // formatter strips all of it back to the loose words, so the words mode
 // always builds its text this way.
+import { inPracticeLanguage } from "./practiceLanguage";
 
 const SENTENCE_MIN = 4;
 const SENTENCE_MAX = 10;
@@ -16,6 +18,10 @@ const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
 // `random` returns [0, 1), like Math.random; seededRandom's generators fit
 export const punctuateWords = (text, random = Math.random) => {
   const words = text.split(" ").filter(Boolean);
+  const [openQuestion, openExclamation] = inPracticeLanguage({
+    es: ["¿", "¡"],
+    en: ["", ""],
+  });
   const out = [];
   let i = 0;
   while (i < words.length) {
@@ -27,9 +33,9 @@ export const punctuateWords = (text, random = Math.random) => {
     const kind = random();
     const [open, close] =
       kind < QUESTION_CHANCE
-        ? ["¿", "?"]
+        ? [openQuestion, "?"]
         : kind < QUESTION_CHANCE + EXCLAMATION_CHANCE
-          ? ["¡", "!"]
+          ? [openExclamation, "!"]
           : ["", "."];
 
     sentence[0] = open + capitalize(sentence[0]);

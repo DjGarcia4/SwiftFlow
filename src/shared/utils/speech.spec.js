@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { pickSpanishVoice } from "./speech";
+import { pickSpanishVoice, pickEnglishVoice, pickVoice } from "./speech";
 
 const voice = (lang, extra = {}) => ({ lang, name: lang, localService: false, ...extra });
 
@@ -35,5 +35,26 @@ describe("pickSpanishVoice", () => {
 
   it("has nothing to offer without a Spanish voice", () => {
     expect(pickSpanishVoice([voice("en-US")], ["es-AR"])).toBeNull();
+  });
+});
+
+describe("pickEnglishVoice", () => {
+  const voice = (lang) => ({ lang, name: lang, localService: false });
+
+  it("prefers your own variant, then the US, then Britain", () => {
+    const voices = [voice("es-AR"), voice("en-GB"), voice("en-US"), voice("en-AU")];
+    expect(pickEnglishVoice(voices, ["en-AU"]).lang).toBe("en-AU");
+    expect(pickEnglishVoice(voices, ["es-AR"]).lang).toBe("en-US");
+    expect(pickEnglishVoice([voice("en-GB"), voice("en-IN")], []).lang).toBe("en-GB");
+  });
+
+  it("is null without an English voice", () => {
+    expect(pickEnglishVoice([voice("es-ES")], ["en-US"])).toBeNull();
+  });
+
+  it("is what pickVoice picks for English, and the Spanish one otherwise", () => {
+    const voices = [voice("es-ES"), voice("en-US")];
+    expect(pickVoice("en", voices).lang).toBe("en-US");
+    expect(pickVoice("es", voices).lang).toBe("es-ES");
   });
 });
