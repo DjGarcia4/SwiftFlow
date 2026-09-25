@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Cómo van tus teclas",
+    text: "El historial te dice qué teclas mejoraron y cuáles empeoraron: tus últimas partidas contra las anteriores.",
+  },
+  {
+    date: "2026-09",
     title: "Curso desde cero",
     text: "24 lecciones para aprender a escribir sin mirar: una fila por vez, hasta los números y los signos, con estrellas y en tu teclado.",
   },

@@ -8,6 +8,7 @@ import {
 import { computeChallengeStats } from "@/features/history/dailyChallenges";
 import { classics } from "@/features/typing-test/content/classics";
 import { courseProgress, LESSONS } from "@/features/course/course";
+import { hasTamedKey } from "@/features/history/utils/keyTrends";
 
 // MODES_COUNT stays at 5 even though there are now 6 modes (numbers was
 // added later), so nobody loses "Explorador" after having earned it.
@@ -179,6 +180,14 @@ export const ACHIEVEMENTS = [
     title: "Robot",
     description: "Completá 20 sesiones con 100% de precisión",
     check: (ctx) => ctx.perfectAccuracyCount >= 20,
+  },
+  {
+    id: "tamed_key",
+    category: "accuracy",
+    icon: "check-badge",
+    title: "Tecla domada",
+    description: "Bajá a la mitad los errores de una tecla que te costaba",
+    check: (ctx) => ctx.hasTamedKey,
   },
   {
     id: "accuracy_avg_95",
@@ -780,6 +789,7 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
     ),
     focusCount: results.filter((r) => r.focus).length,
     course: courseProgress(results),
+    hasTamedKey: hasTamedKey(results),
     dictationCount: results.filter((r) => r.mode === "dictation").length,
     hasCleanLongDictation: results.some(
       (r) => r.mode === "dictation" && r.modeValue >= 5 && r.accuracy >= 98

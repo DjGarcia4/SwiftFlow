@@ -134,6 +134,22 @@ describe("computeAchievements", () => {
     );
   });
 
+  it("unlocks tamed_key when a key's misses halve", () => {
+    const withKey = (misses) => ({
+      mode: "time",
+      wpm: 40,
+      accuracy: 95,
+      keyAttempts: { r: 20 },
+      missedKeys: { r: misses },
+    });
+    const recent = Array.from({ length: 10 }, () => withKey(1));
+    const earlier = Array.from({ length: 10 }, () => withKey(3));
+    expect(isUnlocked(computeAchievements([...recent, ...earlier]), "tamed_key")).toBe(
+      true
+    );
+    expect(isUnlocked(computeAchievements(earlier), "tamed_key")).toBe(false);
+  });
+
   it("unlocks the dictation achievements", () => {
     const dictation = (fields) => ({
       mode: "dictation",

@@ -71,7 +71,13 @@ import KeyboardLayout from "@/features/typing-test/components/KeyboardLayout.vue
 const props = defineProps({
   // Output of computeKeyErrorStats: [{ key, attempts, misses, rate }]
   stats: { type: Array, required: true },
+  // Output of computeKeyTrends, or null: adds "antes" to the tooltips
+  trends: { type: Object, default: null },
 });
+
+const trendByKey = computed(
+  () => new Map((props.trends?.all ?? []).map((trend) => [trend.key, trend]))
+);
 
 const TOP_MISSED_COUNT = 8;
 
@@ -110,6 +116,9 @@ const keyStyle = (key) => {
 const keyStagger = (rowIndex, keyIndex) =>
   staggerStyle(rowIndex + keyIndex, { step: 22, base: 550, max: 1000 });
 
-const describe = (stat) =>
-  `${stat.misses} errores en ${stat.attempts} intentos — fallás ${Math.round(stat.rate * 100)}% de las veces`;
+const describe = (stat) => {
+  const trend = trendByKey.value.get(stat.key);
+  const before = trend ? ` (antes ${Math.round(trend.before * 100)}%)` : "";
+  return `${stat.misses} errores en ${stat.attempts} intentos — fallás ${Math.round(stat.rate * 100)}% de las veces${before}`;
+};
 </script>

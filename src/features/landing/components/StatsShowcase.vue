@@ -58,6 +58,9 @@
                 <KeyErrorHeatmap :stats="demoKeyStats" />
               </template>
 
+              <!-- How the keys are going -->
+              <KeyTrendCard v-else-if="row.id === 'trends'" :trends="demoKeyTrends" />
+
               <!-- Keys and transitions that hold you up -->
               <div v-else-if="row.id === 'slow'" class="space-y-6">
                 <TimingBars :stats="demoKeyTiming" title="Tus teclas más lentas" />
@@ -143,6 +146,7 @@ import {
 import { staggerStyle } from "@/shared/utils/motion";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import TimingBars from "@/features/history/components/TimingBars.vue";
+import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
 import ActivityCalendar from "@/features/history/components/ActivityCalendar.vue";
 import TimeOfDayCard from "@/features/history/components/TimeOfDayCard.vue";
 import WpmChart from "@/features/typing-test/components/WpmChart.vue";
@@ -155,6 +159,7 @@ import {
   demoActivity,
   demoTimeOfDay,
   demoProblemWords,
+  demoKeyTrends,
 } from "../demoData";
 
 const ROWS = [
@@ -169,6 +174,18 @@ const ROWS = [
       "Qué dedo y qué mano fallan más",
     ],
     height: "18rem",
+  },
+  {
+    id: "trends",
+    kicker: "Evolución",
+    title: "Cómo van tus teclas",
+    text: "Tus últimas 30 partidas contra las 30 anteriores, tecla por tecla: cuáles mejoraron y cuáles se te están escapando más que antes. Solo cambios claros, no una mala tarde.",
+    points: [
+      "Qué teclas bajaron sus errores, y cuánto",
+      "Cuáles empeoraron, antes de que se vuelvan un hábito",
+      "El «antes» de cada tecla en el mapa del teclado",
+    ],
+    height: "10rem",
   },
   {
     id: "slow",

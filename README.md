@@ -62,7 +62,7 @@ teclado.
 
 - Gráfico de WPM y errores a lo largo de la sesión
 - Tarjeta para compartir el resultado, con un diseño distinto si fue récord
-- 81 logros en 12 categorías, con aviso al desbloquearlos
+- 82 logros en 12 categorías, con aviso al desbloquearlos
 
 ### En el historial
 
@@ -70,6 +70,8 @@ teclado.
 - **Qué mejorar**: consejos concretos armados con tus propios datos —
   qué tecla practicar, con qué tecla la confundís, si se te adelantan los dedos,
   qué mano o fila te cuesta, y qué teclas te frenan aunque no las falles
+- **Cómo van tus teclas**: qué teclas mejoraron y cuáles empeoraron, tus últimas partidas
+  contra las anteriores
 - **Teclas y combinaciones más lentas**: velocidad, no precisión — lo que las
   estadísticas de errores no pueden ver
 - **Actividad**: los últimos tres meses, un cuadradito por día

@@ -74,6 +74,7 @@ const ROWS = [
   { label: "Cuántas palabras por minuto escribiste", typical: true },
   { label: "Qué porcentaje de teclas acertaste", typical: true },
   { label: "Qué teclas fallás más, en proporción", typical: false },
+  { label: "Qué teclas mejoraron y cuáles empeoraron", typical: false },
   { label: "Qué tecla apretás cuando errás otra", typical: false },
   { label: "Qué letras invertís por adelantarte", typical: false },
   { label: "Qué teclas y combinaciones te frenan sin que las erres", typical: false },

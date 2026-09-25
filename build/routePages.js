@@ -36,7 +36,7 @@ export const ROUTES = [
       <h2>Mientras escribís</h2>
       <p>Combo, un coach que te avisa qué letra se te escapa, teclado en pantalla con colores por dedo, fantasma de tu récord, marcapasos y modo sin red.</p>
       <h2>Estadísticas</h2>
-      <p>Teclas que más fallás, qué apretás en su lugar, letras invertidas, teclas y combinaciones lentas, palabras que se te traban, consistencia, tu mejor hora del día y un año de actividad.</p>
+      <p>Teclas que más fallás y cómo vienen mejorando, qué apretás en su lugar, letras invertidas, teclas y combinaciones lentas, palabras que se te traban, consistencia, tu mejor hora del día y un año de actividad.</p>
       <h2>Entrenamiento</h2>
       <p>Entrenamientos con tus teclas y palabras flojas, que te dicen cuándo parar y te las repasan a 1, 3, 7, 14 y 30 días.</p>
       <h2>Progreso</h2>

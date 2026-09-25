@@ -307,7 +307,7 @@
             </div>
           </div>
         </div>
-        <KeyErrorHeatmap :stats="keyErrorStats" />
+        <KeyErrorHeatmap :stats="keyErrorStats" :trends="keyTrends" />
         <ImprovementTips
           :stats="keyErrorStats"
           :average-accuracy="recentAccuracy"
@@ -317,6 +317,14 @@
           :bigram-timing="bigramTimingStats"
           :problem-words="problemWords"
         />
+      </div>
+
+      <!-- How the keys are going: better and worse, lately -->
+      <div
+        v-if="keyTrends"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:505ms]"
+      >
+        <KeyTrendCard :trends="keyTrends" />
       </div>
 
       <!-- Whole words you stumble on, with a drill on them -->
@@ -646,6 +654,8 @@ import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
 import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
+import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
+import { computeKeyTrends } from "@/features/history/utils/keyTrends";
 import { strictModeById } from "@/features/typing-test/utils/strictModes";
 import KeyboardLayoutPicker from "@/features/typing-test/components/KeyboardLayoutPicker.vue";
 import ImprovementTips from "@/features/history/components/ImprovementTips.vue";
@@ -830,6 +840,8 @@ const dailyActivity = computed(() =>
 );
 
 const keyErrorStats = computed(() => computeKeyErrorStats(keyStatsResults.value));
+// Its own window: the latest sessions against the ones before them
+const keyTrends = computed(() => computeKeyTrends(filteredResults.value));
 const confusionStats = computed(() => computeConfusionStats(keyStatsResults.value));
 const transpositionStats = computed(() =>
   computeTranspositionStats(keyStatsResults.value)

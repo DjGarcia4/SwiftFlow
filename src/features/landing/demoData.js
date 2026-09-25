@@ -102,3 +102,15 @@ export const demoProblemWords = [
   { word: "exactamente", reason: "62% más lenta" },
   { word: "siguiente", reason: "4 de 6 con error" },
 ];
+
+// "Cómo van tus teclas": a few keys that clearly moved, both ways
+export const demoKeyTrends = {
+  sessions: 30,
+  improved: [
+    { key: "ñ", before: 0.12, after: 0.04, change: -0.08 },
+    { key: "q", before: 0.09, after: 0.05, change: -0.04 },
+    { key: "b", before: 0.07, after: 0.03, change: -0.04 },
+  ],
+  worsened: [{ key: "v", before: 0.03, after: 0.06, change: 0.03 }],
+  all: [],
+};
