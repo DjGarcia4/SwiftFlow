@@ -2,6 +2,8 @@
 // typed exactly as written -- capitals, punctuation, line breaks -- so the
 // only cleanup is what nobody can see or type on purpose.
 
+import { t } from "@/shared/i18n";
+
 export const MAX_CUSTOM_TEXTS = 20;
 export const MAX_CUSTOM_TEXT_LENGTH = 5000;
 export const MAX_CUSTOM_NAME_LENGTH = 40;
@@ -31,9 +33,9 @@ export const normalizeCustomText = (text) =>
 // What's wrong with a text about to be saved, in words for the form, or
 // null when it's fine
 export const validateCustomText = ({ name, text }) => {
-  if (!String(name ?? "").trim()) return "Ponele un nombre.";
+  if (!String(name ?? "").trim()) return t("typing.customText.needsName");
   if (normalizeCustomText(text).length < MIN_CUSTOM_TEXT_LENGTH) {
-    return `El texto tiene que tener al menos ${MIN_CUSTOM_TEXT_LENGTH} caracteres.`;
+    return t("typing.customText.tooShort", MIN_CUSTOM_TEXT_LENGTH);
   }
   return null;
 };

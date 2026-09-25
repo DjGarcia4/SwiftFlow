@@ -58,7 +58,7 @@
           class="mx-auto max-w-3xl rounded-card border-2 border-faded-gray px-4 py-3 text-left"
         >
           <p class="mb-1 text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            Lo que se dictó
+            {{ t("typing.dictated") }}
           </p>
           <p class="font-mono text-base sm:text-lg leading-relaxed">
             <span
@@ -103,7 +103,7 @@
             class="inline-flex items-center gap-2 bg-faded-gray/30 text-pencil-gray rounded-xl px-5 py-2.5 text-sm font-bold"
           >
             <StopIcon class="w-5 h-5" />
-            Partida terminada antes de tiempo · no cuenta para el historial
+            {{ t("typing.results.endedEarly") }}
           </div>
         </div>
         <div v-else-if="isCompleted && justBrokeRecord" class="text-center">
@@ -111,7 +111,7 @@
             class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-danger text-white rounded-xl px-5 py-2.5 text-sm font-extrabold shadow-lg shadow-primary/30 animate-key-pop"
           >
             <TrophyIcon class="w-5 h-5 animate-badge-glow" />
-            ¡Nuevo récord personal!
+            {{ t("typing.results.newRecord") }}
           </div>
         </div>
       </Transition>
@@ -127,12 +127,16 @@
             class="inline-flex items-center gap-2 bg-success-tint text-success-dark border-2 border-success/40 rounded-xl px-5 py-2.5 text-sm font-extrabold animate-key-pop"
           >
             <SparklesIcon class="w-5 h-5 animate-badge-glow" />
-            ¡Ronda perfecta!
+            {{ t("typing.results.perfectRound") }}
             <span class="font-bold opacity-80">
               {{
                 perfectRound.count === 1
-                  ? `La primera en ${perfectRound.label}`
-                  : `#${perfectRound.count} en ${perfectRound.label}`
+                  ? t("typing.results.perfectFirst", perfectRound.label)
+                  : t(
+                      "typing.results.perfectCount",
+                      perfectRound.count,
+                      perfectRound.label
+                    )
               }}
             </span>
           </div>
@@ -152,8 +156,8 @@
             <EyeSlashIcon class="w-5 h-5" />
             {{
               configStore.errorKeystrokes === 0
-                ? "Sin red y sin un solo error"
-                : `Jugaste sin red: ${configStore.errorKeystrokes} ${configStore.errorKeystrokes === 1 ? "error" : "errores"} que no viste`
+                ? t("typing.results.blindClean")
+                : t("typing.results.blindErrors", configStore.errorKeystrokes)
             }}
             <button
               v-if="configStore.errorKeystrokes > 0 && configStore.progressSamples.length"
@@ -161,7 +165,7 @@
               class="font-bold text-primary underline underline-offset-2 hover:text-primary-dark"
               @click="openReplay"
             >
-              ver dónde
+              {{ t("typing.results.seeWhere") }}
             </button>
           </div>
         </div>
@@ -178,12 +182,12 @@
             class="inline-flex items-center gap-2 rounded-xl border-2 border-amber-500/40 bg-amber-500/10 px-5 py-2.5 text-sm font-extrabold text-charcoal"
           >
             <TrophyIcon class="w-5 h-5 text-amber-500" />
-            Reto semanal {{ weeklyOutcome.label }}
+            {{ t("typing.results.weekly", weeklyOutcome.label) }}
             <span class="font-bold opacity-80">
               {{
                 weeklyOutcome.improved
-                  ? `· ¡tu mejor marca de la semana! Compartila y desafiá a alguien`
-                  : `· tu mejor sigue en ${weeklyOutcome.best} wpm`
+                  ? t("typing.results.weeklyBest")
+                  : t("typing.results.weeklyStill", weeklyOutcome.best)
               }}
             </span>
           </div>
@@ -257,37 +261,47 @@
           >
             <FireIcon class="w-4 h-4 text-primary" />
             <span class="font-extrabold text-charcoal">{{ configStore.maxStreak }}</span>
-            <span class="text-pencil-gray font-bold">combo máx.</span>
+            <span class="text-pencil-gray font-bold">{{
+              t("typing.results.maxCombo")
+            }}</span>
           </div>
           <div
             class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
             :style="staggerStyle(1, { step: 70, base: 400 })"
           >
             <span class="font-extrabold text-charcoal">{{ configStore.rawWpm }}</span>
-            <span class="text-pencil-gray font-bold">wpm bruto</span>
+            <span class="text-pencil-gray font-bold">{{
+              t("typing.results.rawWpm")
+            }}</span>
           </div>
           <div
             v-if="sessionConsistency !== null"
             class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
             :style="staggerStyle(1, { step: 70, base: 440 })"
-            title="Qué tan parejo fue tu ritmo segundo a segundo: 100% es un metrónomo"
+            :title="t('typing.results.consistencyHint')"
           >
             <span class="font-extrabold text-charcoal">{{ sessionConsistency }}%</span>
-            <span class="text-pencil-gray font-bold">consistencia</span>
+            <span class="text-pencil-gray font-bold">{{
+              t("typing.results.consistency")
+            }}</span>
           </div>
           <div
             class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
             :style="staggerStyle(2, { step: 70, base: 400 })"
           >
             <span class="font-extrabold text-charcoal">{{ correctedErrors }}</span>
-            <span class="text-pencil-gray font-bold">errores corregidos</span>
+            <span class="text-pencil-gray font-bold">{{
+              t("typing.results.corrected")
+            }}</span>
           </div>
           <div
             v-if="topMissedKey"
             class="inline-flex items-center gap-1.5 rounded-xl border-2 border-faded-gray px-3 py-1.5 animate-pop-in"
             :style="staggerStyle(3, { step: 70, base: 400 })"
           >
-            <span class="text-pencil-gray font-bold">más fallada:</span>
+            <span class="text-pencil-gray font-bold">{{
+              t("typing.results.mostMissed")
+            }}</span>
             <kbd
               class="px-2 py-0.5 bg-danger-tint text-danger rounded-md font-mono font-extrabold border-2 border-danger/30"
               >{{ formatKeyLabel(topMissedKey.key) }}</kbd
@@ -303,7 +317,7 @@
             @click="openReplay"
           >
             <MagnifyingGlassIcon class="w-4 h-4" />
-            ¿Dónde te frenaste?
+            {{ t("typing.results.whereSlowed") }}
           </button>
         </div>
       </Transition>
@@ -375,12 +389,12 @@
             class="inline-flex items-center gap-2 bg-success-tint rounded-xl px-5 py-2.5 text-sm text-success-dark font-bold transition-opacity duration-300"
             :class="restartReady ? 'opacity-100' : 'opacity-0'"
           >
-            Presiona
+            {{ t("typing.results.pressSpace") }}
             <kbd
               class="px-2 py-0.5 bg-paper-white text-charcoal rounded-md font-mono text-xs border-2 border-faded-gray"
-              >ESPACIO</kbd
+              >{{ t("typing.results.space") }}</kbd
             >
-            para empezar de nuevo
+            {{ t("typing.results.toRestart") }}
           </div>
         </div>
       </Transition>
@@ -416,7 +430,9 @@
                   :class="configStore.isBeatingBest ? 'text-success' : 'text-charcoal'"
                   >{{ configStore.wpm }}</span
                 >
-                <span class="text-xs text-pencil-gray font-bold uppercase">wpm</span>
+                <span class="text-xs text-pencil-gray font-bold uppercase">{{
+                  t("typing.wpm")
+                }}</span>
               </div>
               <!-- Before typing starts, show which language this snippet is -->
               <div
@@ -448,7 +464,14 @@
                   ? 'border-success/50 text-success'
                   : 'border-danger/50 text-danger'
               "
-              :title="`${Math.abs(ghostLeadNow)} caracteres ${ghostLeadNow >= 0 ? 'adelante' : 'atrás'} ${race.kind === 'pacer' ? 'del marcapasos' : 'de tu fantasma'}`"
+              :title="
+                t(
+                  'typing.raceLead',
+                  Math.abs(ghostLeadNow),
+                  ghostLeadNow >= 0,
+                  race.kind === 'pacer'
+                )
+              "
             >
               <component :is="raceIcon" class="w-4 h-4" />
               {{ ghostLeadNow >= 0 ? "+" : "−" }}{{ Math.abs(ghostLeadNow) }}
@@ -472,7 +495,9 @@
                 class="inline-flex items-center gap-1 bg-success border-2 border-success-dark rounded-xl px-2.5 py-1.5 shadow-sm shadow-success/40 animate-key-pop"
               >
                 <TrophyIcon class="w-3.5 h-3.5 text-white animate-badge-glow" />
-                <span class="text-xs font-extrabold text-white">Récord</span>
+                <span class="text-xs font-extrabold text-white">{{
+                  t("typing.record")
+                }}</span>
               </div>
             </Transition>
 
@@ -488,14 +513,14 @@
                 class="inline-flex items-center gap-1 text-danger"
               >
                 <HeartIcon class="w-4 h-4" />
-                <span class="hidden sm:inline">1 vida</span>
+                <span class="hidden sm:inline">{{ t("typing.oneLife") }}</span>
               </span>
               <span
                 v-else-if="configStore.strictMode === 'must-correct'"
                 class="inline-flex items-center gap-1"
               >
                 <ArrowUturnLeftIcon class="w-4 h-4" />
-                <span class="hidden sm:inline">Corregir</span>
+                <span class="hidden sm:inline">{{ t("typing.mustCorrect") }}</span>
               </span>
               <span
                 v-if="configStore.minAccuracy"
@@ -506,7 +531,9 @@
                 <template v-if="configStore.keystrokes">
                   {{ Math.floor(configStore.accuracy) }}/{{ configStore.minAccuracy }}%
                 </template>
-                <template v-else>mín. {{ configStore.minAccuracy }}%</template>
+                <template v-else>{{
+                  t("typing.minAccuracyShort", configStore.minAccuracy)
+                }}</template>
               </span>
             </div>
 
@@ -588,7 +615,7 @@
           v-model="configStore.userInput"
           class="absolute inset-0 w-full h-full resize-none opacity-0 cursor-default"
           :disabled="isCompleted || !referenceText"
-          aria-label="Escribí el texto"
+          :aria-label="t('typing.typeHere')"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
@@ -613,15 +640,15 @@
             <div class="text-center animate-pop-in">
               <PauseIcon class="w-10 h-10 mx-auto text-primary mb-3" />
               <div class="text-lg font-display font-extrabold text-charcoal mb-1">
-                Pausado
+                {{ t("typing.paused.title") }}
               </div>
-              <div class="text-sm text-pencil-gray">Escribe para continuar</div>
+              <div class="text-sm text-pencil-gray">{{ t("typing.paused.resume") }}</div>
               <div class="hidden sm:block mt-2 text-xs text-pencil-gray">
                 <kbd
                   class="px-1.5 py-0.5 bg-paper-white text-charcoal rounded-md font-mono border-2 border-faded-gray"
                   >ESC</kbd
                 >
-                para terminar la partida
+                {{ t("typing.paused.end") }}
               </div>
             </div>
           </div>
@@ -635,13 +662,13 @@
           <div class="text-center animate-pop-in">
             <PencilSquareIcon class="mx-auto mb-3 h-10 w-10 text-primary" />
             <div class="mb-1 font-display text-lg font-extrabold text-charcoal">
-              Todavía no tenés textos propios
+              {{ t("typing.customEmpty.title") }}
             </div>
             <div class="mb-4 text-sm text-pencil-gray">
-              Pegá algo que escribas seguido y practicalo tal cual.
+              {{ t("typing.customEmpty.detail") }}
             </div>
             <ButtonCustom
-              text="Agregar un texto"
+              :text="t('typing.customEmpty.add')"
               variant="primary"
               size="sm"
               @click="configStore.openCustomEditor()"
@@ -763,7 +790,7 @@
           icon="restart"
           variant="secondary"
           size="lg"
-          tooltip="Reiniciar"
+          :tooltip="t('typing.buttons.restart')"
           @click="restart"
         />
 
@@ -774,7 +801,11 @@
             icon="keyboard"
             :variant="configStore.keyboardVisible ? 'primary' : 'secondary'"
             size="lg"
-            :tooltip="configStore.keyboardVisible ? 'Ocultar teclado' : 'Mostrar teclado'"
+            :tooltip="
+              configStore.keyboardVisible
+                ? t('typing.buttons.hideKeyboard')
+                : t('typing.buttons.showKeyboard')
+            "
             @click="toggleKeyboard"
           />
         </div>
@@ -813,7 +844,7 @@
               class="absolute bottom-full left-1/2 z-40 mb-3 w-max -translate-x-1/2 rounded-card border-2 border-faded-gray bg-paper-white p-3 shadow-xl"
             >
               <p class="mb-2 text-center text-xs font-bold text-pencil-gray">
-                Marcapasos: un ritmo parejo para seguir
+                {{ t("typing.race.pacerMenu") }}
               </p>
               <div class="flex flex-wrap justify-center gap-1.5 max-w-72">
                 <IconButton
@@ -823,7 +854,7 @@
                       : 'secondary'
                   "
                   size="xs"
-                  :text="`Auto (${autoPacerTarget})`"
+                  :text="t('typing.race.pacerAuto', autoPacerTarget)"
                   @click="pickPacer(null)"
                 />
                 <IconButton
@@ -845,7 +876,7 @@
                 class="mt-2 block w-full text-center text-xs font-bold text-pencil-gray underline underline-offset-2 hover:text-primary"
                 @click="toggleRace('pacer')"
               >
-                Apagar
+                {{ t("typing.race.turnOff") }}
               </button>
             </div>
           </Transition>
@@ -859,7 +890,7 @@
             icon="pause"
             variant="primary"
             size="lg"
-            tooltip="Pausar"
+            :tooltip="t('typing.buttons.pause')"
             @click="pause"
           />
 
@@ -869,7 +900,7 @@
             icon="play"
             variant="primary"
             size="lg"
-            tooltip="Continuar"
+            :tooltip="t('typing.buttons.resume')"
             @click="play"
           />
         </template>
@@ -880,7 +911,7 @@
           icon="check"
           variant="primary"
           size="lg"
-          tooltip="Terminar"
+          :tooltip="t('typing.buttons.finish')"
           @click="finishZen"
         />
 
@@ -889,7 +920,7 @@
           icon="share"
           variant="primary"
           size="lg"
-          tooltip="Compartir resultado"
+          :tooltip="t('typing.buttons.share')"
           @click="handleShare"
         />
       </div>
@@ -933,6 +964,7 @@ import LiveKeyboard from "./LiveKeyboard.vue";
 import XpProgress from "@/features/history/components/XpProgress.vue";
 import { levelFromXp } from "@/features/history/utils/experience";
 import { announce, spokenNumber } from "@/shared/utils/announcer";
+import { t } from "@/shared/i18n";
 import {
   describeFailure,
   strictModeById,
@@ -1372,15 +1404,25 @@ const correctedErrors = computed(() =>
 const resultCards = computed(() => {
   const timed = configStore.type === "time" && !configStore.endedEarly;
   return [
-    { label: "WPM", value: configStore.wpm, decimals: 0, suffix: "" },
-    { label: "Precisión", value: configStore.accuracy, decimals: 0, suffix: "%" },
+    { label: t("typing.results.wpm"), value: configStore.wpm, decimals: 0, suffix: "" },
     {
-      label: "Tiempo",
+      label: t("typing.results.accuracy"),
+      value: configStore.accuracy,
+      decimals: 0,
+      suffix: "%",
+    },
+    {
+      label: t("typing.results.time"),
       value: timed ? configStore.timeElapsed : configStore.elapsedMs / 1000,
       decimals: timed ? 0 : 1,
       suffix: "s",
     },
-    { label: "Errores", value: configStore.errors, decimals: 0, suffix: "" },
+    {
+      label: t("typing.results.errors"),
+      value: configStore.errors,
+      decimals: 0,
+      suffix: "",
+    },
   ];
 });
 
@@ -1394,8 +1436,7 @@ const belowMinAccuracy = computed(
 const strictTitle = computed(() =>
   [
     strictModeById(configStore.strictMode)?.detail,
-    configStore.minAccuracy &&
-      `Por debajo del ${configStore.minAccuracy} % de precisión, la partida no cuenta`,
+    configStore.minAccuracy && t("typing.belowMinAccuracy", configStore.minAccuracy),
   ]
     .filter(Boolean)
     .join(". ")
@@ -1403,32 +1444,33 @@ const strictTitle = computed(() =>
 
 const announceResults = () => {
   if (configStore.failure) {
-    announce(`${describeFailure(configStore.failure)}. Espacio para intentar de nuevo.`);
+    announce(t("typing.announce.failed", describeFailure(configStore.failure)));
     return;
   }
-  const parts = [
-    `Terminaste: ${spokenNumber(configStore.wpm)} palabras por minuto`,
-    `${spokenNumber(configStore.accuracy)} % de precisión`,
-    `${configStore.errors} ${configStore.errors === 1 ? "error" : "errores"}`,
+  const sentences = [
+    t(
+      "typing.announce.finished",
+      spokenNumber(configStore.wpm),
+      spokenNumber(configStore.accuracy),
+      configStore.errors
+    ),
   ];
-  const sentences = [parts.join(", ") + "."];
-  if (justBrokeRecord.value) sentences.push("¡Nuevo récord!");
+  if (justBrokeRecord.value) sentences.push(t("typing.announce.record"));
   if (xpGained.value) {
-    sentences.push(`Ganaste ${xpGained.value} de experiencia.`);
+    sentences.push(t("typing.announce.xp", xpGained.value));
     const now = historyStore.level.level;
     if (levelFromXp(historyStore.experience - xpGained.value).level < now) {
-      sentences.push(`¡Subiste al nivel ${now}!`);
+      sentences.push(t("typing.announce.levelUp", now));
     }
   }
-  sentences.push("Espacio para empezar de nuevo.");
+  sentences.push(t("typing.announce.restart"));
   announce(sentences.join(" "));
 };
 
 watch(
   () => configStore.isPaused,
   (paused) => {
-    if (paused)
-      announce("Pausado. Escribí para continuar, o Esc para terminar la partida.");
+    if (paused) announce(t("typing.announce.paused"));
   }
 );
 
@@ -1449,11 +1491,13 @@ const resultsCoach = computed(() => {
 
   const keys = suggestedDrillKeys(historyStore.results);
   if (!keys.length) return null;
-  const labels = keys.map((key) => `la ${key.toUpperCase()}`);
   return {
     keys,
-    title: `Seguí con ${labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(", ")} y ${labels[labels.length - 1]}`}`,
-    detail: "Es lo que más se te escapa en tus últimas sesiones.",
+    title: t(
+      "typing.coach.keepGoing",
+      keys.map((key) => key.toUpperCase())
+    ),
+    detail: t("typing.coach.keepGoingDetail"),
   };
 });
 
@@ -1847,16 +1891,16 @@ const ghostLeadNow = computed(() =>
 );
 
 const ghostTooltip = computed(() => {
-  if (!availableGhost.value) return "Todavía no hay récord de este tipo";
+  if (!availableGhost.value) return t("typing.race.noGhost");
   return configStore.raceMode === "ghost"
-    ? "Dejar de correr contra tu récord"
-    : `Correr contra el ritmo de tu récord (${availableGhost.value.wpm} wpm)`;
+    ? t("typing.race.stopGhost")
+    : t("typing.race.startGhost", availableGhost.value.wpm);
 });
 
 const pacerTooltip = computed(() =>
   configStore.raceMode === "pacer"
-    ? `Marcapasos a ${pacerTarget.value} wpm`
-    : "Marcapasos: seguí un ritmo parejo"
+    ? t("typing.race.pacerOn", pacerTarget.value)
+    : t("typing.race.pacerOff")
 );
 
 const toggleRace = (mode) => {
@@ -1898,8 +1942,8 @@ const describeRaceOutcome = (rival, saved) => {
       ? {
           kind: "ghost",
           racing: false,
-          headline: "Nuevo fantasma guardado",
-          detail: "· corré contra él con el botón del fantasma",
+          headline: t("typing.race.newGhost"),
+          detail: t("typing.race.newGhostDetail"),
         }
       : null;
   }
@@ -1917,9 +1961,9 @@ const describeRaceOutcome = (rival, saved) => {
     diffMs === null
       ? ""
       : diffMs > 0
-        ? ` · ${formatSeconds(diffMs)} s más rápido`
+        ? t("typing.race.faster", formatSeconds(diffMs))
         : diffMs < 0
-          ? ` · ${formatSeconds(-diffMs)} s más lento`
+          ? t("typing.race.slower", formatSeconds(-diffMs))
           : "";
 
   if (rival.kind === "pacer") {
@@ -1929,15 +1973,15 @@ const describeRaceOutcome = (rival, saved) => {
     const steadiness =
       sessionConsistency.value === null
         ? ""
-        : ` · ${sessionConsistency.value}% consistencia`;
+        : t("typing.race.consistency", sessionConsistency.value);
     return {
       kind: "pacer",
       racing: true,
       won: kept,
       headline: kept
-        ? `¡Mantuviste el ritmo de ${rival.wpm} wpm!`
-        : `Te quedaste a ${rival.wpm - wpm} wpm del marcapasos`,
-      detail: `${wpm} vs ${rival.wpm} wpm${clock}${steadiness}${saved ? " · nuevo fantasma" : ""}`,
+        ? t("typing.race.keptPace", rival.wpm)
+        : t("typing.race.behindPacer", rival.wpm - wpm),
+      detail: `${wpm} vs ${rival.wpm} wpm${clock}${steadiness}${saved ? t("typing.race.savedAsGhost") : ""}`,
     };
   }
 
@@ -1946,11 +1990,11 @@ const describeRaceOutcome = (rival, saved) => {
     racing: true,
     won,
     headline: won
-      ? "¡Le ganaste a tu fantasma!"
+      ? t("typing.race.beatGhost")
       : tie
-        ? "Empate con tu fantasma"
-        : "Tu fantasma ganó esta vez",
-    detail: `${wpm} vs ${rival.wpm} wpm${clock}${saved ? " · es tu nuevo fantasma" : ""}`,
+        ? t("typing.race.tiedGhost")
+        : t("typing.race.lostGhost"),
+    detail: `${wpm} vs ${rival.wpm} wpm${clock}${saved ? t("typing.race.isNewGhost") : ""}`,
   };
 };
 
@@ -2192,11 +2236,11 @@ const shareFileName = "swiftflow-resultado.png";
 const shareText = () => {
   // Everyone gets the same weekly text, so a weekly result is a dare
   if (configStore.type === "weekly" && currentWeeklyKey.value) {
-    return `Hice ${configStore.wpm} WPM en el reto semanal ${weeklyLabel(currentWeeklyKey.value)} de SwiftFlow ⚡ ¿Me ganás?`;
+    return t("typing.share.weekly", configStore.wpm, weeklyLabel(currentWeeklyKey.value));
   }
   return justBrokeRecord.value
-    ? `¡Nuevo récord! ${configStore.wpm} WPM en SwiftFlow 🏆`
-    : `${configStore.wpm} WPM en SwiftFlow ⚡`;
+    ? t("typing.share.record", configStore.wpm)
+    : t("typing.share.plain", configStore.wpm);
 };
 
 const handleShare = () => {
@@ -2246,7 +2290,7 @@ const confirmNativeShare = async () => {
   try {
     await navigator.share({
       files: [file],
-      title: "Mi resultado en SwiftFlow",
+      title: t("typing.share.title"),
       text: shareText(),
     });
     closeShareModal();

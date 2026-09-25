@@ -1,15 +1,15 @@
 <template>
   <div ref="rootRef" class="w-full">
     <div class="flex items-center justify-between mb-2">
-      <span class="text-xs font-bold uppercase tracking-wide text-pencil-gray"
-        >WPM por segundo</span
-      >
+      <span class="text-xs font-bold uppercase tracking-wide text-pencil-gray">{{
+        t("typing.chart.title")
+      }}</span>
       <span
         v-if="errorMarkers.length"
         class="inline-flex items-center gap-1.5 text-xs font-bold text-pencil-gray"
       >
         <span class="inline-block w-2 h-2 rounded-full bg-danger"></span>
-        error
+        {{ t("typing.chart.error") }}
       </span>
     </div>
 
@@ -136,7 +136,7 @@
             {{ hoverPoint.wpm }} wpm
           </text>
           <text x="10" y="32" font-size="11" fill="var(--color-faded-gray)">
-            seg {{ hoverPoint.time }}
+            {{ t("typing.chart.second", hoverPoint.time) }}
           </text>
         </g>
       </g>
@@ -146,6 +146,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { t } from "@/shared/i18n";
 
 const props = defineProps({
   history: {

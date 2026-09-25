@@ -20,34 +20,34 @@
       >
         <SpeakerWaveIcon v-if="!listened" class="h-5 w-5" />
         <ArrowPathIcon v-else class="h-5 w-5" />
-        {{ listened ? "Repetir" : "Escuchar" }}
+        {{ listened ? t("typing.dictation.repeat") : t("typing.dictation.listen") }}
         <kbd
           class="hidden rounded-md border-2 border-current/30 px-1.5 font-mono text-[10px] opacity-80 sm:inline"
           >Enter</kbd
         >
       </button>
       <SegmentedControl
-        label="Velocidad de la voz"
-        :options="RATE_OPTIONS"
+        :label="t('typing.dictation.voiceSpeed')"
+        :options="rateOptions"
         :model-value="configStore.dictationRate"
         @select="pickRate"
       />
       <span class="text-xs font-bold text-pencil-gray tabular-nums">
-        Frase {{ current + 1 }} de {{ sentences.length }}
+        {{ t("typing.dictation.sentenceOf", current + 1, sentences.length) }}
       </span>
     </template>
     <p v-else-if="voiceState === 'loading'" class="text-sm font-bold text-pencil-gray">
-      Buscando una voz en español…
+      {{ t("typing.dictation.lookingForVoice") }}
     </p>
     <p v-else class="text-sm font-bold text-danger" role="alert">
-      Tu navegador no tiene una voz en español. Probá con otro navegador, o instalá una
-      voz en español desde los ajustes de tu sistema.
+      {{ t("typing.dictation.noVoice") }}
     </p>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { t } from "@/shared/i18n";
 import { SpeakerWaveIcon, ArrowPathIcon } from "@heroicons/vue/24/outline";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { useConfigStore } from "@/features/typing-test/store";
@@ -57,11 +57,12 @@ import { loadVoices, pickSpanishVoice, speak, stopSpeaking } from "@/shared/util
 
 const configStore = useConfigStore();
 
-const RATE_OPTIONS = [
-  { value: "slow", label: "Lenta" },
-  { value: "normal", label: "Normal" },
-  { value: "fast", label: "Rápida" },
-];
+const rateOptions = computed(() =>
+  ["slow", "normal", "fast"].map((value) => ({
+    value,
+    label: t(`typing.dictation.rates.${value}`),
+  }))
+);
 
 // Browsers only let a page speak after it's been interacted with. Once
 // someone has pressed "Escuchar" here, every new dictation this visit

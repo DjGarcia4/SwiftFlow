@@ -1,5 +1,7 @@
 import { createApp } from "vue";
 import "./style.css";
+// Every feature's words, in every language, before anything shows one
+import "@/shared/i18n/catalog";
 import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";

@@ -33,7 +33,7 @@
       @click="configStore.openCustomEditor()"
     >
       <PlusIcon class="w-4 h-4" />
-      Agregar texto
+      {{ t("typing.customText.add") }}
     </button>
 
     <Transition
@@ -83,8 +83,8 @@
             <button
               type="button"
               class="mr-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-pencil-gray transition-colors duration-150 hover:bg-paper-white hover:text-primary"
-              :aria-label="`Editar ${entry.name}`"
-              :title="`Editar ${entry.name}`"
+              :aria-label="t('typing.customText.editNamed', entry.name)"
+              :title="t('typing.customText.editNamed', entry.name)"
               @click="edit(entry.id)"
             >
               <PencilSquareIcon class="w-4 h-4" />
@@ -100,10 +100,10 @@
             @click="edit(null)"
           >
             <PlusIcon class="w-4 h-4" />
-            Nuevo texto
+            {{ t("typing.customText.new") }}
           </button>
           <p v-else class="px-3 py-2 text-xs font-bold text-pencil-gray">
-            Llegaste a {{ MAX_CUSTOM_TEXTS }} textos: borrá alguno para agregar otro.
+            {{ t("typing.customText.limit", MAX_CUSTOM_TEXTS) }}
           </p>
         </div>
       </div>
@@ -112,6 +112,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { ref, onMounted, onUnmounted } from "vue";
 import {
   DocumentTextIcon,

@@ -4,7 +4,9 @@
       type="button"
       class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
       :aria-label="
-        soundStore.soundEnabled ? 'Configurar sonido' : 'Sonido silenciado — configurar'
+        soundStore.soundEnabled
+          ? t('shared.settings.button')
+          : t('shared.settings.buttonMuted')
       "
       @click="open = !open"
     >
@@ -22,8 +24,20 @@
     >
       <div
         v-if="open"
-        class="absolute right-0 top-full mt-2 w-60 origin-top-right bg-paper-white rounded-card border-2 border-faded-gray p-3 shadow-lg z-50"
+        class="absolute right-0 top-full mt-2 w-64 origin-top-right bg-paper-white rounded-card border-2 border-faded-gray p-3 shadow-lg z-50"
       >
+        <!-- The app's language: the interface, not what's practiced -->
+        <div
+          class="mb-2 flex items-center justify-between gap-3 border-b-2 border-faded-gray/40 pb-3"
+        >
+          <span class="text-xs font-bold text-charcoal">{{ t("shared.language") }}</span>
+          <SegmentedControl
+            :label="t('shared.language')"
+            :options="LANGUAGE_OPTIONS"
+            :model-value="locale"
+            @select="setLocale"
+          />
+        </div>
         <div
           v-for="toggleItem in toggles"
           :key="toggleItem.key"
@@ -43,7 +57,7 @@
             type="button"
             class="relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0"
             :class="soundStore[toggleItem.key] ? 'bg-primary' : 'bg-faded-gray'"
-            :aria-label="`${toggleItem.label}: ${soundStore[toggleItem.key] ? 'activado' : 'desactivado'}`"
+            :aria-label="`${toggleItem.label}: ${soundStore[toggleItem.key] ? t('shared.settings.on') : t('shared.settings.off')}`"
             @click="soundStore.toggle(toggleItem.key)"
           >
             <span
@@ -58,7 +72,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import SegmentedControl from "@/shared/components/SegmentedControl.vue";
+import { t, locale, setLocale, LOCALES } from "@/shared/i18n";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/vue/24/outline";
 import { useSoundStore } from "@/shared/stores/sound";
 
@@ -66,12 +82,15 @@ const soundStore = useSoundStore();
 const open = ref(false);
 const rootEl = ref(null);
 
-const toggles = [
-  { key: "soundEnabled", label: "Sonido general" },
-  { key: "keystrokeSound", label: "Tecleo" },
-  { key: "errorSound", label: "Errores" },
-  { key: "celebrationSound", label: "Logros y récords" },
-];
+// Each language named in itself, so it can be found whatever is showing
+const LANGUAGE_OPTIONS = LOCALES.map(({ id, label }) => ({ value: id, label }));
+
+const toggles = computed(() => [
+  { key: "soundEnabled", label: t("shared.settings.all") },
+  { key: "keystrokeSound", label: t("shared.settings.keystrokes") },
+  { key: "errorSound", label: t("shared.settings.errors") },
+  { key: "celebrationSound", label: t("shared.settings.celebrations") },
+]);
 
 // Sub-toggles stay independently readable/writable even while the master
 // switch is off — their dimmed label is just a hint that they won't

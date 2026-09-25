@@ -16,7 +16,7 @@
           class="inline-block h-2.5 w-2.5 rounded-full"
           :style="{ backgroundColor: fingerColor(nextFinger) }"
         ></span>
-        Próxima: {{ FINGERS[nextFinger].name }}
+        {{ t("typing.keyboard.next", FINGERS[nextFinger].name) }}
       </span>
       <KeyboardLayoutPicker @picked="refocusText" />
       <button
@@ -31,7 +31,7 @@
         @click="toggleFingerColors"
       >
         <HandRaisedIcon class="w-3.5 h-3.5" />
-        Colores por dedo
+        {{ t("typing.keyboard.fingerColors") }}
       </button>
     </div>
   </div>
@@ -39,6 +39,7 @@
 
 <script setup>
 import { ref, computed, watch, onUnmounted, nextTick } from "vue";
+import { t } from "@/shared/i18n";
 import { HandRaisedIcon } from "@heroicons/vue/24/outline";
 import KeyboardLayout from "./KeyboardLayout.vue";
 import KeyboardLayoutPicker from "./KeyboardLayoutPicker.vue";

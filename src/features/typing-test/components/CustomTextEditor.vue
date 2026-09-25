@@ -18,17 +18,15 @@
             id="custom-text-title"
             class="font-display text-xl font-extrabold text-charcoal"
           >
-            {{ editing ? "Editar texto" : "Nuevo texto" }}
+            {{ editing ? t("typing.customText.edit") : t("typing.customText.new") }}
           </h2>
           <p class="text-xs font-bold text-pencil-gray">
-            Pegá lo que quieras practicar: un mail que escribís seguido, código de tu
-            proyecto, vocabulario de tu trabajo. Se escribe tal cual, con mayúsculas y
-            puntuación.
+            {{ t("typing.customText.intro") }}
           </p>
         </div>
         <button
           type="button"
-          aria-label="Cerrar"
+          :aria-label="t('shared.close')"
           class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border-2 border-faded-gray text-pencil-gray transition-[color,background-color,scale] duration-200 ease-spring hover:bg-primary-tint/60 hover:text-primary active:scale-90"
           @click="close"
         >
@@ -40,7 +38,7 @@
         class="mb-1 block text-xs font-bold uppercase tracking-wide text-pencil-gray"
         for="custom-text-name"
       >
-        Nombre
+        {{ t("typing.customText.name") }}
       </label>
       <input
         id="custom-text-name"
@@ -48,7 +46,7 @@
         v-model="name"
         type="text"
         :maxlength="MAX_CUSTOM_NAME_LENGTH"
-        placeholder="Ej.: Mail de seguimiento"
+        :placeholder="t('typing.customText.namePlaceholder')"
         class="mb-4 w-full rounded-xl border-2 border-faded-gray bg-paper-white px-3 py-2 text-sm font-bold text-charcoal outline-none transition-colors focus:border-primary"
       />
 
@@ -56,7 +54,7 @@
         class="mb-1 block text-xs font-bold uppercase tracking-wide text-pencil-gray"
         for="custom-text-body"
       >
-        Texto
+        {{ t("typing.customText.text") }}
       </label>
       <textarea
         id="custom-text-body"
@@ -67,7 +65,7 @@
         class="w-full resize-y rounded-xl border-2 border-faded-gray bg-paper-white px-3 py-2 font-mono text-sm text-charcoal outline-none transition-colors focus:border-primary"
       ></textarea>
       <div class="mt-1 flex justify-between text-[11px] font-bold text-pencil-gray">
-        <span>{{ words }} {{ words === 1 ? "palabra" : "palabras" }}</span>
+        <span>{{ t("typing.customText.words", words) }}</span>
         <span>{{ text.length }}/{{ MAX_CUSTOM_TEXT_LENGTH }}</span>
       </div>
 
@@ -84,14 +82,26 @@
           @click="remove"
         >
           {{
-            confirmingDelete ? "¿Seguro? Tocá de nuevo para eliminarlo" : "Eliminar texto"
+            confirmingDelete
+              ? t("typing.customText.confirmDelete")
+              : t("typing.customText.delete")
           }}
         </button>
         <span v-else></span>
 
         <div class="flex gap-2">
-          <ButtonCustom text="Cancelar" variant="secondary" size="sm" @click="close" />
-          <ButtonCustom text="Guardar" variant="primary" size="sm" type="submit" />
+          <ButtonCustom
+            :text="t('typing.customText.cancel')"
+            variant="secondary"
+            size="sm"
+            @click="close"
+          />
+          <ButtonCustom
+            :text="t('typing.customText.save')"
+            variant="primary"
+            size="sm"
+            type="submit"
+          />
         </div>
       </div>
     </form>
@@ -101,6 +111,7 @@
 <script setup>
 import { ref, computed, onUnmounted } from "vue";
 import { useModalFocus } from "@/shared/composables/useModalFocus";
+import { t } from "@/shared/i18n";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 import { useConfigStore } from "@/features/typing-test/store";

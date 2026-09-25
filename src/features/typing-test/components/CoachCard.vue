@@ -27,14 +27,14 @@
       @click="emit('train', coach.keys)"
     >
       <BoltIcon class="w-3.5 h-3.5" />
-      Entrenar ahora
+      {{ t("typing.liveCoach.trainNow") }}
     </button>
 
     <button
       v-if="dismissible"
       type="button"
       class="flex-shrink-0 -mr-1 rounded-md p-1 text-pencil-gray hover:text-charcoal"
-      aria-label="Ocultar"
+      :aria-label="t('typing.liveCoach.hide')"
       @click="emit('dismiss')"
     >
       <XMarkIcon class="w-4 h-4" />
@@ -44,6 +44,7 @@
 
 <script setup>
 import { ViewfinderCircleIcon, XMarkIcon } from "@heroicons/vue/24/outline";
+import { t } from "@/shared/i18n";
 import { BoltIcon } from "@heroicons/vue/24/solid";
 
 defineProps({

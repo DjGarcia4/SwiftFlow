@@ -18,12 +18,13 @@
       class="mt-1 text-xs font-bold text-pencil-gray underline underline-offset-2 transition-colors duration-200 hover:text-primary"
       @click="configStore.handleDrillKeys([])"
     >
-      Volver a mis teclas más flojas
+      {{ t("typing.drillKeys.backToWeakest") }}
     </button>
   </div>
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 

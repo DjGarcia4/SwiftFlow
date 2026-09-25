@@ -16,7 +16,11 @@
             "
             :aria-pressed="configStore.selectedContentTypes === contentType"
             size="sm"
-            :text="`${contentType == 'punctuation' ? 'Puntuación' : 'Números'}`"
+            :text="
+              contentType == 'punctuation'
+                ? t('typing.toolbar.punctuation')
+                : t('typing.toolbar.numbers')
+            "
             @click="configStore.handleContentTypes(contentType)"
           />
         </template>
@@ -25,7 +29,7 @@
           :variant="configStore.blindMode ? 'primary' : 'secondary'"
           :aria-pressed="configStore.blindMode"
           size="sm"
-          text="Sin red"
+          :text="t('typing.toolbar.blind')"
           @click="configStore.toggleBlindMode"
         />
       </div>
@@ -41,7 +45,7 @@
       <!-- Type selection -->
       <div
         role="group"
-        aria-label="Modo"
+        :aria-label="t('typing.toolbar.mode')"
         class="flex flex-wrap items-center justify-center gap-2"
       >
         <IconButton
@@ -52,7 +56,7 @@
           :variant="configStore.type === type ? 'primary' : 'secondary'"
           :aria-pressed="configStore.type === type"
           size="sm"
-          :text="typeMeta[type].label"
+          :text="t(`shared.modes.${type}`)"
           @click="configStore.handleType(type)"
         />
       </div>
@@ -76,7 +80,7 @@
         <div
           :key="configStore.type"
           role="group"
-          :aria-label="valueOptions?.label ?? 'Texto'"
+          :aria-label="valueOptions?.label ?? t('typing.toolbar.text')"
           class="flex flex-wrap items-center justify-center gap-2 animate-rise [animation-duration:400ms]"
         >
           <template v-if="configStore.type === 'time'">
@@ -119,7 +123,7 @@
               "
               :aria-pressed="configStore.dictationSentences === count"
               size="sm"
-              :text="`${count} ${count === 1 ? 'frase' : 'frases'}`"
+              :text="t('typing.toolbar.sentenceCount', count)"
               @click="configStore.handleDictationSentences(count)"
             />
           </template>
@@ -128,7 +132,7 @@
               :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
               :aria-pressed="!configStore.selectedCodeLanguage"
               size="sm"
-              text="Todos"
+              :text="t('typing.toolbar.allLanguages')"
               @click="configStore.handleCodeLanguage(null)"
             />
             <IconButton
@@ -160,14 +164,14 @@
               v-if="configStore.selectedCustomText"
               variant="secondary"
               size="sm"
-              text="Editar"
+              :text="t('typing.toolbar.edit')"
               @click="configStore.openCustomEditor(configStore.selectedCustomText.id)"
             />
             <IconButton
               icon="plus"
               variant="secondary"
               size="sm"
-              text="Nuevo"
+              :text="t('typing.toolbar.new')"
               @click="configStore.openCustomEditor()"
             />
           </template>
@@ -184,7 +188,7 @@
         v-if="punctuationApplies"
         type="button"
         :aria-pressed="configStore.selectedContentTypes === 'punctuation'"
-        title="Puntuación y mayúsculas"
+        :title="t('typing.toolbar.punctuationHint')"
         class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
         :class="
           configStore.selectedContentTypes === 'punctuation'
@@ -194,14 +198,14 @@
         @click="configStore.handleContentTypes('punctuation')"
       >
         <AtSymbolIcon class="w-4 h-4" />
-        <span class="hidden 2xl:inline">Puntuación</span>
+        <span class="hidden 2xl:inline">{{ t("typing.toolbar.punctuation") }}</span>
       </button>
 
       <!-- "Sin red": mistakes stay hidden until the results -->
       <button
         type="button"
         :aria-pressed="configStore.blindMode"
-        title="Sin red: los errores no se marcan hasta el final"
+        :title="t('typing.toolbar.blindHint')"
         class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
         :class="
           configStore.blindMode
@@ -211,14 +215,14 @@
         @click="configStore.toggleBlindMode"
       >
         <EyeSlashIcon class="w-4 h-4" />
-        <span class="hidden 2xl:inline">Sin red</span>
+        <span class="hidden 2xl:inline">{{ t("typing.toolbar.blind") }}</span>
       </button>
 
       <!-- Sudden death, must-correct, minimum accuracy -->
       <StrictModePicker />
 
       <SegmentedControl
-        label="Modo"
+        :label="t('typing.toolbar.mode')"
         compact-labels
         :options="modeOptions"
         :model-value="configStore.type"
@@ -263,12 +267,16 @@
               : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
           "
           :aria-expanded="pickerOpen"
-          :title="targetKeys.length ? 'Cambiar las teclas a entrenar' : 'Elegir teclas'"
+          :title="
+            targetKeys.length
+              ? t('typing.toolbar.changeKeys')
+              : t('typing.toolbar.pickKeys')
+          "
           @click="pickerOpen = !pickerOpen"
         >
           <ViewfinderCircleIcon class="w-4 h-4" />
           <span v-if="configStore.drillWords.length">
-            Palabras ({{ configStore.drillWords.length }})
+            {{ t("typing.toolbar.drillWords", configStore.drillWords.length) }}
           </span>
           <template v-else-if="targetKeys.length">
             <!-- Green once that letter is done for today -->
@@ -284,7 +292,7 @@
               >{{ key }}</kbd
             >
           </template>
-          <span v-else>Elegir teclas</span>
+          <span v-else>{{ t("typing.toolbar.pickKeys") }}</span>
           <ChevronDownIcon
             class="w-3.5 h-3.5 transition-transform duration-200"
             :class="{ 'rotate-180': pickerOpen }"
@@ -306,7 +314,7 @@
             <!-- Drilling words: which ones, and the way back to letters -->
             <template v-if="configStore.drillWords.length">
               <p class="mb-3 text-center text-xs font-bold text-pencil-gray">
-                Entrenando estas palabras:
+                {{ t("typing.toolbar.drillingWords") }}
               </p>
               <div class="flex max-w-80 flex-wrap justify-center gap-1.5">
                 <span
@@ -321,17 +329,17 @@
                 class="mx-auto mt-3 block text-xs font-bold text-pencil-gray underline underline-offset-2 hover:text-primary"
                 @click="configStore.handleDrillKeys([])"
               >
-                Volver a entrenar letras
+                {{ t("typing.toolbar.backToLetters") }}
               </button>
             </template>
             <template v-else>
               <p class="mb-3 text-center text-xs font-bold text-pencil-gray">
                 {{
                   configStore.drillKeys.length
-                    ? "Elegí hasta 5 teclas"
+                    ? t("typing.toolbar.upToFive")
                     : targetKeys.length
-                      ? "Según tu historial. Elegí otras si querés:"
-                      : "Todavía no sé qué te cuesta: elegí teclas"
+                      ? t("typing.toolbar.fromHistory")
+                      : t("typing.toolbar.noIdeaYet")
                 }}
               </p>
               <DrillKeysPicker />
@@ -353,7 +361,9 @@
         v-if="configStore.drillWords.length"
         class="flex flex-wrap items-center justify-center gap-1.5"
       >
-        <span class="text-xs font-bold text-pencil-gray">Entrenando palabras:</span>
+        <span class="text-xs font-bold text-pencil-gray">{{
+          t("typing.toolbar.drillingWordsShort")
+        }}</span>
         <span
           v-for="word in configStore.drillWords"
           :key="word"
@@ -363,14 +373,18 @@
         <IconButton
           variant="secondary"
           size="xs"
-          text="Volver a letras"
+          :text="t('typing.toolbar.backToLettersShort')"
           @click="configStore.handleDrillKeys([])"
         />
       </div>
 
       <div v-else class="flex flex-wrap items-center justify-center gap-1.5">
         <span class="text-xs font-bold text-pencil-gray">
-          {{ targetKeys.length ? "Entrenando:" : "Todavía no sé qué te cuesta:" }}
+          {{
+            targetKeys.length
+              ? t("typing.toolbar.drilling")
+              : t("typing.toolbar.noIdeaYetShort")
+          }}
         </span>
 
         <kbd
@@ -380,13 +394,13 @@
           >{{ key }}</kbd
         >
         <span v-if="!targetKeys.length" class="text-xs text-pencil-gray">
-          elegí teclas o hacé unos tests primero
+          {{ t("typing.toolbar.pickOrPlay") }}
         </span>
 
         <IconButton
           :variant="editingKeys ? 'primary' : 'secondary'"
           size="xs"
-          :text="editingKeys ? 'Listo' : 'Cambiar'"
+          :text="editingKeys ? t('typing.toolbar.done') : t('typing.toolbar.change')"
           @click="editingKeys = !editingKeys"
         />
       </div>
@@ -403,6 +417,7 @@
 import { isSpeechSupported } from "@/shared/utils/speech";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
 import StrictModePicker from "./StrictModePicker.vue";
+import { t } from "@/shared/i18n";
 import LessonChip from "@/features/course/components/LessonChip.vue";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import {
@@ -435,18 +450,18 @@ const historyStore = useHistoryStore();
 // Icon + label for each typing mode (the mobile buttons take IconButton's
 // icon names, the desktop strip takes the components themselves)
 const typeMeta = {
-  time: { icon: "clock", component: ClockIcon, label: "Tiempo" },
+  time: { icon: "clock", component: ClockIcon },
   words: { icon: "letter", component: "A", label: "Palabras" },
-  numbers: { icon: "number", component: HashtagIcon, label: "Números" },
-  quote: { icon: "quote", component: ChatBubbleBottomCenterTextIcon, label: "Cita" },
-  classics: { icon: "book", component: BookOpenIcon, label: "Clásicos" },
-  dictation: { icon: "speaker", component: SpeakerWaveIcon, label: "Dictado" },
-  lesson: { icon: "academic-cap", component: AcademicCapIcon, label: "Curso" },
-  code: { icon: "code", component: CodeBracketIcon, label: "Código" },
-  zen: { icon: "zen", component: SparklesIcon, label: "Zen" },
-  drill: { icon: "target", component: ViewfinderCircleIcon, label: "Entrenar" },
-  custom: { icon: "document", component: PencilSquareIcon, label: "Mi texto" },
-  weekly: { icon: "trophy", component: TrophyIcon, label: "Semanal" },
+  numbers: { icon: "number", component: HashtagIcon },
+  quote: { icon: "quote", component: ChatBubbleBottomCenterTextIcon },
+  classics: { icon: "book", component: BookOpenIcon },
+  dictation: { icon: "speaker", component: SpeakerWaveIcon },
+  lesson: { icon: "academic-cap", component: AcademicCapIcon },
+  code: { icon: "code", component: CodeBracketIcon },
+  zen: { icon: "zen", component: SparklesIcon },
+  drill: { icon: "target", component: ViewfinderCircleIcon },
+  custom: { icon: "document", component: PencilSquareIcon },
+  weekly: { icon: "trophy", component: TrophyIcon },
 };
 
 // Whether punctuation is a choice: code, the weekly text and your own
@@ -474,7 +489,7 @@ const offeredTypes = computed(() =>
 const modeOptions = computed(() =>
   offeredTypes.value.map((type) => ({
     value: type,
-    label: typeMeta[type].label,
+    label: t(`shared.modes.${type}`),
     icon: typeMeta[type].component,
   }))
 );
@@ -485,7 +500,7 @@ const valueOptions = computed(() => {
   const type = configStore.type;
   if (type === "time") {
     return {
-      label: "Duración",
+      label: t("typing.toolbar.duration"),
       options: configStore.times.map((time) => ({ value: time, label: `${time}s` })),
       selected: configStore.selectedTime,
       select: configStore.handleTime,
@@ -493,7 +508,7 @@ const valueOptions = computed(() => {
   }
   if (type === "words" || type === "numbers" || type === "drill") {
     return {
-      label: "Cantidad",
+      label: t("typing.toolbar.count"),
       options: configStore.words.map((count) => ({ value: count, label: `${count}` })),
       selected: configStore.selectedWords,
       select: configStore.handleWords,
@@ -501,10 +516,10 @@ const valueOptions = computed(() => {
   }
   if (type === "dictation") {
     return {
-      label: "Frases",
+      label: t("typing.toolbar.sentences"),
       options: DICTATION_SENTENCE_COUNTS.map((count) => ({
         value: count,
-        label: `${count} ${count === 1 ? "frase" : "frases"}`,
+        label: t("typing.toolbar.sentenceCount", count),
       })),
       selected: configStore.dictationSentences,
       select: configStore.handleDictationSentences,
@@ -512,9 +527,9 @@ const valueOptions = computed(() => {
   }
   if (type === "code") {
     return {
-      label: "Lenguaje",
+      label: t("typing.toolbar.language"),
       options: [
-        { value: null, label: "Todos" },
+        { value: null, label: t("typing.toolbar.allLanguages") },
         ...configStore.languages.map((language) => ({
           value: language,
           label: language,

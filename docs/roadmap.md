@@ -129,8 +129,10 @@ Landing: sección o tarjeta propia, novedades.
 
 ## Fase 13 — SwiftFlow en inglés
 
-Toda la interfaz traducida, con idioma elegible, y contenido en inglés (palabras, citas,
-textos). El español sigue siendo el idioma principal. Va última porque traduce todo lo
-anterior de una sola vez.
+Dos ajustes independientes: el idioma de la interfaz y el idioma de práctica. Se puede tener
+la app en inglés y practicar español, o al revés. El español sigue siendo el principal.
 
-Landing: la landing también traducida, y su propia ruta o selector.
+- **13a**: la base de traducción, el selector de idioma y la pantalla de escritura
+- **13b**: historial, estadísticas, consejos, logros y retos
+- **13c**: curso, resumen, landing y las páginas para compartir
+- **13d**: contenido de práctica en inglés (palabras, citas, textos, dictado, curso)

@@ -13,8 +13,8 @@
       type="button"
       :aria-expanded="open"
       :aria-pressed="active"
-      :aria-label="`Modos exigentes: ${active ? summary : 'ninguno'}`"
-      title="Modos exigentes"
+      :aria-label="t('typing.strict.buttonLabel', active ? summary : null)"
+      :title="t('typing.strict.button')"
       class="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
       :class="
         active || open
@@ -52,6 +52,7 @@
 import { ref, computed, h, onMounted, onUnmounted } from "vue";
 import { HeartIcon, ChevronDownIcon } from "@heroicons/vue/24/outline";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
+import { t } from "@/shared/i18n";
 import { useConfigStore } from "@/features/typing-test/store";
 import {
   STRICT_MODES,
@@ -76,11 +77,11 @@ const summary = computed(() => {
     strictModeById(configStore.strictMode)?.short,
     configStore.minAccuracy && `${configStore.minAccuracy}%`,
   ].filter(Boolean);
-  return parts.length ? parts.join(" · ") : "Exigente";
+  return parts.length ? parts.join(" · ") : t("typing.strict.summaryNone");
 });
 
-const ACCURACY_OPTIONS = [
-  { value: null, label: "No" },
+const accuracyOptions = () => [
+  { value: null, label: t("typing.strict.off") },
   ...MIN_ACCURACY_OPTIONS.map((value) => ({ value, label: `${value}%` })),
 ];
 
@@ -89,7 +90,7 @@ const StrictOptions = () => [
   h(
     "p",
     { class: "mb-2 text-xs font-bold text-pencil-gray", id: "strict-mistake-label" },
-    "Un error…"
+    t("typing.strict.aMistake")
   ),
   h(
     "div",
@@ -120,10 +121,14 @@ const StrictOptions = () => [
     )
   ),
   h("div", { class: "flex w-full items-center justify-between gap-3" }, [
-    h("span", { class: "text-xs font-bold text-pencil-gray" }, "Precisión mínima"),
+    h(
+      "span",
+      { class: "text-xs font-bold text-pencil-gray" },
+      t("typing.strict.minAccuracy")
+    ),
     h(SegmentedControl, {
-      label: "Precisión mínima",
-      options: ACCURACY_OPTIONS,
+      label: t("typing.strict.minAccuracy"),
+      options: accuracyOptions(),
       modelValue: configStore.minAccuracy,
       onSelect: (value) => configStore.setMinAccuracy(value),
     }),
@@ -131,7 +136,7 @@ const StrictOptions = () => [
   h(
     "p",
     { class: "mt-3 text-[11px] font-bold text-pencil-gray" },
-    "Si no llegás, la partida no cuenta para el historial."
+    t("typing.strict.footnote")
   ),
 ];
 

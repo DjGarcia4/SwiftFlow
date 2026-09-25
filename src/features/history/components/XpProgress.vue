@@ -15,7 +15,9 @@
     <div class="min-w-0 flex-1">
       <div class="flex items-baseline justify-between gap-2 mb-1.5">
         <span class="text-sm font-extrabold text-charcoal">
-          {{ leveledUp ? `¡Nivel ${level.level}!` : `Nivel ${level.level}` }}
+          {{
+            leveledUp ? t("shared.levelUp", level.level) : t("shared.level", level.level)
+          }}
           <span class="font-bold text-pencil-gray">· {{ level.title }}</span>
         </span>
         <span class="text-xs font-bold tabular-nums text-pencil-gray">
@@ -26,7 +28,7 @@
             :style="contrast.high ? null : { color }"
             >+{{ gained }} XP ·
           </span>
-          <template v-if="level.isMax">nivel máximo</template>
+          <template v-if="level.isMax">{{ t("shared.maxLevel") }}</template>
           <template v-else>{{ level.xpIntoLevel }}/{{ level.xpForNextLevel }}</template>
         </span>
       </div>
@@ -41,6 +43,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { ref, computed, watch, onMounted } from "vue";
 import { useHistoryStore } from "@/features/history/store";
 import { levelFromXp } from "@/features/history/utils/experience";

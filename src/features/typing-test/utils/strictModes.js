@@ -3,20 +3,25 @@
 // a third sets how accurate a run has to be to count at all. A run that
 // fails any of them isn't saved, the same as one cut short with Esc; one
 // that makes it is an ordinary run that happens to be flagged.
+import { t } from "@/shared/i18n";
+
+// Their words come from the typing messages, read when shown
+const worded = (id, key) => ({
+  id,
+  get label() {
+    return t(`typing.strict.${key}.label`);
+  },
+  get short() {
+    return t(`typing.strict.${key}.short`);
+  },
+  get detail() {
+    return t(`typing.strict.${key}.detail`);
+  },
+});
 
 export const STRICT_MODES = [
-  {
-    id: "sudden-death",
-    label: "Muerte súbita",
-    short: "1 vida",
-    detail: "El primer error termina la partida",
-  },
-  {
-    id: "must-correct",
-    label: "Corregir para avanzar",
-    short: "Corregir",
-    detail: "Una letra equivocada no entra: hay que acertarla para seguir",
-  },
+  worded("sudden-death", "suddenDeath"),
+  worded("must-correct", "mustCorrect"),
 ];
 
 export const MIN_ACCURACY_OPTIONS = [90, 95, 98];
@@ -47,7 +52,11 @@ export const runFailure = ({ diedAt = null, minAccuracy = null, accuracy }) => {
 export const describeFailure = (failure) => {
   if (!failure) return null;
   if (failure.reason === "sudden-death") {
-    return "Muerte súbita: un error y afuera · no cuenta para el historial";
+    return t("typing.strict.diedMessage");
   }
-  return `Precisión de ${Math.floor(failure.accuracy)} %, por debajo del ${failure.minAccuracy} % · no cuenta para el historial`;
+  return t(
+    "typing.strict.belowMessage",
+    Math.floor(failure.accuracy),
+    failure.minAccuracy
+  );
 };

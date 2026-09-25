@@ -37,11 +37,11 @@
             to="/historial"
             :style="streakStyle"
             class="flex items-center gap-1 h-9 px-2.5 rounded-xl border-2 text-xs font-extrabold transition-[scale,color,border-color,background-color] duration-300 ease-spring hover:scale-105 active:scale-95"
-            :aria-label="`Racha de ${historyStore.dailyStreak} días`"
+            :aria-label="t('shared.nav.streak', historyStore.dailyStreak)"
             :title="
               streakReminder.risk.atRisk
-                ? `Tu racha se corta en ${streakReminder.timeLeft}: todavía no practicaste hoy`
-                : `Racha de ${historyStore.dailyStreak} días`
+                ? t('shared.nav.streakAtRisk', streakReminder.timeLeft)
+                : t('shared.nav.streak', historyStore.dailyStreak)
             "
             :class="{ 'animate-streak-risk': streakReminder.risk.atRisk }"
           >
@@ -55,8 +55,8 @@
         <router-link
           to="/curso"
           class="hidden sm:flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
-          aria-label="Curso desde cero"
-          title="Curso desde cero"
+          :aria-label="t('shared.nav.course')"
+          :title="t('shared.nav.course')"
         >
           <AcademicCapIcon class="w-5 h-5" />
         </router-link>
@@ -64,7 +64,7 @@
         <router-link
           to="/historial"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
-          aria-label="Ver historial"
+          :aria-label="t('shared.nav.history')"
         >
           <ChartBarIcon class="w-5 h-5" />
         </router-link>
@@ -73,8 +73,8 @@
         <router-link
           to="/sobre"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
-          aria-label="Qué es SwiftFlow"
-          title="Qué es SwiftFlow"
+          :aria-label="t('shared.nav.about')"
+          :title="t('shared.nav.about')"
         >
           <InformationCircleIcon class="w-5 h-5" />
         </router-link>
@@ -84,7 +84,9 @@
         <button
           type="button"
           class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
-          :aria-label="themeStore.isDark ? 'Activar modo claro' : 'Activar modo oscuro'"
+          :aria-label="
+            themeStore.isDark ? t('shared.nav.lightMode') : t('shared.nav.darkMode')
+          "
           @click="themeStore.toggleTheme"
         >
           <Transition
@@ -117,6 +119,7 @@ import {
   AcademicCapIcon,
 } from "@heroicons/vue/24/outline";
 import { useThemeStore } from "@/shared/stores/theme";
+import { t } from "@/shared/i18n";
 import { useHistoryStore } from "@/features/history/store";
 import { getDailyStreakColorRgb } from "@/shared/utils/flameColor";
 import { useContrastStore } from "@/shared/stores/contrast";

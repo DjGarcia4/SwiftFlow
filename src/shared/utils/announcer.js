@@ -1,4 +1,5 @@
 import { reactive } from "vue";
+import { locale } from "@/shared/i18n";
 
 // Things a screen reader should say that only ever show up visually: the
 // results, a toast, the coach. LiveAnnouncer.vue renders the two regions
@@ -33,6 +34,8 @@ export const sentences = (pieces) =>
     .map((piece) => (/[.!?…]$/.test(piece) ? piece : `${piece}.`))
     .join(" ");
 
-// "64,5" rather than "64.5": it's read out in Spanish
-export const spokenNumber = (value, decimals = 0) =>
-  Number(value).toFixed(decimals).replace(".", ",");
+// "64,5" in Spanish, "64.5" in English: read out the way each says it
+export const spokenNumber = (value, decimals = 0) => {
+  const fixed = Number(value).toFixed(decimals);
+  return locale.value === "es" ? fixed.replace(".", ",") : fixed;
+};

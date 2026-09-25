@@ -2,11 +2,19 @@
 // the caret glides or jumps. Kept apart from the rewards (customization.js):
 // these are about reading comfortably, so they're never locked.
 
+import { t } from "@/shared/i18n";
+
 // `load` pulls a font's files in the first time it's picked, so nobody
 // downloads the ones they don't use. They're bundled rather than fetched
 // from a font service, so they keep working offline.
 export const TEXT_FONTS = [
-  { id: "mono", label: "Monoespaciada", family: "var(--font-mono)" },
+  {
+    id: "mono",
+    get label() {
+      return t("typing.appearance.fonts.mono");
+    },
+    family: "var(--font-mono)",
+  },
   {
     id: "jetbrains",
     label: "JetBrains Mono",
@@ -40,20 +48,37 @@ export const TEXT_SIZES = [
 ];
 
 export const LINE_HEIGHTS = [
-  { id: "tight", label: "Junto", value: 1.6 },
-  { id: "normal", label: "Normal", value: 1.9 },
-  { id: "loose", label: "Amplio", value: 2.3 },
-];
+  { id: "tight", value: 1.6 },
+  { id: "normal", value: 1.9 },
+  { id: "loose", value: 2.3 },
+].map((option) => ({
+  ...option,
+  get label() {
+    return t(`typing.appearance.lineHeights.${option.id}`);
+  },
+}));
 
-export const CARET_MOTIONS = [
-  { id: "smooth", label: "Se desliza" },
-  { id: "instant", label: "Salta" },
-];
+export const CARET_MOTIONS = [{ id: "smooth" }, { id: "instant" }].map((option) => ({
+  ...option,
+  get label() {
+    return t(`typing.appearance.caretMotions.${option.id}`);
+  },
+}));
 
 // Focus mode: only the word being typed and the next one, big and alone
 export const FOCUS_OPTIONS = [
-  { id: "off", label: "No" },
-  { id: "on", label: "Sí" },
+  {
+    id: "off",
+    get label() {
+      return t("typing.appearance.no");
+    },
+  },
+  {
+    id: "on",
+    get label() {
+      return t("typing.appearance.yes");
+    },
+  },
 ];
 
 export const TEXT_APPEARANCE_DEFAULTS = {

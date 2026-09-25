@@ -3,6 +3,7 @@
 // AltGr, or a dead key for an accent. Only what the on-screen keyboard
 // draws -- characters it has no key for come back null rather than a guess.
 import { layoutById } from "./keyboardLayouts";
+import { t } from "@/shared/i18n";
 
 // Stand in for the modifier keys on the drawn keyboard. Both Shift keys
 // light up together.
@@ -115,16 +116,24 @@ export const foldByKey = (counts, layout) => {
 // Standard touch typing: which finger each key belongs to. Fingers of a
 // kind share a color on both hands, so "the same finger on the other hand"
 // shows at a glance.
+const finger = (id, kind, hand) => ({
+  kind,
+  hand,
+  get name() {
+    return t(`typing.fingers.${id}`);
+  },
+});
+
 export const FINGERS = {
-  "left-pinky": { name: "meñique izquierdo", kind: "pinky", hand: "left" },
-  "left-ring": { name: "anular izquierdo", kind: "ring", hand: "left" },
-  "left-middle": { name: "medio izquierdo", kind: "middle", hand: "left" },
-  "left-index": { name: "índice izquierdo", kind: "index", hand: "left" },
-  "right-index": { name: "índice derecho", kind: "index", hand: "right" },
-  "right-middle": { name: "medio derecho", kind: "middle", hand: "right" },
-  "right-ring": { name: "anular derecho", kind: "ring", hand: "right" },
-  "right-pinky": { name: "meñique derecho", kind: "pinky", hand: "right" },
-  thumb: { name: "pulgar", kind: "thumb", hand: null },
+  "left-pinky": finger("left-pinky", "pinky", "left"),
+  "left-ring": finger("left-ring", "ring", "left"),
+  "left-middle": finger("left-middle", "middle", "left"),
+  "left-index": finger("left-index", "index", "left"),
+  "right-index": finger("right-index", "index", "right"),
+  "right-middle": finger("right-middle", "middle", "right"),
+  "right-ring": finger("right-ring", "ring", "right"),
+  "right-pinky": finger("right-pinky", "pinky", "right"),
+  thumb: finger("thumb", "thumb", null),
 };
 
 // The finger for a key on the drawn keyboard (Shift is either pinky, so

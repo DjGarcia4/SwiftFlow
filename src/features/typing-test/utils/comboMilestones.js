@@ -1,3 +1,5 @@
+import { t } from "@/shared/i18n";
+
 // Motivational "you're on fire" pushes while typing: which combo lengths
 // earn one, when to fire it, and what it says.
 
@@ -19,20 +21,16 @@ export const detectComboMilestone = (previousStreak, streak, celebratedOnce) => 
   return streak;
 };
 
-const MESSAGES = [
-  { from: 25, texts: ["¡Buen ritmo!", "¡Así se hace!", "¡Arrancaste con todo!"] },
-  { from: 50, texts: ["¡Estás on fire!", "¡Qué manos!", "¡Seguí así!"] },
-  { from: 100, texts: ["¡Imparable!", "¡Cien sin fallar!", "¡No hay quien te pare!"] },
-  { from: 150, texts: ["¡Modo bestia!", "¡Estás en la zona!", "¡Qué precisión!"] },
-  { from: 200, texts: ["¡Sos una máquina!", "¡Nivel leyenda!", "¡Increíble!"] },
-  { from: 300, texts: ["¡Esto es otro nivel!", "¡Dedos de acero!", "¡Brutal!"] },
-  { from: 500, texts: ["¡Inhumano!", "¡Estás volando!", "¡Histórico!"] },
-  { from: 1000, texts: ["¡Dios del teclado!", "¡Mil sin un error!"] },
-];
+// Where each tier of messages (typing.combo.tiers) starts
+const TIER_STARTS = [25, 50, 100, 150, 200, 300, 500, 1000];
 
 export const pickComboMessage = (milestone, random = Math.random) => {
-  const tier = [...MESSAGES].reverse().find((m) => milestone >= m.from) ?? MESSAGES[0];
-  return tier.texts[Math.floor(random() * tier.texts.length)];
+  const tier = Math.max(
+    0,
+    TIER_STARTS.findLastIndex((from) => milestone >= from)
+  );
+  const texts = t("typing.combo.tiers")[tier];
+  return texts[Math.floor(random() * texts.length)];
 };
 
 // Where the live combo meter sits: filling from the last milestone reached

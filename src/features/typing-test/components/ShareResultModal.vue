@@ -31,13 +31,13 @@
         >
           <div class="flex items-center justify-between mb-3">
             <h2 id="share-title" class="text-sm font-bold text-charcoal">
-              {{ title }}
+              {{ title ?? t("typing.buttons.share") }}
             </h2>
             <IconButton
               icon="close"
               variant="secondary"
               size="xs"
-              tooltip="Cerrar"
+              :tooltip="t('shared.close')"
               @click="$emit('close')"
             />
           </div>
@@ -45,19 +45,19 @@
           <img
             v-if="imageUrl"
             :src="imageUrl"
-            alt="Vista previa del resultado a compartir"
+            :alt="t('typing.shareDialog.preview')"
             class="w-full rounded-xl border-2 border-faded-gray mb-4"
           />
 
           <div class="flex gap-2 justify-center">
             <ButtonCustom
-              text="Descargar"
+              :text="t('typing.shareDialog.download')"
               variant="secondary"
               @click="$emit('download')"
             />
             <ButtonCustom
               v-if="canNativeShare"
-              text="Compartir"
+              :text="t('typing.shareDialog.share')"
               variant="primary"
               @click="$emit('share')"
             />
@@ -70,13 +70,15 @@
 
 <script setup>
 import { ref } from "vue";
+import { t } from "@/shared/i18n";
 import { useModalFocus } from "@/shared/composables/useModalFocus";
 import IconButton from "@/shared/components/IconButton.vue";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 
 const props = defineProps({
   open: { type: Boolean, default: false },
-  title: { type: String, default: "Compartir resultado" },
+  // The share result's by default
+  title: { type: String, default: null },
   imageUrl: { type: String, default: null },
   canNativeShare: { type: Boolean, default: false },
 });

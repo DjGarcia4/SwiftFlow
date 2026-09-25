@@ -11,7 +11,7 @@
     :aria-valuenow="streak"
     :aria-valuemin="progress.from"
     :aria-valuemax="progress.next ?? streak"
-    :aria-label="`Combo de ${streak}`"
+    :aria-label="t('typing.combo.label', streak)"
   >
     <FireIcon
       class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 transition-colors duration-300"
@@ -49,6 +49,7 @@
 
 <script setup>
 import { ref, computed, watch, onUnmounted } from "vue";
+import { t } from "@/shared/i18n";
 import { FireIcon } from "@heroicons/vue/24/solid";
 import { useConfigStore } from "@/features/typing-test/store";
 import { getCharacterStreakColorRgb } from "@/shared/utils/flameColor";

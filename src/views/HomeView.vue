@@ -27,7 +27,7 @@
           : 'opacity-100 scale-100 rotate-0'
       "
       :aria-hidden="hideConfig"
-      aria-label="Configurar"
+      :aria-label="t('typing.toolbar.settings')"
       @click="configOpen = true"
     >
       <Cog6ToothIcon class="w-6 h-6" />
@@ -60,7 +60,7 @@
             ref="configSheet"
             role="dialog"
             aria-modal="true"
-            aria-label="Configuración"
+            :aria-label="t('typing.toolbar.settingsSheet')"
             class="w-full max-w-md max-h-[85vh] overflow-y-auto"
           >
             <div class="flex justify-end mb-2">
@@ -68,7 +68,7 @@
                 icon="close"
                 variant="secondary"
                 size="xs"
-                tooltip="Cerrar"
+                :tooltip="t('shared.close')"
                 @click="configOpen = false"
               />
             </div>
@@ -116,6 +116,7 @@ import { useStreakReminderStore } from "@/features/history/streakReminder";
 import IconButton from "@/shared/components/IconButton.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import { useModalFocus } from "@/shared/composables/useModalFocus";
+import { t } from "@/shared/i18n";
 
 const configStore = useConfigStore();
 const streakReminder = useStreakReminderStore();

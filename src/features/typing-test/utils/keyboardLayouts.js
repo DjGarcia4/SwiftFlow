@@ -1,3 +1,5 @@
+import { t } from "@/shared/i18n";
+
 // The keyboards SwiftFlow can draw and reason about. Each one is what's
 // printed on its keys (lowercase, left to right), what Shift and AltGr make
 // on them, and its dead keys: the ones pressed before a letter to put an
@@ -29,7 +31,9 @@ const pairs = (keys, shifted) =>
 
 const LATAM = {
   id: "latam",
-  name: "Latinoamericano",
+  get name() {
+    return t("typing.keyboard.layouts.latam");
+  },
   rows: [
     row("1234567890'¿"),
     row("qwertyuiop´+"),
@@ -51,7 +55,9 @@ const LATAM = {
 
 const SPAIN = {
   id: "es",
-  name: "Español (España)",
+  get name() {
+    return t("typing.keyboard.layouts.es");
+  },
   rows: [
     row("1234567890'¡"),
     row("qwertyuiop`+"),
@@ -86,7 +92,9 @@ const SPAIN = {
 // AltGr for the Spanish letters it has no key for
 const US = {
   id: "us",
-  name: "Inglés (EE. UU.) internacional",
+  get name() {
+    return t("typing.keyboard.layouts.us");
+  },
   rows: [row("1234567890-="), row("qwertyuiop[]"), row("asdfghjkl;'"), row("zxcvbnm,./")],
   shift: {
     ...pairs("1234567890-=", "!@#$%^&*()_+"),
@@ -105,7 +113,9 @@ const US = {
 // accents vary from one system to the next, so none is guessed at
 const DVORAK = {
   id: "dvorak",
-  name: "Dvorak",
+  get name() {
+    return t("typing.keyboard.layouts.dvorak");
+  },
   rows: [row("1234567890[]"), row("',.pyfgcrl/="), row("aoeuidhtns-"), row(";qjkxbmwvz")],
   shift: {
     ...pairs("1234567890[]", "!@#$%^&*(){}"),
@@ -115,12 +125,16 @@ const DVORAK = {
   },
   altgr: {},
   dead: {},
-  note: "Las tildes y la ñ no se marcan: cada sistema las pone en otro lado.",
+  get note() {
+    return t("typing.keyboard.noAccentsNote");
+  },
 };
 
 const COLEMAK = {
   id: "colemak",
-  name: "Colemak",
+  get name() {
+    return t("typing.keyboard.layouts.colemak");
+  },
   rows: [row("1234567890-="), row("qwfpgjluy;[]"), row("arstdhneio'"), row("zxcvbkm,./")],
   shift: {
     ...pairs("1234567890-=", "!@#$%^&*()_+"),
@@ -130,7 +144,9 @@ const COLEMAK = {
   },
   altgr: {},
   dead: {},
-  note: "Las tildes y la ñ no se marcan: cada sistema las pone en otro lado.",
+  get note() {
+    return t("typing.keyboard.noAccentsNote");
+  },
 };
 
 export const KEYBOARD_LAYOUTS = [LATAM, SPAIN, US, DVORAK, COLEMAK];

@@ -34,7 +34,7 @@
         ]"
         :style="keyStyle(' ', rows.length, 4)"
       >
-        espacio
+        {{ t("typing.keyboard.space") }}
         <slot name="tooltip" :char="' '" />
       </div>
       <div
@@ -57,6 +57,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { t } from "@/shared/i18n";
 import { SHIFT_KEY, ALTGR_KEY } from "@/features/typing-test/utils/keyboardMap";
 import { layoutById } from "@/features/typing-test/utils/keyboardLayouts";
 import { useConfigStore } from "@/features/typing-test/store";

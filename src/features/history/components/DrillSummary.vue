@@ -39,7 +39,7 @@
             <div
               class="absolute -top-1 h-4 w-0.5 rounded-full bg-charcoal"
               :style="{ left: `${barWidth(letter.target)}%` }"
-              :title="`Meta de hoy: ${percent(letter.target)}`"
+              :title="t('typing.drillSummary.goalToday', percent(letter.target))"
             ></div>
           </div>
           <div
@@ -52,9 +52,11 @@
               >
                 {{ letter.latest === null ? "—" : percent(letter.latest) }}
               </span>
-              de error · meta {{ percent(letter.target) }}
+              {{ t("typing.drillSummary.ofError") }} ·
+              {{ t("typing.drillSummary.goal", percent(letter.target)) }}
               <template v-if="letter.attempts < MIN_DAY_ATTEMPTS">
-                · {{ letter.attempts }}/{{ MIN_DAY_ATTEMPTS }} intentos
+                ·
+                {{ t("typing.drillSummary.attempts", letter.attempts, MIN_DAY_ATTEMPTS) }}
               </template>
             </span>
             <span v-if="reviewLine(letter.key)" class="truncate">{{
@@ -72,7 +74,7 @@
         class="rounded-lg border-2 border-faded-gray px-3 py-1.5 text-xs font-extrabold text-pencil-gray transition-colors duration-200 hover:text-charcoal"
         @click="emit('again')"
       >
-        Otra ronda igual
+        {{ t("typing.drillSummary.sameAgain") }}
       </button>
       <button
         type="button"
@@ -84,7 +86,11 @@
         "
         @click="readiness.verdict === 'keep' ? emit('again') : emit('leave')"
       >
-        {{ readiness.verdict === "keep" ? "Otra ronda" : `Volver a ${leaveLabel}` }}
+        {{
+          readiness.verdict === "keep"
+            ? t("typing.drillSummary.again")
+            : t("typing.drillSummary.backTo", leaveLabel)
+        }}
         <ArrowRightIcon class="w-3.5 h-3.5" />
       </button>
     </div>
@@ -92,6 +98,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import {
   ArrowPathIcon,
@@ -123,34 +130,31 @@ const TONES = {
 };
 const tone = computed(() => TONES[props.readiness.verdict] ?? TONES.keep);
 
-const joinKeys = (keys) => {
-  const labels = keys.map((key) => `la ${key.toUpperCase()}`);
-  return labels.length === 1
-    ? labels[0]
-    : `${labels.slice(0, -1).join(", ")} y ${labels[labels.length - 1]}`;
-};
-
 const headline = computed(() => {
   switch (props.readiness.verdict) {
     case "ready":
-      return "¡Listo por hoy con estas letras!";
+      return t("typing.drillSummary.ready");
     case "rest":
-      return "Por hoy alcanza";
+      return t("typing.drillSummary.rest");
     default:
-      return "Seguí: una ronda más";
+      return t("typing.drillSummary.keep");
   }
 });
 
 const subline = computed(() => {
   const { verdict, rounds, pending, restReason } = props.readiness;
-  const roundText = `${rounds} ${rounds === 1 ? "ronda" : "rondas"} hoy`;
-  if (verdict === "ready") return `${roundText} · el repaso te las trae de vuelta`;
+  const roundText = t("typing.drillSummary.rounds", rounds);
+  if (verdict === "ready") return t("typing.drillSummary.readyDetail", roundText);
   if (verdict === "rest") {
     return restReason === "stalled"
-      ? `${roundText} sin mejorar · descansá, mañana rinde más`
-      : `${roundText} ya es bastante · descansá, mañana rinde más`;
+      ? t("typing.drillSummary.stalled", roundText)
+      : t("typing.drillSummary.enough", roundText);
   }
-  return `${roundText} · falta bajar ${joinKeys(pending)}`;
+  return t(
+    "typing.drillSummary.pending",
+    roundText,
+    pending.map((key) => key.toUpperCase())
+  );
 });
 
 const percent = (rate) => `${Math.round(rate * 100)}%`;
@@ -160,12 +164,10 @@ const percent = (rate) => `${Math.round(rate * 100)}%`;
 const BAR_SCALE = 0.6;
 const barWidth = (rate) => (rate === null ? 0 : Math.min(100, (rate / BAR_SCALE) * 100));
 
-const inDays = (days) => (days === 1 ? "mañana" : days === 0 ? "hoy" : `en ${days} días`);
-
 const reviewLine = (key) => {
   const change = props.reviewChanges.find((c) => c.key === key);
   if (!change) return "";
-  if (change.mastered) return "dominada";
-  return `repaso ${inDays(change.nextInDays)}`;
+  if (change.mastered) return t("typing.drillSummary.mastered");
+  return t("typing.drillSummary.review", change.nextInDays);
 };
 </script>

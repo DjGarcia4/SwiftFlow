@@ -31,17 +31,16 @@
                 id="replay-title"
                 class="font-display text-xl font-extrabold text-charcoal"
               >
-                Dónde te frenaste
+                {{ t("typing.replay.title") }}
               </h2>
               <p class="text-xs font-bold text-pencil-gray">
-                Cada palabra, comparada con tu propio ritmo en esta partida. Pasá el mouse
-                para ver cuánto tardaste.
+                {{ t("typing.replay.intro") }}
               </p>
             </div>
             <!-- No tooltip: this box scrolls, and would clip one above it -->
             <button
               type="button"
-              aria-label="Cerrar"
+              :aria-label="t('shared.close')"
               class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border-2 border-faded-gray text-pencil-gray transition-[color,background-color,scale] duration-200 ease-spring hover:bg-primary-tint/60 hover:text-primary active:scale-90"
               @click="emit('close')"
             >
@@ -57,13 +56,13 @@
               class="inline-flex items-center gap-1.5"
             >
               <span class="inline-block h-3 w-3 rounded-sm" :class="tier.swatch"></span>
-              {{ tier.label }}
+              {{ t(`typing.replay.tiers.${tier.id}`) }}
             </span>
             <span class="inline-flex items-center gap-1.5">
               <span class="underline decoration-wavy decoration-danger underline-offset-2"
                 >abc</span
               >
-              con error
+              {{ t("typing.replay.withError") }}
             </span>
           </div>
 
@@ -98,14 +97,14 @@
           <div v-if="replay.slowest.length" class="mt-4">
             <div class="mb-2 flex items-center justify-between gap-3">
               <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-                Tus palabras más lentas
+                {{ t("typing.replay.slowest") }}
               </div>
               <button
                 type="button"
                 class="inline-flex items-center gap-1 rounded-lg border-2 border-primary px-2.5 py-1 text-xs font-extrabold text-primary transition-[background-color,color,scale] duration-200 ease-spring hover:bg-primary hover:text-white active:scale-95"
                 @click="emit('train', slowestWords)"
               >
-                Entrenar estas
+                {{ t("typing.replay.train") }}
               </button>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -122,7 +121,7 @@
             </div>
           </div>
           <p v-else class="mt-4 text-sm font-bold text-success-dark">
-            Ninguna palabra se te trabó: ritmo parejo de punta a punta.
+            {{ t("typing.replay.allSmooth") }}
           </p>
         </div>
       </Transition>
@@ -132,6 +131,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import { t } from "@/shared/i18n";
 import { useModalFocus } from "@/shared/composables/useModalFocus";
 import { normalizeWord } from "@/features/typing-test/utils/wordStats";
 import { XMarkIcon } from "@heroicons/vue/24/outline";
@@ -159,10 +159,10 @@ const TIER_CLASSES = {
 };
 
 const LEGEND = [
-  { id: "fast", label: "rápida", swatch: "bg-success" },
-  { id: "normal", label: "a tu ritmo", swatch: "bg-charcoal" },
-  { id: "slow", label: "lenta", swatch: "bg-primary/40" },
-  { id: "stuck", label: "te trabaste", swatch: "bg-danger/60" },
+  { id: "fast", swatch: "bg-success" },
+  { id: "normal", swatch: "bg-charcoal" },
+  { id: "slow", swatch: "bg-primary/40" },
+  { id: "stuck", swatch: "bg-danger/60" },
 ];
 
 const seconds = (ms) => (ms / 1000).toFixed(1).replace(".", ",");

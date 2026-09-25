@@ -3,6 +3,7 @@
 // on one session's counters, so its bars are far lower than the history's
 // -- and far stricter about the gap to your own average, since a handful of
 // keystrokes is mostly noise.
+import { t } from "@/shared/i18n";
 
 // Not before this many keystrokes: the first line is warm-up.
 const MIN_SESSION_KEYSTROKES = 40;
@@ -27,14 +28,6 @@ const foldCounts = (counts) => {
   }
   return folded;
 };
-
-const joinKeys = (keys) =>
-  keys.length === 1
-    ? `la ${keys[0]}`
-    : `${keys
-        .slice(0, -1)
-        .map((key) => `la ${key}`)
-        .join(", ")} y la ${keys[keys.length - 1]}`;
 
 // { keyAttempts, missedKeys, confusions } straight off the typing store.
 // Returns null until a pattern stands out, otherwise the letters to drill
@@ -81,12 +74,22 @@ export const computeLiveCoach = ({ keyAttempts, missedKeys, confusions } = {}) =
   }
 
   const slipText = slip
-    ? ` y ${slip.count} veces apretaste ${slip.typed === " " ? "el espacio" : `la ${slip.typed.toUpperCase()}`}`
+    ? t(
+        "typing.liveCoach.slip",
+        slip.count,
+        slip.typed === " " ? " " : slip.typed.toUpperCase()
+      )
     : "";
 
   return {
     keys: weak.map((stat) => stat.key),
-    title: `Se te ${weak.length === 1 ? "escapa" : "escapan"} ${joinKeys(labels)}`,
-    detail: `La ${labels[0]} te salió mal ${worst.misses} de ${worst.attempts} veces${slipText}.`,
+    title: t("typing.liveCoach.slipping", labels),
+    detail: t(
+      "typing.liveCoach.missedTimes",
+      labels[0],
+      worst.misses,
+      worst.attempts,
+      slipText
+    ),
   };
 };
