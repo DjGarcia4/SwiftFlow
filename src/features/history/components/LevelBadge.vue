@@ -42,18 +42,25 @@
     <div
       class="pointer-events-none absolute top-full right-0 z-50 mt-2 w-max rounded-xl bg-night-ink px-3 py-1.5 text-xs font-bold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
     >
-      <template v-if="level.isMax"
-        >Nivel máximo · {{ level.xpIntoLevel }} XP de más</template
-      >
+      <template v-if="level.isMax">{{
+        t("history.levelBadge.max", level.xpIntoLevel)
+      }}</template>
       <template v-else>
-        {{ level.xpIntoLevel }}/{{ level.xpForNextLevel }} XP para el nivel
-        {{ level.level + 1 }}
+        {{
+          t(
+            "history.levelBadge.toNext",
+            level.xpIntoLevel,
+            level.xpForNextLevel,
+            level.level + 1
+          )
+        }}
       </template>
     </div>
   </router-link>
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useHistoryStore } from "@/features/history/store";
 

@@ -48,7 +48,7 @@
         class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border-2 border-primary px-2.5 py-1 text-xs font-extrabold text-primary transition-[background-color,color,scale] duration-200 ease-spring hover:bg-primary hover:text-white active:scale-95"
         @click="play(challenge.action)"
       >
-        Jugar
+        {{ t("history.challengesWidget.play") }}
         <ArrowRightIcon class="w-3.5 h-3.5" />
       </button>
     </li>
@@ -56,6 +56,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { useRouter } from "vue-router";
 import { CheckIcon, ArrowRightIcon } from "@heroicons/vue/24/outline";
 import { ACHIEVEMENT_ICONS } from "@/features/history/achievementPresentation";

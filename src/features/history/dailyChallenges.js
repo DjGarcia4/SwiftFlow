@@ -7,6 +7,7 @@ import {
 } from "@/features/history/utils/historyStats";
 import { isPerfectRound } from "@/features/history/utils/perfectRounds";
 import { hashString, seededRandom } from "@/shared/utils/seededRandom";
+import { t } from "@/shared/i18n";
 
 // Three small goals a day, derived entirely from the history the same way
 // the achievements are: nothing extra to store, and nothing to get out of
@@ -83,7 +84,7 @@ const TEMPLATES = [
     build: (baseline, random) => {
       const target = pick(random, [3, 4, 5]);
       return {
-        title: `Completá ${target} sesiones`,
+        title: t("history.challenges.sessions", target),
         target,
         measure: (day) => day.length,
       };
@@ -95,7 +96,7 @@ const TEMPLATES = [
     build: (baseline, random) => {
       const target = pick(random, [5, 8, 10]);
       return {
-        title: `Practicá ${target} minutos`,
+        title: t("history.challenges.minutes", target),
         target,
         unit: "min",
         measure: (day) =>
@@ -110,7 +111,7 @@ const TEMPLATES = [
       // A step above where you usually land, never an impossible 100
       const bar = averageAccuracy === null ? 95 : clamp(averageAccuracy + 2, 92, 99);
       return {
-        title: `Terminá una sesión con ${bar}% de precisión o más`,
+        title: t("history.challenges.accuracy", bar),
         target: 1,
         measure: (day) => (day.some((r) => r.accuracy >= bar) ? 1 : 0),
       };
@@ -124,7 +125,7 @@ const TEMPLATES = [
         ? Math.max(15, Math.round(averageWpm * pick(random, [1.05, 1.1])))
         : 30;
       return {
-        title: `Llegá a ${target} wpm en una sesión`,
+        title: t("history.challenges.speed", target),
         target,
         unit: "wpm",
         measure: (day) => best(day.filter(isCurrentMetrics), "wpm"),
@@ -139,7 +140,7 @@ const TEMPLATES = [
         ? clamp(Math.round((typicalCombo * 1.25) / 10) * 10, 30, 400)
         : 50;
       return {
-        title: `Hacé un combo de ${target} sin errores`,
+        title: t("history.challenges.combo", target),
         target,
         unit: "combo",
         measure: (day) => best(day, "maxStreak"),
@@ -150,7 +151,7 @@ const TEMPLATES = [
     kind: "perfect",
     icon: "star",
     build: () => ({
-      title: "Hacé una ronda perfecta, sin un solo error",
+      title: t("history.challenges.perfect"),
       target: 1,
       measure: (day) => (day.some(isPerfectRound) ? 1 : 0),
     }),
@@ -161,7 +162,7 @@ const TEMPLATES = [
     build: (baseline, random, dayStart) => {
       const { mode } = pick(random, availableOn(CHALLENGE_MODES, dayStart));
       return {
-        title: `Completá una partida de ${formatModeName(mode)}`,
+        title: t("history.challenges.mode", formatModeName(mode)),
         target: 1,
         measure: (day) => (day.some((r) => r.mode === mode) ? 1 : 0),
         action: { mode },
@@ -174,7 +175,7 @@ const TEMPLATES = [
     icon: "heart",
     since: since(2026, 9, 26),
     build: () => ({
-      title: "Completá una partida con muerte súbita",
+      title: t("history.challenges.suddenDeath"),
       target: 1,
       measure: (day) => (day.some((r) => r.strict === "sudden-death") ? 1 : 0),
     }),
@@ -184,7 +185,7 @@ const TEMPLATES = [
     icon: "shield",
     since: since(2026, 9, 26),
     build: () => ({
-      title: "Completá una partida exigiéndote un 95% de precisión o más",
+      title: t("history.challenges.minAccuracy"),
       target: 1,
       measure: (day) => (day.some((r) => r.minAccuracy >= 95) ? 1 : 0),
     }),
@@ -194,7 +195,7 @@ const TEMPLATES = [
     icon: "eye",
     since: since(2026, 9, 26),
     build: () => ({
-      title: "Completá una partida en modo foco",
+      title: t("history.challenges.focus"),
       target: 1,
       measure: (day) => (day.some((r) => r.focus) ? 1 : 0),
     }),

@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { isCurrentMetrics } from "./historyStats";
 
 // When in the day you type best. Raw wpm would mostly measure which modes
@@ -6,11 +7,16 @@ import { isCurrentMetrics } from "./historyStats";
 // of the day gets the average of those.
 
 export const DAY_PARTS = [
-  { id: "dawn", label: "madrugada", from: 0, to: 6 },
-  { id: "morning", label: "mañana", from: 6, to: 12 },
-  { id: "afternoon", label: "tarde", from: 12, to: 19 },
-  { id: "night", label: "noche", from: 19, to: 24 },
-];
+  { id: "dawn", from: 0, to: 6 },
+  { id: "morning", from: 6, to: 12 },
+  { id: "afternoon", from: 12, to: 19 },
+  { id: "night", from: 19, to: 24 },
+].map((part) => ({
+  ...part,
+  get label() {
+    return t(`history.dayParts.${part.id}`);
+  },
+}));
 
 // A part of the day needs this many sessions before it says anything...
 export const MIN_PART_SESSIONS = 5;

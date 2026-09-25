@@ -1,6 +1,7 @@
 // Pure helpers over a list of history results (most-recent-first), kept
 // separate from the store so they're trivial to unit test.
 import { weeklyLabel } from "@/features/typing-test/content/weekly";
+import { t } from "@/shared/i18n";
 import { classicById } from "@/features/typing-test/content/classics";
 import { lessonIndex } from "@/features/course/course";
 
@@ -53,47 +54,39 @@ export const computeAverageAccuracy = (results) => {
   return Math.round(total / results.length);
 };
 
+// A mode with its value, or just the mode's name when there's no value
+const labelled = (mode, value) =>
+  value || value === 0
+    ? t(`history.modeLabels.${mode}`, value)
+    : t(`shared.modes.${mode}`);
+
 const MODE_LABELS = {
-  time: (value) => `${value}s`,
-  words: (value) => `${value} palabras`,
-  numbers: (value) => `${value} números`,
-  code: (value) => (value ? `Código · ${value}` : "Código"),
-  quote: () => "Cita",
-  classics: (value) => {
-    const work = classicById(value)?.work;
-    return work ? `Clásicos · ${work}` : "Clásicos";
-  },
-  dictation: (value) =>
-    value ? `Dictado · ${value} ${value === 1 ? "frase" : "frases"}` : "Dictado",
+  time: (value) => t("history.modeLabels.time", value),
+  words: (value) => t("history.modeLabels.words", value),
+  numbers: (value) => t("history.modeLabels.numbers", value),
+  code: (value) => labelled("code", value),
+  quote: () => t("shared.modes.quote"),
+  classics: (value) => labelled("classics", classicById(value)?.work),
+  dictation: (value) => labelled("dictation", value),
   lesson: (value) => {
     const index = lessonIndex(value);
-    return index === -1 ? "Curso" : `Curso · Lección ${index + 1}`;
+    return labelled("lesson", index === -1 ? null : index + 1);
   },
-  zen: () => "Zen",
+  zen: () => t("shared.modes.zen"),
   // Sessions saved before the drill reported its word count have no value
-  drill: (value) => (value ? `Entrenar · ${value} palabras` : "Entrenar"),
-  weekly: (value) => (value ? `Semanal · ${weeklyLabel(value)}` : "Semanal"),
-  custom: (value) => (value ? `Mi texto · ${value}` : "Mi texto"),
+  drill: (value) => labelled("drill", value),
+  weekly: (value) => labelled("weekly", value ? weeklyLabel(value) : null),
+  custom: (value) => labelled("custom", value),
 };
 
 // The mode on its own, without the value formatModeLabel tacks on --
 // "Tiempo", not "15s", for anything that covers every length at once.
-const MODE_NAMES = {
-  time: "Tiempo",
-  words: "Palabras",
-  numbers: "Números",
-  quote: "Cita",
-  classics: "Clásicos",
-  dictation: "Dictado",
-  lesson: "Curso",
-  code: "Código",
-  zen: "Zen",
-  drill: "Entrenar",
-  weekly: "Semanal",
-  custom: "Mi texto",
-};
 
-export const formatModeName = (mode) => MODE_NAMES[mode] ?? mode;
+// A mode from before the current ones (or unknown) keeps its own id
+export const formatModeName = (mode) => {
+  const name = t(`shared.modes.${mode}`);
+  return name === `shared.modes.${mode}` ? mode : name;
+};
 
 export const formatModeLabel = ({ mode, modeValue }) => {
   const format = MODE_LABELS[mode];
@@ -405,15 +398,15 @@ export const computeBigramTimingStats = (
     ...rest,
   }));
 
-const KEY_LABELS = { " ": "espacio", "\n": "enter", "\t": "tab" };
-
-export const formatKeyLabel = (key) => KEY_LABELS[key] ?? key;
+const KEY_NAMES = { " ": "space", "\n": "enter", "\t": "tab" };
+export const formatKeyLabel = (key) =>
+  KEY_NAMES[key] ? t(`history.keyLabels.${KEY_NAMES[key]}`) : key;
 
 // A pair with an invisible key in it can't just be concatenated -- "s " would
 // read as "sespacio".
 export const formatPairLabel = (pair) => {
   const chars = [...pair];
-  return chars.some((char) => KEY_LABELS[char])
+  return chars.some((char) => KEY_NAMES[char])
     ? chars.map(formatKeyLabel).join(" + ")
     : pair;
 };

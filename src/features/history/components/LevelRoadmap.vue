@@ -16,7 +16,7 @@
         v-if="tier.state === 'current'"
         class="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white"
         :style="{ backgroundColor: rgb(tier) }"
-        >Estás acá</span
+        >{{ t("history.roadmap.here") }}</span
       >
 
       <!-- Locked ranks still wear their own look, just dimmed, so you can
@@ -45,9 +45,7 @@
         {{ tier.title }}
       </div>
       <div class="text-[11px] font-bold text-pencil-gray">
-        {{
-          tier.from === tier.to ? `Nivel ${tier.from}` : `Niveles ${tier.from}–${tier.to}`
-        }}
+        {{ t("history.roadmap.levels", tier.from, tier.to) }}
       </div>
 
       <div v-if="tier.state === 'current'" class="w-full px-1">
@@ -60,15 +58,18 @@
       </div>
       <div v-else class="text-[10px] font-bold text-pencil-gray/80">
         <template v-if="tier.state === 'done'">
-          <CheckIcon class="inline w-3 h-3 -mt-0.5" /> Completado
+          <CheckIcon class="inline w-3 h-3 -mt-0.5" /> {{ t("history.roadmap.done") }}
         </template>
-        <template v-else>desde {{ formatXp(tier.xpToReach) }} XP</template>
+        <template v-else>{{
+          t("history.roadmap.from", formatXp(tier.xpToReach))
+        }}</template>
       </div>
     </li>
   </ol>
 </template>
 
 <script setup>
+import { t, localeTag } from "@/shared/i18n";
 import { computed } from "vue";
 import { LockClosedIcon, CheckIcon } from "@heroicons/vue/24/outline";
 import { ACHIEVEMENT_ICONS } from "@/features/history/achievementPresentation";
@@ -98,5 +99,5 @@ const tierStyle = (tier) => {
   };
 };
 
-const formatXp = (xp) => xp.toLocaleString("es");
+const formatXp = (xp) => xp.toLocaleString(localeTag());
 </script>

@@ -1,4 +1,5 @@
 import { formatPairLabel } from "./historyStats";
+import { t } from "@/shared/i18n";
 import { ERROR_RATE_BAR, SLOW_RATIO_BAR } from "./problemWords";
 import {
   FINGERS,
@@ -51,7 +52,7 @@ const SLOW_KEY_FACTOR = 1.3;
 const SLOW_BIGRAM_FACTOR = 1.5;
 const MAX_SLOW_KEYS = 2;
 
-const ROW_NAMES = ["de arriba", "del medio", "de abajo"];
+const ROW_IDS = ["top", "home", "bottom"];
 const isLetterOrDigit = (key) => /^[\p{L}\d]$/u.test(key);
 
 // The keyboard's letter and digit keys by hand, and its three letter rows
@@ -66,7 +67,7 @@ const keyGroups = (layout) => {
   return {
     hands,
     rows: rows.slice(1).map((keys, index) => ({
-      name: ROW_NAMES[index],
+      name: t(`history.tips.row.names.${ROW_IDS[index]}`),
       keys: new Set(keys.filter((key) => /^\p{L}$/u.test(key))),
     })),
   };
@@ -77,11 +78,11 @@ const ACCENTED = new Set([..."áéíóúü"]);
 const percent = (rate) => `${Math.round(rate * 100)}%`;
 
 // "1 de cada 5" reads better than "20%" for a single key
-const oneIn = (rate) => `1 de cada ${Math.max(2, Math.round(1 / rate))}`;
+const oneIn = (rate) => t("history.tips.oneIn", Math.max(2, Math.round(1 / rate)));
 
 // ...but it reads backwards once the share passes a third, where the clamp
 // in oneIn turns 70% into "1 de cada 2".
-const outOfTen = (share) => `${Math.round(share * 10)} de cada 10`;
+const outOfTen = (share) => t("history.tips.outOfTen", Math.round(share * 10));
 
 // Whether two keys sit side by side on the same row -- the difference
 // between "your finger slid" and "your hand was in the wrong place".
@@ -90,15 +91,6 @@ const areNeighbours = (first, second, layout) => {
   const b = keyPosition(second.toLowerCase(), layout);
   return Boolean(a && b) && a.row === b.row && Math.abs(a.column - b.column) === 1;
 };
-
-// "la Ñ y la Q" -- the article has to repeat, or the second key reads as an
-// afterthought ("la Ñ y Q").
-const joinKeysWithArticle = (keys) => joinKeys(keys.map((key) => `la ${key}`));
-
-const joinKeys = (keys) =>
-  keys.length === 1
-    ? keys[0]
-    : `${keys.slice(0, -1).join(", ")} y ${keys[keys.length - 1]}`;
 
 // Misses this key costs above the typist's own average rate. Mixes rate and
 // volume: a 25%-rate key typed 60 times (+9 misses) outranks a 30%-rate key
@@ -185,7 +177,7 @@ export const computeImprovementTips = (
     // a contradiction.
     const contrast =
       topByMisses && !weakKeys.includes(topByMisses) && /^\p{L}$/u.test(topByMisses.key)
-        ? ` La ${label(topByMisses)} suma más errores, pero solo porque la tecleás mucho más seguido.`
+        ? t("history.tips.weakKeys.contrast", label(topByMisses))
         : "";
 
     // A key you confuse is usually a key you miss, so the two tips would
@@ -193,18 +185,31 @@ export const computeImprovementTips = (
     // no slot and reads as one thought instead of two.
     const merged =
       topConfusion && weakKeys.some((s) => s.key === topConfusion.expected)
-        ? ` Cuando la errás, ${outOfTen(topConfusion.shareOfKeyMisses)} veces apretás la ${topConfusion.typed.toUpperCase()}.`
+        ? t(
+            "history.tips.weakKeys.merged",
+            outOfTen(topConfusion.shareOfKeyMisses),
+            topConfusion.typed.toUpperCase()
+          )
         : "";
 
     tips.push({
       id: "weak-keys",
       icon: "target",
       severity: worst.rate / (overallRate * WEAK_FACTOR),
-      title: `Practicá la ${joinKeys(weakKeys.map(label))}`,
-      detail: `${weakKeys.length === 1 ? "Es la tecla" : "Son las teclas"} que más se te escapan en proporción: la ${label(worst)} te sale mal ${oneIn(worst.rate)} veces (${worst.misses} errores) contra tu promedio de ${percent(overallRate)}.${contrast}${merged}`,
+      title: t("history.tips.weakKeys.title", weakKeys.map(label)),
+      detail: t(
+        "history.tips.weakKeys.detail",
+        weakKeys.length,
+        label(worst),
+        oneIn(worst.rate),
+        worst.misses,
+        percent(overallRate),
+        contrast,
+        merged
+      ),
       keys: weakKeys.map((s) => s.key),
       action: {
-        label: "Entrenar estas",
+        label: t("history.tips.train"),
         mode: "drill",
         keys: weakKeys.map((s) => s.key),
       },
@@ -225,15 +230,17 @@ export const computeImprovementTips = (
       id: "key-confusion",
       icon: "confusion",
       severity: topConfusion.shareOfKeyMisses / MIN_CONFUSION_SHARE,
-      title: `Confundís la ${from} con la ${to}`,
-      detail: `${outOfTen(topConfusion.shareOfKeyMisses)} veces que errás la ${from} terminás apretando la ${to}. ${
+      title: t("history.tips.confusion.title", from, to),
+      detail: t(
+        "history.tips.confusion.detail",
+        outOfTen(topConfusion.shareOfKeyMisses),
+        from,
+        to,
         areNeighbours(topConfusion.expected, topConfusion.typed, layout)
-          ? "Son teclas vecinas: el dedo se te corre a la de al lado. Bajá un cambio en esa zona hasta que la posición se acomode sola."
-          : "Fijate en esa mano: es un error de posición, no de velocidad."
-      }`,
+      ),
       keys: [topConfusion.expected, topConfusion.typed],
       action: {
-        label: "Entrenar estas",
+        label: t("history.tips.train"),
         mode: "drill",
         keys: [topConfusion.expected, topConfusion.typed],
       },
@@ -248,8 +255,13 @@ export const computeImprovementTips = (
       id: "transposition",
       icon: "swap",
       severity: swappedShare / MIN_TRANSPOSITION_SHARE,
-      title: "Se te adelantan los dedos",
-      detail: `Cambiás el orden de dos letras seguido: ${swappedTotal} veces, y la que más se te da vuelta es «${worstPair.pair}» (te sale «${worstPair.typedAs}»). No es puntería sino ritmo entre las manos: practicá esa combinación despacio y pareja.`,
+      title: t("history.tips.transposition.title"),
+      detail: t(
+        "history.tips.transposition.detail",
+        swappedTotal,
+        worstPair.pair,
+        worstPair.typedAs
+      ),
     });
   }
 
@@ -264,8 +276,8 @@ export const computeImprovementTips = (
       id: "space",
       icon: "space",
       severity: overallRate ? space.rate / overallRate : 1,
-      title: "Cuidá los espacios",
-      detail: `Es donde más errores acumulás (${space.misses}). Suele pasar por adelantarte a la siguiente palabra: terminá cada palabra antes de pegar el espacio.`,
+      title: t("history.tips.space.title"),
+      detail: t("history.tips.space.detail", space.misses),
       keys: [" "],
     });
   }
@@ -279,7 +291,7 @@ export const computeImprovementTips = (
   const right = groupRate(keyStats, groups.hands.right);
   if (left.attempts >= MIN_GROUP_ATTEMPTS && right.attempts >= MIN_GROUP_ATTEMPTS) {
     const [worse, better, name] =
-      left.rate >= right.rate ? [left, right, "izquierda"] : [right, left, "derecha"];
+      left.rate >= right.rate ? [left, right, "left"] : [right, left, "right"];
     if (better.rate > 0 && worse.rate / better.rate >= GROUP_GAP) {
       groupCandidates.push({
         gap: worse.rate / better.rate,
@@ -287,8 +299,12 @@ export const computeImprovementTips = (
           id: "hand",
           icon: "hand",
           severity: worse.rate / better.rate / GROUP_GAP,
-          title: `Tu mano ${name} falla más`,
-          detail: `Errás el ${percent(worse.rate)} de sus teclas contra el ${percent(better.rate)} de la otra. Vale la pena ejercitarla aparte.`,
+          title: t("history.tips.hand.title", t(`history.tips.hand.names.${name}`)),
+          detail: t(
+            "history.tips.hand.detail",
+            percent(worse.rate),
+            percent(better.rate)
+          ),
         },
       });
     }
@@ -307,8 +323,13 @@ export const computeImprovementTips = (
           id: "row",
           icon: "rows",
           severity: worst.rate / best.rate / GROUP_GAP,
-          title: `La fila ${worst.name} te cuesta más`,
-          detail: `Fallás el ${percent(worst.rate)} ahí contra el ${percent(best.rate)} en la fila ${best.name}. Practicá llegar a esas teclas sin mirar.`,
+          title: t("history.tips.row.title", worst.name),
+          detail: t(
+            "history.tips.row.detail",
+            percent(worst.rate),
+            percent(best.rate),
+            best.name
+          ),
         },
       });
     }
@@ -348,8 +369,13 @@ export const computeImprovementTips = (
           id: "finger",
           icon: "hand",
           severity: worst.rate / middle.rate / GROUP_GAP,
-          title: `Tu ${FINGERS[worst.finger].name} falla más`,
-          detail: `Errás el ${percent(worst.rate)} de las teclas que le tocan (${joinKeys(keys)}) contra el ${percent(middle.rate)} de un dedo típico tuyo. Con los colores por dedo del teclado en pantalla vas a ver cuáles son.`,
+          title: t("history.tips.finger.title", FINGERS[worst.finger].name),
+          detail: t(
+            "history.tips.finger.detail",
+            percent(worst.rate),
+            keys,
+            percent(middle.rate)
+          ),
         },
       });
     }
@@ -388,8 +414,17 @@ export const computeImprovementTips = (
         id: "slow-keys",
         icon: "clock",
         severity: worst.ratio / SLOW_KEY_FACTOR,
-        title: `Te ${single ? "frena" : "frenan"} ${joinKeysWithArticle(slowKeys.map((s) => s.key.toUpperCase()))}`,
-        detail: `No ${single ? "la errás" : "las errás"} casi nunca, pero te ${single ? "lleva" : "llevan"} un ${percent(worst.ratio - 1)} más de tiempo que el resto de tus teclas: ${worst.meanMs} ms contra tus ${baseline} ms habituales. ${single ? "Repetila suelta" : "Repetilas sueltas"}, sin apuro, hasta que ${single ? "salga" : "salgan"} sin pensar.`,
+        title: t(
+          "history.tips.slowKeys.title",
+          slowKeys.map((s) => s.key.toUpperCase())
+        ),
+        detail: t(
+          "history.tips.slowKeys.detail",
+          single,
+          percent(worst.ratio - 1),
+          worst.meanMs,
+          baseline
+        ),
         keys: slowKeys.map((stat) => stat.key),
       });
     }
@@ -405,8 +440,17 @@ export const computeImprovementTips = (
         id: "slow-bigrams",
         icon: "link",
         severity: worst.ratio / SLOW_BIGRAM_FACTOR,
-        title: `Tus combinaciones más lentas: ${joinKeys(slowPairs.map((s) => formatPairLabel(s.pair)))}`,
-        detail: `Pasar de una letra a la otra en «${formatPairLabel(worst.pair)}» te lleva ${worst.meanMs} ms contra tus ${baseline} ms de siempre, un ${percent(worst.ratio - 1)} más. No son teclas difíciles sino transiciones entre dedos: practicá esas combinaciones sueltas antes de acelerar.`,
+        title: t(
+          "history.tips.slowPairs.title",
+          slowPairs.map((s) => formatPairLabel(s.pair))
+        ),
+        detail: t(
+          "history.tips.slowPairs.detail",
+          formatPairLabel(worst.pair),
+          worst.meanMs,
+          baseline,
+          percent(worst.ratio - 1)
+        ),
       });
     }
   }
@@ -427,11 +471,10 @@ export const computeImprovementTips = (
         worst.errorRate / ERROR_RATE_BAR,
         worst.slowRatio / SLOW_RATIO_BAR
       ),
-      title: `Se te ${named.length === 1 ? "traba" : "traban"} ${joinKeys(named)}`,
-      detail:
-        "Son palabras enteras, no letras sueltas: las errás o te frenan cada vez que aparecen. Repetirlas solas hasta que salgan de corrido las vuelve automáticas.",
+      title: t("history.tips.problemWords.title", named),
+      detail: t("history.tips.problemWords.detail"),
       action: {
-        label: "Entrenar estas",
+        label: t("history.tips.train"),
         mode: "drill",
         words: problemWords.map((w) => w.word),
       },
@@ -445,9 +488,9 @@ export const computeImprovementTips = (
       id: "digits",
       icon: "hashtag",
       severity: digits.rate / (overallRate * WEAK_FACTOR),
-      title: "Los números te cuestan",
-      detail: `Fallás el ${percent(digits.rate)} de los dígitos. El modo Números es ideal para eso.`,
-      action: { label: "Practicar números", mode: "numbers" },
+      title: t("history.tips.digits.title"),
+      detail: t("history.tips.digits.detail", percent(digits.rate)),
+      action: { label: t("history.tips.digits.action"), mode: "numbers" },
     });
   }
 
@@ -457,8 +500,8 @@ export const computeImprovementTips = (
       id: "accents",
       icon: "language",
       severity: accents.rate / (overallRate * WEAK_FACTOR),
-      title: "Ojo con las tildes",
-      detail: `Fallás el ${percent(accents.rate)} de las letras con tilde. Practicá la combinación de la tecla de acento con la vocal.`,
+      title: t("history.tips.accents.title"),
+      detail: t("history.tips.accents.detail", percent(accents.rate)),
     });
   }
 
@@ -468,16 +511,16 @@ export const computeImprovementTips = (
       id: "slow-down",
       icon: "gauge",
       severity: 92 / averageAccuracy,
-      title: "Bajá un poco la velocidad",
-      detail: `Tu precisión reciente es ${averageAccuracy}%. Con más de 95% cada error cuesta menos y la velocidad sube sola.`,
+      title: t("history.tips.slowDown.title"),
+      detail: t("history.tips.slowDown.detail", averageAccuracy),
     });
   } else if (averageAccuracy !== null && averageAccuracy >= 97) {
     tips.push({
       id: "speed-up",
       icon: "bolt",
       severity: averageAccuracy / 97,
-      title: "Podés apretar el ritmo",
-      detail: `Tu precisión reciente es ${averageAccuracy}%: está excelente. Es buen momento para empujar la velocidad.`,
+      title: t("history.tips.speedUp.title"),
+      detail: t("history.tips.speedUp.detail", averageAccuracy),
     });
   }
 

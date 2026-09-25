@@ -10,8 +10,10 @@
       <div
         class="flex items-center gap-3 mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
       >
-        <span class="min-w-[4.5rem] text-center">{{ unitLabel }}</span>
-        <span class="flex-1">más lento que tu ritmo habitual</span>
+        <span class="min-w-[4.5rem] text-center">{{
+          unitLabel ?? t("history.timing.key")
+        }}</span>
+        <span class="flex-1">{{ t("history.timing.slowerThanUsual") }}</span>
         <span class="w-20 text-right">ms</span>
       </div>
 
@@ -43,6 +45,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { formatKeyLabel, formatPairLabel } from "@/features/history/utils/historyStats";
 import { staggerStyle } from "@/shared/utils/motion";
@@ -51,7 +54,8 @@ const props = defineProps({
   // Output of computeKeyTimingStats or computeBigramTimingStats
   stats: { type: Array, required: true },
   title: { type: String, required: true },
-  unitLabel: { type: String, default: "tecla" },
+  // The key's by default
+  unitLabel: { type: String, default: null },
 });
 
 const SHOWN = 6;

@@ -7,10 +7,10 @@
   <div>
     <div class="mb-3 flex items-baseline justify-between gap-3">
       <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-        Qué tan parejo sos
+        {{ t("history.consistency.title") }}
       </div>
       <div class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70">
-        de un día al otro · {{ data.label }}
+        {{ t("history.consistency.scope", data.label) }}
       </div>
     </div>
 
@@ -21,8 +21,14 @@
       <div class="pb-0.5">
         <div class="text-sm font-extrabold text-charcoal">{{ data.level }}</div>
         <div class="text-xs font-bold text-pencil-gray">
-          Tus días van de {{ Math.round(data.min) }} a {{ Math.round(data.max) }} wpm,
-          {{ Math.round(data.mean) }} de promedio
+          {{
+            t(
+              "history.consistency.range",
+              Math.round(data.min),
+              Math.round(data.max),
+              Math.round(data.mean)
+            )
+          }}
         </div>
       </div>
     </div>
@@ -34,7 +40,7 @@
         class="h-28 w-full overflow-visible"
         preserveAspectRatio="none"
         role="img"
-        :aria-label="`WPM promedio de cada uno de tus últimos ${data.days.length} días de práctica`"
+        :aria-label="t('history.consistency.chart', data.days.length)"
       >
         <rect
           :x="0"
@@ -97,13 +103,15 @@
 
     <table class="sr-only">
       <caption>
-        WPM promedio por día
+        {{
+          t("history.consistency.tableCaption")
+        }}
       </caption>
       <thead>
         <tr>
-          <th scope="col">Día</th>
+          <th scope="col">{{ t("history.consistency.day") }}</th>
           <th scope="col">WPM</th>
-          <th scope="col">Partidas</th>
+          <th scope="col">{{ t("history.consistency.sessions") }}</th>
         </tr>
       </thead>
       <tbody>
@@ -118,6 +126,7 @@
 </template>
 
 <script setup>
+import { t, localeTag } from "@/shared/i18n";
 import { ref, computed } from "vue";
 
 const props = defineProps({
@@ -151,10 +160,13 @@ const y = (wpm) => {
 };
 
 const formatDay = (date) =>
-  new Date(date).toLocaleDateString("es", { day: "numeric", month: "short" });
+  new Date(date).toLocaleDateString(localeTag(), { day: "numeric", month: "short" });
 
 const describe = (day) =>
-  `${formatDay(day.date)}: ${Math.round(day.wpm)} wpm en ${day.sessions} ${
-    day.sessions === 1 ? "partida" : "partidas"
-  }`;
+  t(
+    "history.consistency.describe",
+    formatDay(day.date),
+    Math.round(day.wpm),
+    day.sessions
+  );
 </script>

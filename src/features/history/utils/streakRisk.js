@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { computeDailyStreak, toLocalDayKey } from "./historyStats";
 
 // Whether today can still keep the practice streak alive: there is one
@@ -23,7 +24,9 @@ export const computeStreakRisk = (results, now = new Date()) => {
 
 // "3 h" or, in the last hour, "40 min"
 export const formatTimeLeft = ({ hoursLeft, minutesLeft }) =>
-  hoursLeft >= 1 ? `${hoursLeft} h` : `${minutesLeft} min`;
+  hoursLeft >= 1
+    ? t("history.timeLeft.hours", hoursLeft)
+    : t("history.timeLeft.minutes", minutesLeft);
 
 // The hours a reminder can be set for, evening only: earlier would nag
 // about a day that's barely started

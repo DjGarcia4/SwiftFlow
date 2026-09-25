@@ -6,8 +6,11 @@
   -->
   <div class="space-y-5">
     <p v-if="upcoming" class="text-xs font-bold text-pencil-gray">
-      Próximo desbloqueo: <span class="text-charcoal">Nivel {{ upcoming.level }}</span> ·
-      {{ KIND_NAMES[upcoming.kind] }} {{ upcoming.label.toLowerCase() }}
+      {{ t("history.customize.nextUnlock") }}
+      <span class="text-charcoal">{{
+        t("history.customize.level", upcoming.level)
+      }}</span>
+      · {{ KIND_NAMES[upcoming.kind] }} {{ upcoming.label.toLowerCase() }}
     </p>
 
     <section v-for="kind in REWARD_KINDS" :key="kind">
@@ -23,7 +26,9 @@
           :class="optionClass(reward)"
           :aria-pressed="customization[kind] === reward.id"
           :title="
-            unlocked(reward) ? reward.label : `Se desbloquea en el nivel ${reward.level}`
+            unlocked(reward)
+              ? reward.label
+              : t('history.customize.unlocksAt', reward.level)
           "
           @click="pick(reward)"
         >
@@ -61,6 +66,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { LockClosedIcon, SpeakerWaveIcon } from "@heroicons/vue/24/outline";
 import { useCustomizationStore } from "@/shared/stores/customization";

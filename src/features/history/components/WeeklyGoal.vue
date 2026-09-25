@@ -7,7 +7,9 @@
       >
         <CheckCircleIcon v-if="week.completed" class="w-4 h-4 animate-pop-in" />
         <CalendarDaysIcon v-else class="w-4 h-4 text-primary" />
-        {{ week.completed ? "¡Meta semanal cumplida!" : "Esta semana" }}
+        {{
+          week.completed ? t("history.weeklyGoal.done") : t("history.weeklyGoal.thisWeek")
+        }}
       </div>
       <div class="text-xs font-bold tabular-nums text-pencil-gray">
         <span class="font-extrabold text-charcoal">{{ week.minutes }}</span
@@ -51,14 +53,16 @@
                 ? 'text-pencil-gray/50'
                 : 'text-pencil-gray'
           "
-          >{{ day.label }}</span
+          >{{ t("history.weeklyGoal.days")[index] }}</span
         >
       </div>
     </div>
 
     <!-- Choosing the goal: Auto follows your recent weeks -->
     <div v-if="editable" class="mt-4 flex flex-wrap items-center gap-1.5">
-      <span class="text-xs font-bold text-pencil-gray mr-1">Meta:</span>
+      <span class="text-xs font-bold text-pencil-gray mr-1">{{
+        t("history.weeklyGoal.goal")
+      }}</span>
       <IconButton
         :variant="historyStore.weeklyGoalIsAuto ? 'primary' : 'secondary'"
         size="xs"
@@ -82,6 +86,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { CalendarDaysIcon, CheckCircleIcon } from "@heroicons/vue/24/outline";
 import IconButton from "@/shared/components/IconButton.vue";

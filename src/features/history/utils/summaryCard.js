@@ -3,6 +3,7 @@
 // unit tested for the same reason -- jsdom has no canvas.
 import { CARD_SIZE } from "@/features/typing-test/utils/shareCard";
 import { formatKeyLabel } from "./historyStats";
+import { t } from "@/shared/i18n";
 
 export const drawSummaryCard = (canvas, summary) => {
   const size = CARD_SIZE;
@@ -27,13 +28,13 @@ export const drawSummaryCard = (canvas, summary) => {
 
   ctx.font = "bold 44px system-ui, sans-serif";
   ctx.fillStyle = "#fdba74";
-  ctx.fillText(`Mi ${summary.label}`, size / 2, 190);
+  ctx.fillText(t("history.summary.cardTitle", summary.label), size / 2, 190);
 
   // The big three
   const stats = [
-    [summary.sessions, summary.sessions === 1 ? "partida" : "partidas"],
-    [summary.minutes, "minutos"],
-    [summary.daysPracticed, summary.daysPracticed === 1 ? "día" : "días"],
+    [summary.sessions, t("history.summary.sessions", summary.sessions)],
+    [summary.minutes, t("history.summary.minutes")],
+    [summary.daysPracticed, t("history.summary.days", summary.daysPracticed)],
   ];
   stats.forEach(([value, label], i) => {
     const x = size / 6 + (i * size) / 3;
@@ -49,7 +50,11 @@ export const drawSummaryCard = (canvas, summary) => {
   const lines = [];
   if (summary.best) {
     lines.push(
-      `${summary.best.record ? "🏆 Récord: " : "Mejor: "}${summary.best.wpm} WPM · ${summary.best.label}`
+      t(
+        summary.best.record ? "history.summary.record" : "history.summary.best",
+        summary.best.wpm,
+        summary.best.label
+      )
     );
   }
   if (summary.averageWpm !== null) {
@@ -60,19 +65,22 @@ export const drawSummaryCard = (canvas, summary) => {
           ? ` (${summary.wpmChange}%)`
           : "";
     lines.push(
-      `Promedio: ${summary.averageWpm} WPM${change} · ${summary.averageAccuracy}% precisión`
+      t("history.summary.average", summary.averageWpm, change, summary.averageAccuracy)
     );
   }
   if (summary.tamedKey) {
     const pct = (rate) => `${Math.round(rate * 100)}%`;
     lines.push(
-      `Tecla domada: ${formatKeyLabel(summary.tamedKey.key).toUpperCase()} ${pct(summary.tamedKey.before)} → ${pct(summary.tamedKey.after)}`
+      t(
+        "history.summary.tamed",
+        formatKeyLabel(summary.tamedKey.key).toUpperCase(),
+        pct(summary.tamedKey.before),
+        pct(summary.tamedKey.after)
+      )
     );
   }
   if (summary.achievements.length) {
-    lines.push(
-      `${summary.achievements.length} ${summary.achievements.length === 1 ? "logro" : "logros"} nuevos`
-    );
+    lines.push(t("history.summary.newAchievements", summary.achievements.length));
   }
   ctx.font = "bold 40px system-ui, sans-serif";
   ctx.fillStyle = "#ffffff";
@@ -80,7 +88,7 @@ export const drawSummaryCard = (canvas, summary) => {
 
   ctx.font = "bold 32px system-ui, sans-serif";
   ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-  ctx.fillText("Tu resumen en SwiftFlow", size / 2, size - 70);
+  ctx.fillText(t("history.summary.footer"), size / 2, size - 70);
 
   return canvas;
 };

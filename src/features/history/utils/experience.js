@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { isPerfectRound, MIN_PERFECT_KEYSTROKES } from "./perfectRounds";
 
 // Experience: one number that everything else feeds into -- showing up,
@@ -61,21 +62,21 @@ export const totalXpForLevel = (level) => {
 // same split the achievements use. The ranks get longer as the levels get
 // more expensive, and the last one is the top level alone.
 export const LEVEL_TIERS = [
-  { from: 1, to: 4, title: "Novato", icon: "sparkles", rgb: [100, 116, 139] },
-  { from: 5, to: 9, title: "Aprendiz", icon: "academic-cap", rgb: [22, 163, 74] },
-  { from: 10, to: 14, title: "Ágil", icon: "bolt", rgb: [8, 145, 178] },
-  { from: 15, to: 19, title: "Veloz", icon: "rocket", rgb: [37, 99, 235] },
-  { from: 20, to: 29, title: "Experto", icon: "shield", rgb: [124, 58, 237] },
-  { from: 30, to: 39, title: "Maestro", icon: "trophy", rgb: [219, 39, 119] },
-  { from: 40, to: 49, title: "Leyenda", icon: "fire", rgb: [234, 88, 12] },
-  {
-    from: MAX_LEVEL,
-    to: MAX_LEVEL,
-    title: "Dios del teclado",
-    icon: "star",
-    rgb: [202, 138, 4],
+  { from: 1, to: 4, icon: "sparkles", rgb: [100, 116, 139] },
+  { from: 5, to: 9, icon: "academic-cap", rgb: [22, 163, 74] },
+  { from: 10, to: 14, icon: "bolt", rgb: [8, 145, 178] },
+  { from: 15, to: 19, icon: "rocket", rgb: [37, 99, 235] },
+  { from: 20, to: 29, icon: "shield", rgb: [124, 58, 237] },
+  { from: 30, to: 39, icon: "trophy", rgb: [219, 39, 119] },
+  { from: 40, to: 49, icon: "fire", rgb: [234, 88, 12] },
+  { from: MAX_LEVEL, to: MAX_LEVEL, icon: "star", rgb: [202, 138, 4] },
+].map((tier) => ({
+  ...tier,
+  // Named in the current language, by where the rank starts
+  get title() {
+    return t(`history.tiers.${tier.from}`);
   },
-];
+}));
 
 export const levelTier = (level) =>
   LEVEL_TIERS.find((tier) => level >= tier.from && level <= tier.to) ??

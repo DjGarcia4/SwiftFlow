@@ -34,9 +34,9 @@
             "
             >{{ percent(entry.lastRate) }}</span
           >
-          <span class="ml-1 text-[10px] font-bold uppercase text-pencil-gray"
-            >de error</span
-          >
+          <span class="ml-1 text-[10px] font-bold uppercase text-pencil-gray">{{
+            t("history.review.ofError")
+          }}</span>
         </div>
         <!-- One dot per interval: the ones already held are filled -->
         <div
@@ -59,10 +59,14 @@
       </div>
 
       <div class="flex-shrink-0 text-right text-xs font-bold">
-        <span v-if="entry.mastered" class="text-success-dark">Dominada</span>
-        <span v-else-if="entry.dueInDays <= 0" class="text-primary">Hoy</span>
+        <span v-if="entry.mastered" class="text-success-dark">{{
+          t("history.review.mastered")
+        }}</span>
+        <span v-else-if="entry.dueInDays <= 0" class="text-primary">{{
+          t("history.review.today")
+        }}</span>
         <span v-else class="text-pencil-gray">
-          {{ entry.dueInDays === 1 ? "Mañana" : `En ${entry.dueInDays} días` }}
+          {{ t("history.review.due", entry.dueInDays) }}
         </span>
       </div>
     </li>
@@ -70,6 +74,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { REVIEW_INTERVALS } from "@/features/history/utils/keyReview";
 
 defineProps({

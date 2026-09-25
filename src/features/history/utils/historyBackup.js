@@ -3,6 +3,8 @@
 // outside the app — so nothing throws and anything unrecognizable is
 // dropped rather than trusted.
 
+import { t } from "@/shared/i18n";
+
 const APP_TAG = "swiftflow";
 const BACKUP_VERSION = 1;
 
@@ -29,19 +31,19 @@ export const parseBackup = (text) => {
   try {
     parsed = JSON.parse(text);
   } catch {
-    return { ok: false, error: "El archivo no es un JSON válido." };
+    return { ok: false, error: t("history.backup.notJson") };
   }
 
   if (!parsed || parsed.app !== APP_TAG) {
-    return { ok: false, error: "Ese archivo no es una copia de SwiftFlow." };
+    return { ok: false, error: t("history.backup.notOurs") };
   }
   if (!Array.isArray(parsed.results)) {
-    return { ok: false, error: "La copia no tiene sesiones adentro." };
+    return { ok: false, error: t("history.backup.empty") };
   }
 
   const results = parsed.results.filter(isUsableResult);
   if (!results.length) {
-    return { ok: false, error: "No se pudo leer ninguna sesión de la copia." };
+    return { ok: false, error: t("history.backup.unreadable") };
   }
 
   return { ok: true, results, skipped: parsed.results.length - results.length };

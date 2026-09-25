@@ -23,7 +23,7 @@
       />
       <div>
         <div class="text-[10px] font-bold uppercase tracking-wide opacity-80">
-          {{ achievement.kicker ?? "¡Logro desbloqueado!" }}
+          {{ achievement.kicker ?? t("history.toasts.achievement") }}
         </div>
         <div class="font-display font-extrabold leading-tight">
           {{ achievement.title }}
@@ -48,6 +48,7 @@ import {
 import { useSoundStore } from "@/shared/stores/sound";
 import { playCelebrationSound } from "@/shared/utils/sound";
 import { announce, sentences } from "@/shared/utils/announcer";
+import { t } from "@/shared/i18n";
 
 const historyStore = useHistoryStore();
 const soundStore = useSoundStore();
@@ -89,7 +90,7 @@ watch(
       if (current.id !== lastCelebrated) {
         announce(
           sentences([
-            current.kicker ?? "¡Logro desbloqueado!",
+            current.kicker ?? t("history.toasts.achievement"),
             current.title,
             current.subtitle,
           ])

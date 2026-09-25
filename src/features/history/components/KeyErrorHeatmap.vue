@@ -28,9 +28,9 @@
       <div
         class="flex items-center gap-3 mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
       >
-        <span class="min-w-[4.5rem] text-center">tecla</span>
-        <span class="flex-1">errores en total</span>
-        <span class="w-28 text-right">errores · % fallado</span>
+        <span class="min-w-[4.5rem] text-center">{{ t("history.heatmap.key") }}</span>
+        <span class="flex-1">{{ t("history.heatmap.totalMisses") }}</span>
+        <span class="w-28 text-right">{{ t("history.heatmap.missesAndRate") }}</span>
       </div>
       <div
         v-for="(stat, index) in topMissed"
@@ -57,12 +57,13 @@
       </div>
     </div>
     <div v-else class="text-sm text-pencil-gray text-center">
-      Ningún error registrado todavía. ¡Impecable!
+      {{ t("history.heatmap.none") }}
     </div>
   </div>
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { formatKeyLabel } from "@/features/history/utils/historyStats";
 import { staggerStyle } from "@/shared/utils/motion";
@@ -118,7 +119,13 @@ const keyStagger = (rowIndex, keyIndex) =>
 
 const describe = (stat) => {
   const trend = trendByKey.value.get(stat.key);
-  const before = trend ? ` (antes ${Math.round(trend.before * 100)}%)` : "";
-  return `${stat.misses} errores en ${stat.attempts} intentos — fallás ${Math.round(stat.rate * 100)}% de las veces${before}`;
+  const before = trend ? t("history.heatmap.before", Math.round(trend.before * 100)) : "";
+  return t(
+    "history.heatmap.describe",
+    stat.misses,
+    stat.attempts,
+    Math.round(stat.rate * 100),
+    before
+  );
 };
 </script>

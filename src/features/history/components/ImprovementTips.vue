@@ -3,16 +3,16 @@
     <div class="flex items-center gap-2 mb-3">
       <LightBulbIcon class="w-4 h-4 text-primary" />
       <span class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-        Qué mejorar
+        {{ t("history.improve.title") }}
       </span>
     </div>
 
     <p v-if="!result.enoughData" class="text-sm text-pencil-gray">
-      Jugá un par de partidas más y te digo en qué enfocarte.
+      {{ t("history.improve.notEnough") }}
     </p>
 
     <p v-else-if="!result.tips.length" class="text-sm text-pencil-gray">
-      ¡Vas muy parejo! No hay un patrón claro de errores por ahora.
+      {{ t("history.improve.allEven") }}
     </p>
 
     <ul v-else class="space-y-2.5">
@@ -48,6 +48,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import {

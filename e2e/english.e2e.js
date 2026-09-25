@@ -50,3 +50,36 @@ test("the language can be switched from the menu, and stays", async ({ page }) =
   await page.getByRole("radio", { name: "Español" }).click();
   await expect(page.getByRole("textbox", { name: "Escribí el texto" })).toBeAttached();
 });
+
+test.describe("the history in English", () => {
+  test.use({ locale: "en-US" });
+
+  test("speaks English, down to the tips and achievements", async ({ page }) => {
+    await page.addInitScript(() => {
+      const day = 24 * 60 * 60 * 1000;
+      const results = Array.from({ length: 12 }, (_, i) => ({
+        id: `s${i}`,
+        date: new Date(Date.now() - i * day).toISOString(),
+        metricsVersion: 3,
+        mode: "time",
+        modeValue: 30,
+        wpm: 50 + (i % 4),
+        accuracy: 90,
+        errors: 3,
+        timeElapsed: 30,
+        keyAttempts: { a: 80, e: 80, r: 60, t: 60, s: 40 },
+        missedKeys: { a: 2, e: 2, r: 14, t: 2, s: 1 },
+      }));
+      localStorage.setItem("swiftflow_results", JSON.stringify(results));
+    });
+    await page.goto("/historial");
+    await expect(page.getByRole("heading", { name: "History" })).toBeVisible();
+    await expect(page.getByText("Most missed keys")).toBeVisible();
+    await expect(page.getByText("What to improve")).toBeVisible();
+    await expect(page.getByText(/^Practice R/)).toBeVisible();
+    await expect(page.getByText(/^Achievements \(\d+\/\d+\)/)).toBeVisible();
+    await expect(page.getByText("First step")).toBeVisible();
+    await expect(page.getByText("Activity", { exact: true })).toBeVisible();
+    await expect(page.getByText("30s").first()).toBeVisible();
+  });
+});

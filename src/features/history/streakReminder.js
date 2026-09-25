@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { useHistoryStore } from "@/features/history/store";
@@ -79,9 +80,9 @@ export const useStreakReminderStore = defineStore("streakReminder", () => {
   };
 
   const notify = async () => {
-    const title = `Tu racha de ${risk.value.streak} ${risk.value.streak === 1 ? "día" : "días"} se corta hoy`;
+    const title = t("history.streakNotice.title", risk.value.streak);
     const options = {
-      body: `Te quedan ${timeLeft.value}. Una partida alcanza para mantenerla.`,
+      body: t("history.streakNotice.body", timeLeft.value),
       icon: "/pwa-192x192.png",
       tag: "swiftflow-streak",
     };

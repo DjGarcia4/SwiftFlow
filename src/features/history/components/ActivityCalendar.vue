@@ -2,11 +2,10 @@
   <div>
     <div class="flex items-baseline justify-between gap-3 mb-3">
       <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-        Actividad
+        {{ t("history.calendar.title") }}
       </div>
       <div class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70">
-        {{ totalSessions }} {{ totalSessions === 1 ? "sesión" : "sesiones" }} en
-        {{ activeDays }} {{ activeDays === 1 ? "día" : "días" }}
+        {{ t("history.calendar.totals", totalSessions, activeDays) }}
       </div>
     </div>
 
@@ -55,7 +54,7 @@
                end up. -->
           <div class="flex w-7 shrink-0 flex-col gap-[2px]">
             <div
-              v-for="(label, dayIndex) in WEEKDAY_LABELS"
+              v-for="(label, dayIndex) in t('history.calendar.weekdays')"
               :key="dayIndex"
               class="flex flex-1 items-center justify-end text-[0.55rem] font-bold leading-none text-pencil-gray/70"
             >
@@ -104,19 +103,24 @@
     </div>
 
     <div class="mt-3 flex items-center justify-end gap-1.5">
-      <span class="text-[0.65rem] font-bold text-pencil-gray/70">menos</span>
+      <span class="text-[0.65rem] font-bold text-pencil-gray/70">{{
+        t("history.calendar.less")
+      }}</span>
       <div
         v-for="level in [0, 1, 2, 3, 4]"
         :key="level"
         class="h-2.5 w-2.5 rounded-[3px]"
         :style="levelStyle(level)"
       ></div>
-      <span class="text-[0.65rem] font-bold text-pencil-gray/70">más</span>
+      <span class="text-[0.65rem] font-bold text-pencil-gray/70">{{
+        t("history.calendar.more")
+      }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
+import { t, localeTag } from "@/shared/i18n";
 import { computed } from "vue";
 import { staggerStyle } from "@/shared/utils/motion";
 
@@ -128,21 +132,6 @@ const props = defineProps({
 const WEEKDAYS = 7;
 // Rows run Sunday to Saturday, so these land on Monday, Wednesday and
 // Friday -- the same three GitHub labels.
-const WEEKDAY_LABELS = ["", "lun", "", "mié", "", "vie", ""];
-const MONTH_NAMES = [
-  "ene",
-  "feb",
-  "mar",
-  "abr",
-  "may",
-  "jun",
-  "jul",
-  "ago",
-  "sep",
-  "oct",
-  "nov",
-  "dic",
-];
 // A month name over a first column of one or two days would point at a
 // month the grid barely shows.
 const MIN_FIRST_COLUMN_DAYS = 3;
@@ -201,7 +190,8 @@ const monthLabels = computed(() => {
 
     const month = firstDay.date.getMonth();
     const isStub = index === 0 && week.filter(Boolean).length < MIN_FIRST_COLUMN_DAYS;
-    labels[index] = month !== lastMonth && !isStub ? MONTH_NAMES[month] : "";
+    labels[index] =
+      month !== lastMonth && !isStub ? t("history.calendar.months")[month] : "";
     lastMonth = month;
   });
 
@@ -238,10 +228,10 @@ const levelStyle = (level) =>
 const dayStyle = (day) => levelStyle(levelFor(day.sessions));
 
 const formatDay = (date) =>
-  date.toLocaleDateString("es", { day: "numeric", month: "long" });
+  date.toLocaleDateString(localeTag(), { day: "numeric", month: "long" });
 
 const describe = (day) =>
   day.sessions
-    ? `${day.sessions} ${day.sessions === 1 ? "sesión" : "sesiones"} el ${formatDay(day.date)}`
-    : `Nada el ${formatDay(day.date)}`;
+    ? t("history.calendar.day", day.sessions, formatDay(day.date))
+    : t("history.calendar.nothing", formatDay(day.date));
 </script>

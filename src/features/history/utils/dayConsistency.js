@@ -2,6 +2,7 @@
 // the per-session consistency), but whether Tuesday's you types like
 // Thursday's. Read off your most-played kind of session only, since 15
 // seconds and 120 seconds, or words and code, don't run at the same speed.
+import { t } from "@/shared/i18n";
 import { isCurrentMetrics, toLocalDayKey, formatModeLabel } from "./historyStats";
 
 // The latest days you played, each one's average against the others
@@ -11,11 +12,16 @@ const MIN_DAYS = 5;
 const LOOKBACK_SESSIONS = 80;
 
 export const CONSISTENCY_LEVELS = [
-  { min: 93, label: "Muy parejo" },
-  { min: 87, label: "Parejo" },
-  { min: 80, label: "Con altibajos" },
-  { min: 0, label: "Irregular" },
-];
+  { min: 93, id: "veryEven" },
+  { min: 87, id: "even" },
+  { min: 80, id: "bumpy" },
+  { min: 0, id: "irregular" },
+].map((level) => ({
+  ...level,
+  get label() {
+    return t(`history.consistencyLevels.${level.id}`);
+  },
+}));
 
 const kindOf = (result) => `${result.mode}:${result.modeValue ?? ""}`;
 

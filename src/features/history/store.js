@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import {
@@ -35,9 +36,12 @@ import { rewardsUnlockedBetween, KIND_NAMES } from "@/features/history/utils/rew
 const unlockedText = (from, to) => {
   const unlocked = rewardsUnlockedBetween(from, to);
   return unlocked.length
-    ? `Desbloqueaste: ${unlocked
-        .map((reward) => `${KIND_NAMES[reward.kind]} ${reward.label.toLowerCase()}`)
-        .join(", ")}`
+    ? t(
+        "history.rewards.unlocked",
+        unlocked.map(
+          (reward) => `${KIND_NAMES[reward.kind]} ${reward.label.toLowerCase()}`
+        )
+      )
     : null;
 };
 import { loadGhosts, saveGhosts, clearGhosts } from "@/features/history/ghostRepository";
@@ -292,7 +296,7 @@ export const useHistoryStore = defineStore("history", () => {
         category: "challenge",
         icon: c.icon,
         title: c.title,
-        kicker: "¡Reto cumplido!",
+        kicker: t("history.toasts.challengeDone"),
       }));
     // A drill moves its letters along the review schedule
     let reviewChanges = [];
@@ -313,8 +317,11 @@ export const useHistoryStore = defineStore("history", () => {
             id: `review:${challengeDay.value.toDateString()}`,
             category: "challenge",
             icon: "check-badge",
-            title: `Repasaste ${reviewToday.value.keys.map((k) => k.toUpperCase()).join(", ")}`,
-            kicker: "¡Repaso del día hecho!",
+            title: t(
+              "history.toasts.reviewed",
+              reviewToday.value.keys.map((k) => k.toUpperCase())
+            ),
+            kicker: t("history.toasts.reviewDone"),
           },
         ]
       : [];
@@ -337,8 +344,8 @@ export const useHistoryStore = defineStore("history", () => {
             id: `week:${week.key}`,
             category: "time",
             icon: "calendar",
-            title: `${week.goal} minutos esta semana`,
-            kicker: "¡Meta semanal cumplida!",
+            title: t("history.toasts.weekGoal", week.goal),
+            kicker: t("history.toasts.weekGoalDone"),
           },
         ]
       : [];
@@ -369,8 +376,8 @@ export const useHistoryStore = defineStore("history", () => {
               category: "level",
               icon: level.value.tier.icon,
               rgb: level.value.tier.rgb,
-              title: `Nivel ${level.value.level} · ${level.value.title}`,
-              kicker: "¡Subiste de nivel!",
+              title: t("history.toasts.level", level.value.level, level.value.title),
+              kicker: t("history.toasts.levelUp"),
               // What it unlocked, to go try it
               subtitle: unlockedText(levelBefore, level.value.level),
             },

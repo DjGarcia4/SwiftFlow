@@ -6,10 +6,10 @@
   <div>
     <div class="mb-3 flex items-baseline justify-between gap-3">
       <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-        Cómo van tus teclas
+        {{ t("history.trends.title") }}
       </div>
       <div class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70">
-        últimas {{ trends.sessions }} contra las {{ trends.sessions }} anteriores
+        {{ t("history.trends.scope", trends.sessions) }}
       </div>
     </div>
 
@@ -17,7 +17,7 @@
       v-if="!trends.improved.length && !trends.worsened.length"
       class="text-sm text-pencil-gray"
     >
-      Ninguna tecla cambió lo suficiente como para decir algo todavía: seguís parejo.
+      {{ t("history.trends.nothing") }}
     </p>
 
     <div v-else class="grid gap-4 sm:grid-cols-2">
@@ -42,11 +42,11 @@
             <span class="text-sm font-bold tabular-nums text-pencil-gray">
               {{ percent(trend.before) }}
               <span aria-hidden="true">&nbsp;→&nbsp;</span>
-              <span class="sr-only">a</span>
+              <span class="sr-only">{{ t("history.trends.to") }}</span>
               <span class="font-extrabold" :class="column.tone">{{
                 percent(trend.after)
               }}</span>
-              de error
+              {{ t("history.trends.ofError") }}
             </span>
           </li>
         </ul>
@@ -57,6 +57,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { ArrowTrendingDownIcon, ArrowTrendingUpIcon } from "@heroicons/vue/24/outline";
 import { formatKeyLabel } from "@/features/history/utils/historyStats";
@@ -70,18 +71,18 @@ const percent = (rate) => `${Math.round(rate * 100)}%`;
 
 const columns = computed(() => [
   {
-    title: "Mejoraste",
+    title: t("history.trends.improved"),
     icon: ArrowTrendingDownIcon,
     tone: "text-success",
     items: props.trends.improved,
-    empty: "Ninguna bajó lo suficiente todavía.",
+    empty: t("history.trends.noneImproved"),
   },
   {
-    title: "Ojo con",
+    title: t("history.trends.worsened"),
     icon: ArrowTrendingUpIcon,
     tone: "text-danger",
     items: props.trends.worsened,
-    empty: "Ninguna empeoró. Bien ahí.",
+    empty: t("history.trends.noneWorsened"),
   },
 ]);
 </script>

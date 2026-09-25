@@ -2,14 +2,14 @@
   <div>
     <div class="flex items-baseline justify-between gap-3 mb-3">
       <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-        Palabras que te cuestan
+        {{ t("history.problemWords.title") }}
       </div>
       <button
         type="button"
         class="inline-flex items-center gap-1 rounded-lg border-2 border-primary px-2.5 py-1 text-xs font-extrabold text-primary transition-[background-color,color,scale] duration-200 ease-spring hover:bg-primary hover:text-white active:scale-95"
         @click="train"
       >
-        Entrenar estas
+        {{ t("history.problemWords.train") }}
         <ArrowRightIcon class="w-3.5 h-3.5" />
       </button>
     </div>
@@ -29,6 +29,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { useRouter } from "vue-router";
 import { ArrowRightIcon } from "@heroicons/vue/24/outline";
 import { staggerStyle } from "@/shared/utils/motion";
@@ -49,9 +50,9 @@ const reason = (entry) => {
   const errorShare = entry.errorRate / ERROR_RATE_BAR;
   const slowShare = entry.slowRatio / SLOW_RATIO_BAR;
   if (entry.errors && errorShare >= slowShare) {
-    return `${entry.errors} de ${entry.times} con error`;
+    return t("history.problemWords.errors", entry.errors, entry.times);
   }
-  return `${Math.round((entry.slowRatio - 1) * 100)}% más lenta`;
+  return t("history.problemWords.slower", Math.round((entry.slowRatio - 1) * 100));
 };
 
 const train = () => {

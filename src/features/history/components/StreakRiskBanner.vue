@@ -20,16 +20,15 @@
         <FireIcon class="mt-0.5 w-6 h-6 flex-shrink-0 text-primary animate-badge-glow" />
         <div class="min-w-0 flex-1">
           <div class="text-sm font-extrabold text-charcoal">
-            Tu racha de {{ reminder.risk.streak }}
-            {{ reminder.risk.streak === 1 ? "día" : "días" }} se corta a medianoche
+            {{ t("history.streakBanner.title", reminder.risk.streak) }}
           </div>
           <div class="text-xs font-bold text-pencil-gray">
-            Te quedan {{ reminder.timeLeft }}. Una partida alcanza.
+            {{ t("history.streakBanner.left", reminder.timeLeft) }}
           </div>
         </div>
         <button
           type="button"
-          aria-label="Ocultar por hoy"
+          :aria-label="t('history.streakBanner.hideToday')"
           class="-mr-1 rounded-md p-1 text-pencil-gray hover:text-charcoal"
           @click="reminder.dismiss()"
         >
@@ -41,7 +40,9 @@
       <div v-if="supported" class="mt-2.5 border-t-2 border-faded-gray/60 pt-2.5">
         <div class="flex flex-wrap items-center gap-1.5">
           <BellIcon class="w-4 h-4 text-pencil-gray" />
-          <span class="text-xs font-bold text-pencil-gray">Avisarme a las</span>
+          <span class="text-xs font-bold text-pencil-gray">{{
+            t("history.streakBanner.remindAt")
+          }}</span>
           <button
             v-for="hour in REMINDER_HOURS"
             :key="hour"
@@ -54,7 +55,7 @@
             "
             @click="setHour(hour)"
           >
-            {{ hour }} h
+            {{ t("history.streakBanner.hour", hour) }}
           </button>
           <button
             v-if="reminder.reminderHour !== null"
@@ -62,7 +63,7 @@
             class="text-xs font-bold text-pencil-gray underline underline-offset-2 hover:text-charcoal"
             @click="setHour(null)"
           >
-            no avisar
+            {{ t("history.streakBanner.noReminder") }}
           </button>
         </div>
         <p class="mt-1 text-[11px] font-bold text-pencil-gray/80">
@@ -78,6 +79,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { ref, computed } from "vue";
 import { FireIcon, BellIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { useConfigStore } from "@/features/typing-test/store";

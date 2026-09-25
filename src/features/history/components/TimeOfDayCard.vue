@@ -3,7 +3,7 @@
     <div class="flex items-center gap-2 mb-1">
       <ClockIcon class="w-4 h-4 text-primary" />
       <span class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-        Tu mejor momento
+        {{ t("history.timeOfDay.title") }}
       </span>
     </div>
     <p class="text-sm font-extrabold text-charcoal">{{ headline }}</p>
@@ -35,7 +35,7 @@
           {{ part.label }}
         </div>
         <div class="text-[10px] font-bold text-pencil-gray/70">
-          {{ part.sessions }} {{ part.sessions === 1 ? "sesión" : "sesiones" }}
+          {{ t("history.timeOfDay.sessions", part.sessions) }}
         </div>
       </div>
     </div>
@@ -43,6 +43,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { ClockIcon } from "@heroicons/vue/24/outline";
 import { MIN_PART_SESSIONS } from "@/features/history/utils/timeOfDay";
@@ -64,10 +65,10 @@ const delta = (relative) => {
 
 const headline = computed(() => {
   const { best, enoughData } = props.data;
-  if (!enoughData) return "Todavía no sé a qué hora rendís más";
+  if (!enoughData) return t("history.timeOfDay.notYet");
   return best
-    ? `Escribís un ${percent(best.relative)}% más rápido a la ${best.label}`
-    : "Rendís parejo a cualquier hora";
+    ? t("history.timeOfDay.faster", percent(best.relative), best.label)
+    : t("history.timeOfDay.even");
 });
 
 const footnote = computed(() => {
@@ -76,11 +77,11 @@ const footnote = computed(() => {
     // Say what there is and what's missing, in whole sessions
     const [only] = played.value;
     return only
-      ? `Ya tenés ${only.sessions} a la ${only.label}: jugá ${MIN_PART_SESSIONS} en otro momento del día para comparar.`
-      : `Necesito ${MIN_PART_SESSIONS} sesiones en al menos dos momentos del día para comparar.`;
+      ? t("history.timeOfDay.onlyOne", only.sessions, only.label, MIN_PART_SESSIONS)
+      : t("history.timeOfDay.needMore", MIN_PART_SESSIONS);
   }
   if (!worst || worst === best) return "";
-  return `A la ${worst.label} bajás un ${percent(worst.relative)}% · comparado con tu promedio en cada modo`;
+  return t("history.timeOfDay.slower", worst.label, percent(worst.relative));
 });
 
 // ±20% fills half the column

@@ -2,6 +2,8 @@
 // seeded from the week alone -- no server involved -- so anyone opening the
 // app that week gets exactly these words, and a result can be compared
 // with a friend's.
+import { t } from "@/shared/i18n";
+
 import { spanishWords } from "@/features/typing-test/content/words";
 import { randomFrom } from "@/shared/utils/seededRandom";
 
@@ -30,7 +32,7 @@ export const weeklyKey = (date = new Date()) => {
 // "S39·2026": what people read and share
 export const weeklyLabel = (key) => {
   const [year, week] = key.split("-W");
-  return `S${Number(week)}·${year}`;
+  return t("history.weekLabel", Number(week), year);
 };
 
 export const generateWeeklyText = (key, count = WEEKLY_WORD_COUNT) => {

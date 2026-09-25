@@ -22,7 +22,9 @@
         class="text-sm font-bold leading-snug"
         :class="review.completed ? 'text-success-dark' : 'text-charcoal'"
       >
-        {{ review.completed ? "Repaso de hoy hecho" : "Hoy toca repasar" }}
+        {{
+          review.completed ? t("history.review.doneToday") : t("history.review.dueToday")
+        }}
       </div>
       <div class="mt-1 flex flex-wrap gap-1">
         <kbd
@@ -45,13 +47,14 @@
       class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-xs font-extrabold text-white border-b-2 border-primary-dark transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
       @click="startReview"
     >
-      Repasar
+      {{ t("history.review.start") }}
       <ArrowRightIcon class="w-3.5 h-3.5" />
     </button>
   </div>
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import {

@@ -2,14 +2,14 @@
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
     <div class="flex items-center justify-between gap-3 mb-6 animate-rise">
       <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-charcoal">
-        Historial
+        {{ t("history.view.title") }}
       </h1>
       <div class="hidden sm:flex items-center gap-2 text-xs text-pencil-gray font-bold">
         <kbd
           class="px-2 py-0.5 bg-paper-white text-charcoal rounded-md font-mono border-2 border-faded-gray"
-          >ESPACIO</kbd
+          >{{ t("history.view.space") }}</kbd
         >
-        para volver a escribir
+        {{ t("history.view.backToTyping") }}
       </div>
     </div>
 
@@ -17,7 +17,7 @@
       v-if="historyStore.sessionsCount === 0"
       class="bg-paper-white rounded-card p-8 border-2 border-faded-gray text-center text-pencil-gray animate-rise [animation-delay:100ms]"
     >
-      Todavía no completaste ningún test.
+      {{ t("history.view.empty") }}
     </div>
 
     <template v-else>
@@ -33,7 +33,7 @@
         >
           <span class="flex items-center gap-2">
             <SparklesIcon class="h-4 w-4" />
-            Tu resumen de {{ currentMonthName }}
+            {{ t("history.view.monthSummary", currentMonthName) }}
           </span>
           <ArrowRightIcon class="h-4 w-4" />
         </RouterLink>
@@ -46,7 +46,11 @@
             :aria-expanded="levelPanel === 'levels'"
             @click="toggleLevelPanel('levels')"
           >
-            {{ levelPanel === "levels" ? "Ocultar niveles" : "Ver todos los niveles" }}
+            {{
+              levelPanel === "levels"
+                ? t("history.view.hideLevels")
+                : t("history.view.showLevels")
+            }}
           </button>
           <button
             type="button"
@@ -54,7 +58,11 @@
             :aria-expanded="levelPanel === 'customize'"
             @click="toggleLevelPanel('customize')"
           >
-            {{ levelPanel === "customize" ? "Ocultar" : "Personalizar" }}
+            {{
+              levelPanel === "customize"
+                ? t("history.view.hide")
+                : t("history.view.customize")
+            }}
           </button>
         </div>
         <Transition
@@ -83,7 +91,7 @@
         <IconButton
           :variant="selectedMode === null ? 'primary' : 'secondary'"
           size="xs"
-          text="Todos"
+          :text="t('history.view.allModes')"
           @click="selectedMode = null"
         />
         <IconButton
@@ -116,7 +124,7 @@
           <div
             class="text-xs sm:text-sm text-primary-dark font-bold uppercase tracking-wide"
           >
-            Racha
+            {{ t("history.view.streak") }}
           </div>
         </div>
         <div
@@ -130,7 +138,7 @@
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
           >
-            Sesiones
+            {{ t("history.view.sessions") }}
           </div>
         </div>
         <div
@@ -143,7 +151,7 @@
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
           >
-            Mejor WPM
+            {{ t("history.view.bestWpm") }}
           </div>
         </div>
         <div
@@ -158,7 +166,7 @@
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
           >
-            WPM promedio
+            {{ t("history.view.averageWpm") }}
           </div>
         </div>
         <div
@@ -175,7 +183,7 @@
           <div
             class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
           >
-            Precisión promedio
+            {{ t("history.view.averageAccuracy") }}
           </div>
         </div>
       </div>
@@ -186,16 +194,17 @@
       >
         <div class="flex items-baseline justify-between gap-3 mb-3">
           <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            Retos de hoy
+            {{ t("history.view.todaysChallenges") }}
           </div>
           <div
             class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
           >
-            {{ historyStore.challengeStats.completed }}
-            {{ historyStore.challengeStats.completed === 1 ? "cumplido" : "cumplidos" }} ·
-            {{ historyStore.challengeStats.fullDays }}
             {{
-              historyStore.challengeStats.fullDays === 1 ? "día redondo" : "días redondos"
+              t(
+                "history.view.challengeCounts",
+                historyStore.challengeStats.completed,
+                historyStore.challengeStats.fullDays
+              )
             }}
           </div>
         </div>
@@ -208,7 +217,7 @@
           <div
             class="mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
           >
-            Semanas anteriores
+            {{ t("history.view.pastWeeks") }}
           </div>
           <div class="flex flex-wrap gap-2">
             <div
@@ -233,16 +242,13 @@
       >
         <div class="flex items-baseline justify-between gap-3 mb-3">
           <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            Meta semanal
+            {{ t("history.view.weeklyGoal") }}
           </div>
           <div
             v-if="historyStore.weeksCompleted"
             class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
           >
-            {{ historyStore.weeksCompleted }}
-            {{
-              historyStore.weeksCompleted === 1 ? "semana cumplida" : "semanas cumplidas"
-            }}
+            {{ t("history.view.weeksDone", historyStore.weeksCompleted) }}
           </div>
         </div>
         <WeeklyGoal editable />
@@ -286,7 +292,7 @@
         class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:450ms]"
       >
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          Tendencia de WPM
+          {{ t("history.view.wpmTrend") }}
         </div>
         <TrendSparkline :values="trendValues" />
       </div>
@@ -307,15 +313,14 @@
       >
         <div class="flex items-baseline justify-between gap-3 mb-3">
           <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            Teclas más falladas
+            {{ t("history.view.mostMissed") }}
           </div>
           <div class="flex items-baseline gap-2">
             <KeyboardLayoutPicker class="hidden sm:inline-flex" />
             <div
               class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
             >
-              últimas {{ keyStatsResults.length }}
-              {{ keyStatsResults.length === 1 ? "sesión" : "sesiones" }}
+              {{ t("history.view.lastSessions", keyStatsResults.length) }}
             </div>
           </div>
         </div>
@@ -366,13 +371,13 @@
           <TimingBars
             v-if="keyTimingStats.length"
             :stats="keyTimingStats"
-            title="Tus teclas más lentas"
+            :title="t('history.view.slowestKeys')"
           />
           <TimingBars
             v-if="bigramTimingStats.length"
             :stats="bigramTimingStats"
-            title="Tus combinaciones más lentas"
-            unit-label="combo"
+            :title="t('history.view.slowestPairs')"
+            :unit-label="t('history.view.comboUnit')"
           />
         </div>
       </div>
@@ -384,12 +389,12 @@
       >
         <div class="flex items-baseline justify-between gap-3 mb-3">
           <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            Letras en repaso
+            {{ t("history.view.inReview") }}
           </div>
           <div
             class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
           >
-            1 · 3 · 7 · 14 · 30 días
+            {{ t("history.view.reviewSteps") }}
           </div>
         </div>
         <ReviewKeysList :entries="historyStore.reviewKeys" />
@@ -401,7 +406,7 @@
         class="mb-6 animate-rise [animation-delay:550ms]"
       >
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          Récords personales
+          {{ t("history.view.personalBests") }}
         </div>
         <TransitionGroup
           tag="div"
@@ -436,7 +441,7 @@
         class="mb-6 animate-rise [animation-delay:575ms]"
       >
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          Rondas perfectas ({{ filteredPerfectTotal }})
+          {{ t("history.view.perfectRounds", filteredPerfectTotal) }}
         </div>
         <div class="flex flex-wrap gap-2">
           <div
@@ -460,9 +465,13 @@
       <!-- Achievements -->
       <div class="mb-6 animate-rise [animation-delay:600ms]">
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          Logros ({{ historyStore.unlockedAchievementsCount }}/{{
-            historyStore.achievements.length
-          }})
+          {{
+            t(
+              "history.view.achievements",
+              historyStore.unlockedAchievementsCount,
+              historyStore.achievements.length
+            )
+          }}
         </div>
 
         <!-- Collapsed: clipped to ~2 rows with a fade at the bottom (same
@@ -535,8 +544,11 @@
           >
             {{
               showAllAchievements
-                ? "Ver menos"
-                : `Ver más (${historyStore.achievements.length - ACHIEVEMENTS_COLLAPSED_COUNT})`
+                ? t("history.view.showLess")
+                : t(
+                    "history.view.showMore",
+                    historyStore.achievements.length - ACHIEVEMENTS_COLLAPSED_COUNT
+                  )
             }}
           </button>
         </div>
@@ -550,7 +562,7 @@
       <TransitionGroup
         tag="div"
         role="region"
-        aria-label="Tus partidas"
+        :aria-label="t('history.view.yourSessions')"
         tabindex="0"
         class="space-y-2 mb-6 max-h-[32rem] overflow-y-auto overscroll-contain pr-2 -mr-2 rounded-card"
         enter-active-class="transition-all duration-500 ease-smooth"
@@ -573,8 +585,8 @@
               <span
                 v-if="result.blind"
                 class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
-                title="Jugada sin red: los errores no se veían mientras escribías"
-                >sin red</span
+                :title="t('history.view.blindHint')"
+                >{{ t("history.view.blindBadge") }}</span
               >
               <span
                 v-if="strictModeById(result.strict)"
@@ -585,13 +597,13 @@
               <span
                 v-if="result.minAccuracy"
                 class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
-                :title="`Jugada con una precisión mínima del ${result.minAccuracy} %`"
+                :title="t('history.view.minAccuracyHint', result.minAccuracy)"
                 >≥{{ result.minAccuracy }}%</span
               >
               <span
                 v-if="!isCurrentMetrics(result)"
                 class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
-                title="Medida con la fórmula anterior de WPM: no cuenta para récords ni promedios"
+                :title="t('history.view.oldMetricsHint')"
                 >v1</span
               >
             </div>
@@ -600,21 +612,25 @@
           <div class="flex items-center gap-4 flex-shrink-0 text-right">
             <div>
               <div class="font-display font-extrabold text-success">{{ result.wpm }}</div>
-              <div class="text-[10px] text-pencil-gray uppercase font-bold">wpm</div>
+              <div class="text-[10px] text-pencil-gray uppercase font-bold">
+                {{ t("history.view.wpm") }}
+              </div>
             </div>
             <div>
               <div class="font-display font-extrabold text-charcoal">
                 {{ result.accuracy }}%
               </div>
               <div class="text-[10px] text-pencil-gray uppercase font-bold">
-                precisión
+                {{ t("history.view.accuracy") }}
               </div>
             </div>
             <div>
               <div class="font-display font-extrabold text-charcoal">
                 {{ result.errors }}
               </div>
-              <div class="text-[10px] text-pencil-gray uppercase font-bold">errores</div>
+              <div class="text-[10px] text-pencil-gray uppercase font-bold">
+                {{ t("history.view.errors") }}
+              </div>
             </div>
           </div>
         </div>
@@ -622,19 +638,21 @@
 
       <div class="flex flex-wrap items-center justify-center gap-2">
         <ButtonCustom
-          text="Exportar"
+          :text="t('history.view.export')"
           variant="secondary"
           size="sm"
           @click="handleExport"
         />
         <ButtonCustom
-          text="Importar"
+          :text="t('history.view.import')"
           variant="secondary"
           size="sm"
           @click="fileInput?.click()"
         />
         <ButtonCustom
-          :text="confirmingClear ? '¿Confirmar borrado?' : 'Borrar historial'"
+          :text="
+            confirmingClear ? t('history.view.confirmClear') : t('history.view.clear')
+          "
           variant="secondary"
           size="sm"
           @click="handleClearClick"
@@ -649,11 +667,11 @@
       </div>
 
       <p class="mt-8 text-center text-xs font-bold text-pencil-gray">
-        ¿Primera vez por acá?
+        {{ t("history.view.firstTime") }}
         <router-link
           to="/sobre"
           class="text-primary underline underline-offset-2 hover:text-primary-dark"
-          >Mirá todo lo que hace SwiftFlow</router-link
+          >{{ t("history.view.seeLanding") }}</router-link
         >
       </p>
 
@@ -671,8 +689,11 @@
 <script setup>
 import { RouterLink } from "vue-router";
 import { ArrowRightIcon } from "@heroicons/vue/24/outline";
+import { t, localeTag } from "@/shared/i18n";
 
-const currentMonthName = new Date().toLocaleDateString("es", { month: "long" });
+const currentMonthName = computed(() =>
+  new Date().toLocaleDateString(localeTag(), { month: "long" })
+);
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { FireIcon, SparklesIcon } from "@heroicons/vue/24/outline";
@@ -799,24 +820,27 @@ const extraStats = computed(() => {
   // Recent habits, like the accuracy tips: how steady you type now
   const consistency = computeAverageConsistency(results.slice(0, RECENT_SESSIONS));
   return [
-    { label: "Mejor combo", value: computeBestStreak(results) || "—" },
+    { label: t("history.view.bestCombo"), value: computeBestStreak(results) || "—" },
     {
-      label: "Consistencia",
+      label: t("history.view.consistency"),
       value: consistency === null ? "—" : `${consistency}%`,
     },
-    { label: "Tiempo total", value: formatDuration(computeTotalTimeElapsed(results)) },
     {
-      label: "Teclas pulsadas",
+      label: t("history.view.totalTime"),
+      value: formatDuration(computeTotalTimeElapsed(results)),
+    },
+    {
+      label: t("history.view.keystrokes"),
       value: keystrokes || "—",
     },
     {
-      label: "Errores corregidos",
+      label: t("history.view.corrected"),
       value: corrected || "—",
     },
   ];
 });
 
-const formatThousands = (value) => value.toLocaleString("es");
+const formatThousands = (value) => value.toLocaleString(localeTag());
 
 const hasCurrent = computed(() => filteredCurrent.value.length > 0);
 
@@ -902,7 +926,10 @@ const trendValues = computed(() =>
 const formatModeLabel = (result) => formatModeLabelUtil(result);
 
 const formatDate = (isoDate) =>
-  new Date(isoDate).toLocaleString("es", { dateStyle: "short", timeStyle: "short" });
+  new Date(isoDate).toLocaleString(localeTag(), {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
 
 // Two-step confirmation: the button asks to confirm, then reverts on its
 // own after a few seconds if the user doesn't click again.
@@ -937,7 +964,7 @@ const handleExport = () => {
   URL.revokeObjectURL(url);
 
   const count = historyStore.results.length;
-  showBackupMessage(`Exportaste ${count} ${count === 1 ? "sesión" : "sesiones"}.`);
+  showBackupMessage(t("history.view.exported", count));
 };
 
 const handleImport = async (event) => {
@@ -953,11 +980,11 @@ const handleImport = async (event) => {
   }
 
   const { added } = historyStore.importResults(parsed.results);
-  const skipped = parsed.skipped ? ` Se saltearon ${parsed.skipped} sin leer.` : "";
+  const skipped = parsed.skipped ? t("history.view.skipped", parsed.skipped) : "";
   showBackupMessage(
     added
-      ? `Importaste ${added} ${added === 1 ? "sesión nueva" : "sesiones nuevas"}.${skipped}`
-      : `Ya tenías todas esas sesiones.${skipped}`
+      ? t("history.view.imported", added, skipped)
+      : t("history.view.nothingNew", skipped)
   );
 };
 

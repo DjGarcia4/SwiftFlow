@@ -27,11 +27,13 @@
         class="w-[min(22rem,calc(100vw-2rem))] rounded-card border-2 border-faded-gray bg-paper-white p-4 shadow-xl"
       >
         <div class="flex items-baseline justify-between gap-2 mb-3">
-          <div class="font-display font-extrabold text-charcoal">Retos de hoy</div>
+          <div class="font-display font-extrabold text-charcoal">
+            {{ t("history.challengesWidget.title") }}
+          </div>
           <div class="text-[10px] font-bold uppercase tracking-wide text-pencil-gray">
-            {{ historyStore.challengeStats.completed }}
-            {{ historyStore.challengeStats.completed === 1 ? "cumplido" : "cumplidos" }}
-            en total
+            {{
+              t("history.challengesWidget.total", historyStore.challengeStats.completed)
+            }}
           </div>
         </div>
         <ReviewToday
@@ -41,7 +43,7 @@
         />
         <DailyChallengesList :challenges="challenges" @play="open = false" />
         <p v-if="allDone" class="mt-3 text-center text-xs font-bold text-success-dark">
-          ¡Día redondo! Mañana hay retos nuevos.
+          {{ t("history.challengesWidget.fullDay") }}
         </p>
 
         <WeeklyChallengeCard class="mt-2" @play="open = false" />
@@ -61,11 +63,11 @@
           : 'border-faded-gray bg-paper-white text-charcoal'
       "
       :aria-expanded="open"
-      :aria-label="`Retos de hoy: ${doneCount} de ${challenges.length}`"
+      :aria-label="t('history.challengesWidget.aria', doneCount, challenges.length)"
       @click="open = !open"
     >
       <FlagIcon class="w-5 h-5" :class="allDone ? '' : 'text-primary'" />
-      <span class="hidden xs:inline">Retos</span>
+      <span class="hidden xs:inline">{{ t("history.challengesWidget.short") }}</span>
       <span class="tabular-nums">{{ doneCount }}/{{ challenges.length }}</span>
       <!-- A review waiting doesn't change the count, so it gets a dot -->
       <span
@@ -77,6 +79,7 @@
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { FlagIcon } from "@heroicons/vue/24/outline";
 import DailyChallengesList from "./DailyChallengesList.vue";

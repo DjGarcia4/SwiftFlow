@@ -13,21 +13,7 @@ import {
   toLocalDayKey,
 } from "./historyStats";
 import { computeAchievements } from "@/features/history/achievements";
-
-const MONTHS = [
-  "enero",
-  "febrero",
-  "marzo",
-  "abril",
-  "mayo",
-  "junio",
-  "julio",
-  "agosto",
-  "septiembre",
-  "octubre",
-  "noviembre",
-  "diciembre",
-];
+import { t, localeTag } from "@/shared/i18n";
 
 // A key needs this many attempts in both periods to say it improved
 const MIN_KEY_ATTEMPTS = 40;
@@ -45,8 +31,17 @@ export const previousPeriod = (period) =>
       ? { kind: "month", year: period.year - 1, month: 11 }
       : { kind: "month", year: period.year, month: period.month - 1 };
 
+// The month named the way the current language names it
 export const periodLabel = (period) =>
-  period.kind === "year" ? `${period.year}` : `${MONTHS[period.month]} de ${period.year}`;
+  period.kind === "year"
+    ? `${period.year}`
+    : t(
+        "history.summary.period",
+        new Date(period.year, period.month, 1).toLocaleDateString(localeTag(), {
+          month: "long",
+        }),
+        period.year
+      );
 
 // The same period, as a URL-friendly id and back: "2026-09" or "2026"
 export const periodId = (period) =>

@@ -11,15 +11,15 @@
 
     <div class="min-w-0 flex-1">
       <div class="text-sm font-bold leading-snug text-charcoal">
-        Reto semanal · {{ weeklyLabel(key) }}
+        {{ t("history.weeklyCard.title", weeklyLabel(key)) }}
       </div>
       <div class="text-xs text-pencil-gray">
         <template v-if="week">
-          Tu mejor:
+          {{ t("history.weeklyCard.yourBest") }}
           <span class="font-extrabold text-charcoal">{{ week.best.wpm }} wpm</span> ·
-          {{ week.attempts }} {{ week.attempts === 1 ? "intento" : "intentos" }}
+          {{ t("history.weeklyCard.attempts", week.attempts) }}
         </template>
-        <template v-else>El mismo texto para todos esta semana</template>
+        <template v-else>{{ t("history.weeklyCard.sameText") }}</template>
       </div>
     </div>
 
@@ -28,13 +28,14 @@
       class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border-2 border-amber-500 px-2.5 py-1 text-xs font-extrabold text-amber-600 transition-[background-color,color,scale] duration-200 ease-spring hover:bg-amber-500 hover:text-white active:scale-95"
       @click="play"
     >
-      {{ week ? "Mejorar" : "Jugar" }}
+      {{ week ? t("history.weeklyCard.improve") : t("history.weeklyCard.play") }}
       <ArrowRightIcon class="w-3.5 h-3.5" />
     </button>
   </div>
 </template>
 
 <script setup>
+import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { TrophyIcon, ArrowRightIcon } from "@heroicons/vue/24/outline";
