@@ -1,0 +1,9 @@
+/* OpenDyslexic Mono, loaded only when picked as the text font
+   (src/shared/utils/textAppearance.js). See LICENSE.md next to it. */
+@font-face {
+  font-family: "OpenDyslexic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./OpenDyslexicMono-Regular.woff2") format("woff2");
+}

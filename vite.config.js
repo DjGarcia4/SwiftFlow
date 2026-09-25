@@ -19,6 +19,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      // The text fonts too (textAppearance.js), so a picked one still works
+      // offline
+      workbox: { globPatterns: ["**/*.{js,wasm,css,html,woff2}"] },
       includeAssets: ["favicon-16x16.png", "favicon-32x32.png", "apple-touch-icon.png"],
       manifest: {
         name: "SwiftFlow",

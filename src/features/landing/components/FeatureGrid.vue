@@ -151,12 +151,13 @@
         </ol>
       </article>
 
-      <!-- Small ones: three to a row, or two when that leaves none alone -->
+      <!-- Small ones: three to a row, the last row two wide if it'd
+           otherwise leave one alone -->
       <article
-        v-for="small in SMALL_CARDS"
+        v-for="(small, index) in SMALL_CARDS"
         :key="small.title"
         v-tilt="3"
-        :class="[CARD, SMALL_CARDS.length % 3 ? 'md:col-span-3' : 'md:col-span-2']"
+        :class="[CARD, smallCardSpan(index)]"
       >
         <CardTitle :icon="small.icon" :title="small.title" :text="small.text" />
       </article>
@@ -185,6 +186,7 @@ import {
   WifiIcon,
   LanguageIcon,
 } from "@heroicons/vue/24/outline";
+import TextStyleIcon from "@/shared/components/icons/TextStyleIcon";
 import { FireIcon } from "@heroicons/vue/24/solid";
 import GhostIcon from "@/shared/components/icons/GhostIcon";
 import MetronomeIcon from "@/shared/components/icons/MetronomeIcon";
@@ -272,6 +274,11 @@ const SMALL_CARDS = [
     text: LAYOUTS_TEXT,
   },
   {
+    icon: TextStyleIcon,
+    title: "Texto a tu gusto",
+    text: "Tamaño, interlineado y fuente, con opciones pensadas para leer mejor como Atkinson Hyperlegible y OpenDyslexic.",
+  },
+  {
     icon: EyeSlashIcon,
     title: "Sin red",
     text: "Escribí sin ver tus errores hasta el final: entrena la confianza en tus dedos.",
@@ -287,6 +294,14 @@ const SMALL_CARDS = [
     text: "Instalala como app y practicá donde sea.",
   },
 ];
+
+// Rows of three; a leftover one or two share the last row(s) two by two
+const smallCardSpan = (index) => {
+  const count = SMALL_CARDS.length;
+  const leftover = count % 3;
+  const pairedFrom = leftover === 0 ? count : count - (leftover === 1 ? 4 : 2);
+  return index >= Math.max(0, pairedFrom) ? "md:col-span-3" : "md:col-span-2";
+};
 
 // The on-screen keyboard's finger colors, at rest
 const FINGER_RGB = {

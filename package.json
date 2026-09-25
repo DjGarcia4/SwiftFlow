@@ -16,6 +16,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@fontsource/atkinson-hyperlegible": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@heroicons/vue": "^2.2.0",
     "@tailwindcss/vite": "^4.1.13",
     "pinia": "^3.0.3",

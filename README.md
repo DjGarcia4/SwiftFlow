@@ -33,6 +33,8 @@ Con o sin puntuación y mayúsculas, salvo en código, que siempre se escribe ta
 - Teclado en pantalla con la próxima tecla, el dedo que va y la tecla muerta, Shift o AltGr
   que necesita, en tu distribución: Latinoamericano, España, EE. UU. internacional, Dvorak o
   Colemak
+- Texto a tu gusto: fuente (monoespaciada, JetBrains Mono, Nunito, Atkinson Hyperlegible u
+  OpenDyslexic), tamaño, interlineado, y cursor que se desliza o salta
 - Efectos de sonido configurables (tecla, error, celebración)
 - Tema claro y oscuro
 
@@ -136,6 +138,12 @@ ya se alcanzó no debería volver a subirse: nadie tendría que perder un logro 
 `store.js` (`types`), `ToolBar.vue` (`typeMeta`, o el render explota),
 `IconButton.vue` (el ícono), `ParagraphToType.vue` (cómo se genera el texto) y
 `historyStats.js` (`MODE_LABELS`).
+
+## 🔤 Fuentes
+
+JetBrains Mono y Atkinson Hyperlegible vienen de Fontsource (SIL OFL). OpenDyslexic Mono es
+de Abelardo Gonzalez, bajo CC BY 3.0 sobre Bitstream Vera: ver
+`src/assets/fonts/opendyslexic/LICENSE.md`.
 
 ## 📄 Licencia
 

@@ -5,6 +5,11 @@
 export const CHANGELOG = [
   {
     date: "2026-09",
+    title: "Texto a tu gusto",
+    text: "Elegí la fuente, el tamaño y el interlineado del texto, y si el cursor se desliza o salta.",
+  },
+  {
+    date: "2026-09",
     title: "Tu distribución de teclado",
     text: "Latinoamericano, España, EE. UU. internacional, Dvorak o Colemak: el teclado en pantalla, los dedos y los consejos siguen al tuyo.",
   },

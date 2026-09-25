@@ -1,12 +1,13 @@
 <template>
   <div v-if="tooltip" class="relative group">
     <ButtonCustom
+      v-bind="$attrs"
       :variant="variant"
       :size="size"
       :disabled="disabled"
       :loading="loading"
       :full-width="fullWidth"
-      :aria-label="text ? undefined : tooltip"
+      :aria-label="$attrs['aria-label'] ?? (text ? undefined : tooltip || undefined)"
       @click="$emit('click', $event)"
     >
       <template v-if="icon" #icon>
@@ -37,6 +38,7 @@
 
   <ButtonCustom
     v-else
+    v-bind="$attrs"
     :variant="variant"
     :size="size"
     :disabled="disabled"
@@ -61,6 +63,10 @@
 <script setup>
 import { computed } from "vue";
 import ButtonCustom from "./ButtonCustom.vue";
+
+// Attributes (aria-pressed, aria-expanded...) belong on the button itself,
+// not on the tooltip's wrapper
+defineOptions({ inheritAttrs: false });
 
 // Import common Heroicons
 import {
@@ -93,6 +99,7 @@ import {
 import KeyboardIcon from "./icons/KeyboardIcon";
 import GhostIcon from "./icons/GhostIcon";
 import MetronomeIcon from "./icons/MetronomeIcon";
+import TextStyleIcon from "./icons/TextStyleIcon";
 
 // Props
 const props = defineProps({
@@ -137,6 +144,7 @@ const props = defineProps({
         "ghost",
         "metronome",
         "eye-slash",
+        "text-style",
       ].includes(value),
   },
   variant: {
@@ -198,6 +206,7 @@ const iconMap = {
   ghost: GhostIcon,
   metronome: MetronomeIcon,
   "eye-slash": EyeSlashIcon,
+  "text-style": TextStyleIcon,
 };
 
 // Computed icon component

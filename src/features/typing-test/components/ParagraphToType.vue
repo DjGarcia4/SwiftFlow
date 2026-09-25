@@ -583,13 +583,16 @@
             <div
               ref="textContentEl"
               :key="`text-${textVersion}`"
-              class="animate-fade-in relative font-mono text-2xl sm:text-3xl leading-[1.9] tracking-wide whitespace-pre-wrap"
+              class="animate-fade-in relative tracking-wide whitespace-pre-wrap"
+              :style="textStyle"
             >
               <!-- Smooth animated caret -->
               <div
                 v-show="!isCompleted && !configStore.isPaused"
-                class="absolute transition-[top,left,height,width] duration-100 ease-out pointer-events-none"
+                class="absolute pointer-events-none"
                 :class="[
+                  textAppearance.caretGlides &&
+                    'transition-[top,left,height,width] duration-100 ease-out',
                   CARET_CLASSES[customization.caret] ?? CARET_CLASSES.bar,
                   { 'animate-caret-idle': configStore.userInput.length === 0 },
                 ]"
@@ -662,6 +665,8 @@
           tooltip="Reiniciar"
           @click="restart"
         />
+
+        <TextAppearanceMenu v-if="!isCompleted" />
 
         <div v-if="!isCompleted" class="hidden sm:block">
           <IconButton
@@ -885,6 +890,9 @@ import MetronomeIcon from "@/shared/components/icons/MetronomeIcon";
 import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 import { useSoundStore } from "@/shared/stores/sound";
 import { useCustomizationStore } from "@/shared/stores/customization";
+import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
+import TextAppearanceMenu from "./TextAppearanceMenu.vue";
+import { textStyleFor } from "@/shared/utils/textAppearance";
 import {
   playKeystrokeSound,
   playErrorSound,
@@ -1428,6 +1436,32 @@ const caretPosition = ref({ top: 0, left: 0, height: 0, width: 0 });
 
 // The caret's look, from the ones levels unlock (rewards.js)
 const customization = useCustomizationStore();
+
+// The text's font, size and spacing, as picked in the "Texto" menu. Its
+// size steps up from sm, as the classes it replaces did.
+const textAppearance = useTextAppearanceStore();
+const wideQuery = window.matchMedia?.("(min-width: 640px)");
+const isWide = ref(wideQuery?.matches ?? true);
+const onWideChange = (event) => {
+  isWide.value = event.matches;
+};
+wideQuery?.addEventListener?.("change", onWideChange);
+onUnmounted(() => wideQuery?.removeEventListener?.("change", onWideChange));
+const textStyle = computed(() =>
+  textStyleFor(textAppearance.appearance, { wide: isWide.value })
+);
+
+// Any of that moves every character: put the carets back on theirs, and
+// the line being typed back in the middle
+watch(
+  () => [textStyle.value, textAppearance.fontsLoaded],
+  () =>
+    nextTick(() => {
+      updateCaretPosition();
+      updateGhostCaret();
+      scrollToCurrentPosition();
+    })
+);
 const CARET_CLASSES = {
   bar: "rounded-full bg-primary",
   block: "rounded-sm bg-primary/35",
