@@ -27,6 +27,7 @@
       </div>
     </div>
     <AchievementToast />
+    <CommandPalette />
     <LiveAnnouncer />
   </div>
 </template>
@@ -38,6 +39,7 @@ import Nav from "@/shared/layout/Nav.vue";
 import SplashScreen from "@/shared/layout/SplashScreen.vue";
 import AchievementToast from "@/features/history/components/AchievementToast.vue";
 import LiveAnnouncer from "@/shared/components/LiveAnnouncer.vue";
+import CommandPalette from "@/features/command-palette/components/CommandPalette.vue";
 import { useCustomizationStore } from "@/shared/stores/customization";
 import { useContrastStore } from "@/shared/stores/contrast";
 import { useStreakReminderStore } from "@/features/history/streakReminder";

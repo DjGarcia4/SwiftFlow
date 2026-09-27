@@ -225,6 +225,22 @@ describe("computeAchievements", () => {
     expect(isUnlocked(computeAchievements(focused.slice(1)), "focus_10")).toBe(false);
     expect(isUnlocked(computeAchievements(focused), "focus_10")).toBe(true);
 
+    // Set up from the command palette and played without the mouse
+    const byKeyboard = Array.from({ length: 25 }, () => ({
+      mode: "time",
+      wpm: 40,
+      accuracy: 97,
+      keyboard: true,
+    }));
+    expect(isUnlocked(computeAchievements(focused), "keyboard_only_1")).toBe(false);
+    expect(
+      isUnlocked(computeAchievements(byKeyboard.slice(0, 1)), "keyboard_only_1")
+    ).toBe(true);
+    expect(isUnlocked(computeAchievements(byKeyboard.slice(1)), "keyboard_only_25")).toBe(
+      false
+    );
+    expect(isUnlocked(computeAchievements(byKeyboard), "keyboard_only_25")).toBe(true);
+
     // English texts: runs in them, and a day in both languages
     const day = "2026-09-26T12:00:00";
     const inEnglish = Array.from({ length: 25 }, () => ({

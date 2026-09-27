@@ -25,6 +25,7 @@ import {
   EyeIcon,
   SpeakerWaveIcon,
   LanguageIcon,
+  CommandLineIcon,
 } from "@heroicons/vue/24/outline";
 
 // Shared between the achievements grid (HistoryView) and the unlock toast,
@@ -56,6 +57,7 @@ export const ACHIEVEMENT_ICONS = {
   eye: EyeIcon,
   speaker: SpeakerWaveIcon,
   language: LanguageIcon,
+  command: CommandLineIcon,
 };
 
 export const ACHIEVEMENT_CATEGORY_RGB = {

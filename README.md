@@ -45,6 +45,9 @@ Y combinables con cualquier modo:
 - Texto a tu gusto: fuente (monoespaciada, JetBrains Mono, Nunito, Atkinson Hyperlegible u
   OpenDyslexic), tamaño, interlineado, y cursor que se desliza o salta
 - Modo foco: solo la palabra que estás escribiendo y la siguiente, grandes y centradas
+- Todo sin soltar el teclado: **Ctrl/⌘ K** abre los comandos (escribí `30`, `palabras 50`,
+  `oscuro`, `dvorak`, `historial`…) y **Tab** empieza de nuevo a mitad de una partida; `?`
+  fuera del test muestra los atajos
 - Efectos de sonido configurables (tecla, error, celebración)
 - Tema claro y oscuro, y alto contraste (sigue al del sistema hasta que lo cambies)
 - Accesible: todo se maneja con el teclado, los diálogos atrapan y devuelven el foco, y

@@ -69,6 +69,10 @@ export default {
         text: (names, last) =>
           `${names.join(", ")} o ${last}: el teclado en pantalla, los dedos y los consejos siguen al tuyo.`,
       },
+      keyboardOnly: {
+        title: "Sin soltar el teclado",
+        text: "Ctrl/⌘ K y escribí lo que buscás: 30 segundos, palabras 50, tema oscuro, historial. Tab empieza de nuevo.",
+      },
       appearance: {
         title: "Texto a tu gusto",
         text: "Tamaño, interlineado y fuente, con opciones pensadas para leer mejor como Atkinson Hyperlegible y OpenDyslexic.",
@@ -198,6 +202,10 @@ export default {
       blind: {
         title: "No safety net",
         text: "Type without seeing your mistakes until the end: it builds trust in your fingers.",
+      },
+      keyboardOnly: {
+        title: "Hands stay on the keys",
+        text: "Ctrl/⌘ K and type what you're after: 30 seconds, words 50, dark theme, history. Tab starts over.",
       },
       focus: {
         title: "Focus mode",

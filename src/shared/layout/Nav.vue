@@ -19,6 +19,20 @@
       </router-link>
 
       <div class="flex items-center gap-2">
+        <!-- The command palette, and the keys that open it: there's no
+             keyboard to press them on a phone -->
+        <button
+          type="button"
+          class="hidden md:flex items-center gap-1.5 h-9 px-2.5 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-95"
+          :aria-label="t('palette.openHint', paletteKeys())"
+          :title="t('palette.openHint', paletteKeys())"
+          aria-keyshortcuts="Control+K Meta+K"
+          @click="palette.open()"
+        >
+          <CommandLineIcon class="w-4 h-4" />
+          <kbd class="font-mono text-[11px] font-bold">{{ paletteKeys() }}</kbd>
+        </button>
+
         <!-- Level, once there's any experience to show -->
         <LevelBadge v-if="historyStore.experience > 0" />
 
@@ -117,6 +131,7 @@ import {
   FireIcon,
   InformationCircleIcon,
   AcademicCapIcon,
+  CommandLineIcon,
 } from "@heroicons/vue/24/outline";
 import { useThemeStore } from "@/shared/stores/theme";
 import { t } from "@/shared/i18n";
@@ -127,8 +142,11 @@ import SoundSettingsMenu from "@/shared/components/SoundSettingsMenu.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { useStreakReminderStore } from "@/features/history/streakReminder";
 import LevelBadge from "@/features/history/components/LevelBadge.vue";
+import { usePaletteStore } from "@/features/command-palette/store";
+import { paletteKeys } from "@/features/command-palette/keys";
 
 const themeStore = useThemeStore();
+const palette = usePaletteStore();
 const historyStore = useHistoryStore();
 // Today not practiced yet: the streak chip pulses until it is
 const streakReminder = useStreakReminderStore();

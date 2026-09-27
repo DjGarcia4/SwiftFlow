@@ -1046,6 +1046,7 @@ import { drawShareCard } from "@/features/typing-test/utils/shareCard";
 import { useSoundStore } from "@/shared/stores/sound";
 import { useCustomizationStore } from "@/shared/stores/customization";
 import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
+import { usePaletteStore } from "@/features/command-palette/store";
 import TextAppearanceMenu from "./TextAppearanceMenu.vue";
 import { textStyleFor } from "@/shared/utils/textAppearance";
 import {
@@ -1615,6 +1616,8 @@ watch(isCompleted, (completed) => {
         blind: configStore.blindMode || undefined,
         // How it was played, only when so: what some achievements count
         focus: textAppearance.focusMode || undefined,
+        // Set up from the command palette and played without the mouse
+        keyboard: palette.keyboardOnly || undefined,
         punctuation: configStore.selectedContentTypes === "punctuation" || undefined,
         // The language of the text, only when it isn't Spanish
         textLanguage: resultLanguage(configStore.type),
@@ -1742,6 +1745,7 @@ const customization = useCustomizationStore();
 // The text's font, size and spacing, as picked in the "Texto" menu. Its
 // size steps up from sm, as the classes it replaces did.
 const textAppearance = useTextAppearanceStore();
+const palette = usePaletteStore();
 const wideQuery = window.matchMedia?.("(min-width: 640px)");
 const isWide = ref(wideQuery?.matches ?? true);
 const onWideChange = (event) => {
@@ -2162,6 +2166,23 @@ const handleKeydown = (event) => {
   // Handle space key when session is completed to restart
   if (restartOnSpace(event)) return;
 
+  // Tab mid-run: start over with a new text. With nothing typed yet, or
+  // paused, Tab moves on the way it always does, so the keyboard can still
+  // get out of the text.
+  if (
+    event.key === "Tab" &&
+    !event.shiftKey &&
+    !event.ctrlKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    configStore.userInput.length > 0 &&
+    !configStore.isPaused
+  ) {
+    event.preventDefault();
+    if (!event.repeat) restart();
+    return;
+  }
+
   if (event.key === "Backspace" && configStore.userInput.length === 0) {
     event.preventDefault();
   }
@@ -2219,6 +2240,12 @@ const restart = () => {
 const pause = () => {
   configStore.pause();
 };
+
+// "Start over" from the command palette
+watch(
+  () => palette.restartRequests,
+  () => restart()
+);
 
 const play = () => {
   configStore.play();

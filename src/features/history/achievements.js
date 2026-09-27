@@ -446,6 +446,19 @@ export const ACHIEVEMENTS = [
     icon: "document",
     check: (ctx) => ctx.wordValuesPlayed >= WORD_OPTIONS_COUNT,
   },
+  // Set up from the command palette and played without the mouse
+  {
+    id: "keyboard_only_1",
+    category: "explorer",
+    icon: "command",
+    check: (ctx) => ctx.keyboardOnlyCount >= 1,
+  },
+  {
+    id: "keyboard_only_25",
+    category: "explorer",
+    icon: "command",
+    check: (ctx) => ctx.keyboardOnlyCount >= 25,
+  },
 
   // Time — total practice time across every session
   {
@@ -709,6 +722,7 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
       (r) => r.mode === "words" && r.modeValue >= 100 && r.punctuation
     ),
     focusCount: results.filter((r) => r.focus).length,
+    keyboardOnlyCount: results.filter((r) => r.keyboard).length,
     englishCount: results.filter((r) => r.textLanguage === "en").length,
     bilingualDay: hasBilingualDay(results),
     englishClassicsRead: new Set(

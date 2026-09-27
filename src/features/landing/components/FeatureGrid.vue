@@ -232,6 +232,7 @@ import {
   UserGroupIcon,
   HeartIcon,
   EyeIcon,
+  CommandLineIcon,
   BookOpenIcon,
   SpeakerWaveIcon,
 } from "@heroicons/vue/24/outline";
@@ -338,6 +339,7 @@ const layoutsText = () => {
 const SMALL_CARDS = [
   { id: "english", icon: GlobeAltIcon },
   { id: "layouts", icon: LanguageIcon },
+  { id: "keyboardOnly", icon: CommandLineIcon },
   { id: "appearance", icon: TextStyleIcon },
   { id: "everyone", icon: UserGroupIcon },
   { id: "blind", icon: EyeSlashIcon },

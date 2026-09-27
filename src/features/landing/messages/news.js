@@ -7,6 +7,10 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        commandPalette: {
+          title: "Todo con el teclado",
+          text: "Ctrl/⌘ K abre los comandos: cambiá el tiempo, el modo, el tema, el idioma, el teclado o la fuente escribiendo, sin soltar las manos. Tab empieza de nuevo a mitad de una partida. Con un logro y un reto nuevos.",
+        },
         recordsByLanguage: {
           title: "Récords por idioma",
           text: "Tus récords, promedios, rondas perfectas y el reto semanal, por separado en español y en inglés, con un filtro por idioma en el historial. Y los links en inglés ya se ven en inglés al compartirlos.",
@@ -130,6 +134,10 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        commandPalette: {
+          title: "All from the keyboard",
+          text: "Ctrl/⌘ K opens the commands: change the time, mode, theme, language, keyboard or font by typing, hands never leaving the keys. Tab starts over mid-run. With a new achievement and challenge.",
+        },
         recordsByLanguage: {
           title: "Records per language",
           text: "Your records, averages, perfect rounds and the weekly challenge, kept apart for Spanish and English, with a language filter in the history. And links in English now look English when shared.",

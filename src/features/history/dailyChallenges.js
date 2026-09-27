@@ -226,6 +226,17 @@ const TEMPLATES = [
         ).size,
     }),
   },
+  // Without the mouse (September 2026)
+  {
+    kind: "keyboard-only",
+    icon: "command",
+    since: since(2026, 9, 28),
+    build: () => ({
+      title: t("history.challenges.keyboardOnly"),
+      target: 1,
+      measure: (day) => (day.some((r) => r.keyboard) ? 1 : 0),
+    }),
+  },
 ];
 
 const startOfDay = (date) => {

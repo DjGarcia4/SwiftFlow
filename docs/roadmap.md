@@ -136,3 +136,18 @@ la app en inglés y practicar español, o al revés. El español sigue siendo el
 - **13b**: historial, estadísticas, consejos, logros y retos
 - **13c**: curso, resumen, landing y las páginas para compartir
 - **13d**: contenido de práctica en inglés (palabras, citas, textos, dictado, curso)
+
+## Fase 14 — Todo con el teclado
+
+Cambiar cualquier cosa sin soltar las manos del teclado.
+
+- **Ctrl/⌘ K** abre una paleta de comandos desde cualquier página: se escribe lo que se busca
+  (`30`, `palabras 50`, `oscuro`, `dvorak`, `historial`) en español o en inglés, se elige con
+  ↑/↓ y Enter. Los usados hace poco quedan arriba. Si hay una partida en curso, se pausa
+- **Tab** a mitad de una partida empieza de nuevo con otro texto (sin nada escrito o en
+  pausa, Tab mueve el foco como siempre, para no atrapar a nadie en el texto)
+- **?** fuera del test muestra la lista de atajos
+- Una partida armada con la paleta y jugada sin tocar el mouse queda marcada (`keyboard`)
+
+Landing: tarjeta chica "Sin soltar el teclado", novedades, botón ⌘K en la barra, logros y un
+reto diario.

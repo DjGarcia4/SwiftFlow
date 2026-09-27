@@ -164,6 +164,37 @@ describe("challenges added later", () => {
   });
 });
 
+describe("the keyboard-only challenge", () => {
+  const LAUNCH = new Date(2026, 8, 28, 12);
+
+  it("starts the day after it shipped, and counts runs played without the mouse", () => {
+    for (let back = 1; back <= 400; back++) {
+      const day = new Date(2026, 8, 28 - back, 12);
+      expect(buildDailyChallenges([], day).map((c) => c.kind)).not.toContain(
+        "keyboard-only"
+      );
+    }
+
+    let found = null;
+    for (let i = 0; i < 400 && !found; i++) {
+      const day = new Date(LAUNCH.getFullYear(), LAUNCH.getMonth(), 28 + i, 12);
+      if (buildDailyChallenges([], day).some((c) => c.kind === "keyboard-only")) {
+        found = day;
+      }
+    }
+    expect(found).not.toBeNull();
+
+    const pending = buildDailyChallenges([session(found)], found).find(
+      (c) => c.kind === "keyboard-only"
+    );
+    expect(pending.completed).toBe(false);
+    const done = buildDailyChallenges([session(found, { keyboard: true })], found).find(
+      (c) => c.kind === "keyboard-only"
+    );
+    expect(done.completed).toBe(true);
+  });
+});
+
 describe("computeChallengeStats", () => {
   it("adds up the challenges completed on every day", () => {
     expect(computeChallengeStats([])).toEqual({ completed: 0, fullDays: 0 });

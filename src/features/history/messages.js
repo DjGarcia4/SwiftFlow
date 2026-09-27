@@ -222,6 +222,8 @@ export default {
       focus: "Completá una partida en modo foco",
       english: "Completá una partida con textos en inglés",
       bilingual: "Jugá una partida en español y otra en inglés",
+      keyboardOnly:
+        "Armá una partida con los comandos (Ctrl/⌘ K) y terminala sin tocar el mouse",
     },
     tiers: {
       1: "Novato",
@@ -614,6 +616,15 @@ export default {
         title: "Todos los tamaños",
         description: "Jugá las 4 cantidades de palabras disponibles",
       },
+      keyboard_only_1: {
+        title: "Sin soltar el teclado",
+        description:
+          "Armá una partida con los comandos (Ctrl/⌘ K) y terminala sin tocar el mouse",
+      },
+      keyboard_only_25: {
+        title: "El mouse junta polvo",
+        description: "Completá 25 partidas armadas con los comandos, sin tocar el mouse",
+      },
       time_10min: {
         title: "Calentando motores",
         description: "Practicá 10 minutos en total",
@@ -923,6 +934,8 @@ export default {
       focus: "Finish a run in focus mode",
       english: "Finish a run with English texts",
       bilingual: "Play one run in Spanish and another in English",
+      keyboardOnly:
+        "Set up a run from the commands (Ctrl/⌘ K) and finish it without touching the mouse",
     },
     tiers: {
       1: "Rookie",
@@ -1281,6 +1294,16 @@ export default {
         description: "Play all 4 durations (15s, 30s, 60s, 120s)",
       },
       all_word_options: { title: "Every size", description: "Play all 4 word counts" },
+      keyboard_only_1: {
+        title: "Hands on the keys",
+        description:
+          "Set up a run from the commands (Ctrl/⌘ K) and finish it without touching the mouse",
+      },
+      keyboard_only_25: {
+        title: "The mouse gathers dust",
+        description:
+          "Finish 25 runs set up from the commands, without touching the mouse",
+      },
       time_10min: { title: "Warming up", description: "Practice 10 minutes in total" },
       time_1h: { title: "An hour of practice", description: "Practice 1 hour in total" },
       time_5h: { title: "Marathoner", description: "Practice 5 hours in total" },
