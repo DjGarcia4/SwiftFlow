@@ -24,6 +24,7 @@
     >
       <div
         v-if="open"
+        ref="panel"
         class="w-[min(22rem,calc(100vw-2rem))] rounded-card border-2 border-faded-gray bg-paper-white p-4 shadow-xl"
       >
         <div class="flex items-baseline justify-between gap-2 mb-3">
@@ -64,11 +65,13 @@
       "
       :aria-expanded="open"
       :aria-label="t('history.challengesWidget.aria', doneCount, challenges.length)"
+      :aria-keyshortcuts="hotkeyAria"
       @click="open = !open"
     >
       <FlagIcon class="w-5 h-5" :class="allDone ? '' : 'text-primary'" />
       <span class="hidden xs:inline">{{ t("history.challengesWidget.short") }}</span>
       <span class="tabular-nums">{{ doneCount }}/{{ challenges.length }}</span>
+      <KeyHint id="challenges" small />
       <!-- A review waiting doesn't change the count, so it gets a dot -->
       <span
         v-if="reviewPending"
@@ -80,7 +83,7 @@
 
 <script setup>
 import { t } from "@/shared/i18n";
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from "vue";
 import { FlagIcon } from "@heroicons/vue/24/outline";
 import DailyChallengesList from "./DailyChallengesList.vue";
 import WeeklyGoal from "./WeeklyGoal.vue";
@@ -89,10 +92,16 @@ import WeeklyChallengeCard from "./WeeklyChallengeCard.vue";
 import { useHistoryStore } from "@/features/history/store";
 import { useConfigStore } from "@/features/typing-test/store";
 import { msUntilNextDay } from "@/features/history/dailyChallenges";
+import { usePaletteStore } from "@/features/command-palette/store";
+import { useHotkey } from "@/features/command-palette/hotkeys";
+import { focusableIn } from "@/shared/composables/useModalFocus";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
 
 const historyStore = useHistoryStore();
 const configStore = useConfigStore();
+const palette = usePaletteStore();
 const root = ref(null);
+const panel = ref(null);
 const open = ref(false);
 
 const challenges = computed(() => historyStore.dailyChallenges);
@@ -110,6 +119,30 @@ const hidden = computed(
 watch(hidden, (isHidden) => {
   if (isHidden) open.value = false;
 });
+
+// Opened from the keyboard, the focus goes in with it, so Tab walks the
+// challenges and Enter plays one
+const openFromKeyboard = async () => {
+  open.value = true;
+  await nextTick();
+  focusableIn(panel.value)[0]?.focus({ preventScroll: true });
+};
+
+// "L" (Logros) beside the pill, and in the palette from any page
+const { aria: hotkeyAria } = useHotkey("challenges", {
+  key: "l",
+  inPalette: false,
+  enabled: () => !hidden.value,
+  run: () => (open.value ? (open.value = false) : openFromKeyboard()),
+});
+
+watch(
+  () => palette.challengesRequested,
+  (requested) => {
+    if (requested && palette.takeChallengesRequest()) openFromKeyboard();
+  },
+  { immediate: true }
+);
 
 // Closes on a click anywhere else, or Esc -- without swallowing that Esc,
 // which the typing view uses to pause.

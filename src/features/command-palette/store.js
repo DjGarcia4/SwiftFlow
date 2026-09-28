@@ -36,6 +36,10 @@ export const usePaletteStore = defineStore("commandPalette", () => {
   // Bumped to ask the typing screen for a fresh text
   const restartRequests = ref(0);
 
+  // Asked to show the day's challenges -- maybe from another page, so it
+  // waits until the test (where they live) is there to take it
+  const challengesRequested = ref(false);
+
   // True from a command run until the mouse (or a finger) touches the page:
   // a run finished meanwhile was set up and played on the keyboard alone
   const keyboardOnly = ref(false);
@@ -78,6 +82,16 @@ export const usePaletteStore = defineStore("commandPalette", () => {
     restartRequests.value++;
   };
 
+  const requestChallenges = () => {
+    challengesRequested.value = true;
+  };
+
+  const takeChallengesRequest = () => {
+    const requested = challengesRequested.value;
+    challengesRequested.value = false;
+    return requested;
+  };
+
   const touchedWithPointer = () => {
     keyboardOnly.value = false;
   };
@@ -93,6 +107,9 @@ export const usePaletteStore = defineStore("commandPalette", () => {
     toggle,
     run,
     requestRestart,
+    challengesRequested,
+    requestChallenges,
+    takeChallengesRequest,
     touchedWithPointer,
   };
 });

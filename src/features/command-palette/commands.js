@@ -8,6 +8,8 @@
 // to. The group and label are also searched in the other language, so
 // "tiempo" finds the time options with the app in English.
 import { t, catalogFor, LOCALES } from "@/shared/i18n";
+import { hotkeyLabel } from "@/features/command-palette/hotkeys";
+import { LESSONS, lessonIndex, lessonTitle } from "@/features/course/course";
 import { KEYBOARD_LAYOUTS } from "@/features/typing-test/utils/keyboardLayouts";
 import { PRACTICE_LANGUAGES } from "@/features/typing-test/content/practiceLanguage";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
@@ -63,7 +65,9 @@ const PAGES = [
 ];
 
 // ctx: { config, theme, contrast, sound, appearance, palette, router,
-// route, locale, setLocale, canSpeak }
+// route, locale, setLocale, canSpeak, hotkeys, course }. `course` is the
+// course's progress (courseProgress in course.js). `hotkeys` are the buttons
+// on screen with a key of their own ({ id, hotkey }, see hotkeys.js).
 export const buildCommands = (ctx) => {
   const {
     config,
@@ -77,6 +81,8 @@ export const buildCommands = (ctx) => {
     locale,
     setLocale,
     canSpeak = true,
+    hotkeys = [],
+    course = null,
   } = ctx;
 
   const onTest = route?.name === "home";
@@ -112,6 +118,7 @@ export const buildCommands = (ctx) => {
         id: "action:restart",
         group: group("action"),
         label: t("palette.commands.restart"),
+        hotkey: "restart",
         run: () => palette.requestRestart(),
       },
       { labelPath: "palette.commands.restart", extra: words("palette.keywords.restart") }
@@ -125,6 +132,93 @@ export const buildCommands = (ctx) => {
           run: () => config.endSession(),
         },
         { labelPath: "palette.commands.finish", extra: words("palette.keywords.finish") }
+      );
+    }
+  }
+
+  // What the buttons on screen do, with the key that presses each one
+  for (const { id, hotkey } of hotkeys) {
+    const label = hotkeyLabel(hotkey);
+    add(
+      {
+        id: `hotkey:${id}`,
+        group: group("here"),
+        label,
+        hotkey: id,
+        run: hotkey.run,
+      },
+      { groupId: "here", extra: label.split(/\s+/) }
+    );
+  }
+
+  // The day's challenges, from anywhere: they live on the test
+  add(
+    {
+      id: "challenges:open",
+      group: group("challenges"),
+      label: t("palette.commands.challenges"),
+      hotkey: "challenges",
+      run: () => {
+        palette.requestChallenges();
+        if (!onTest) router.push("/");
+      },
+    },
+    {
+      labelPath: "palette.commands.challenges",
+      extra: words("palette.keywords.challenges"),
+    }
+  );
+  add(
+    {
+      id: "challenges:weekly",
+      group: group("challenges"),
+      label: t("palette.commands.weekly"),
+      active: config.type === "weekly",
+      run: onTheTest(() => setMode("weekly")),
+    },
+    { labelPath: "palette.commands.weekly", extra: words("palette.keywords.weekly") }
+  );
+  add(
+    {
+      id: "challenges:achievements",
+      group: group("challenges"),
+      label: t("palette.commands.achievements"),
+      run: () => router.push({ path: "/historial", hash: "#logros" }),
+    },
+    {
+      labelPath: "palette.commands.achievements",
+      extra: words("palette.keywords.achievements"),
+    }
+  );
+
+  // The course: on to the next lesson, or any one already open
+  if (course) {
+    const lessonNumber = (lesson) => lessonIndex(lesson.id) + 1;
+    add(
+      {
+        id: "course:continue",
+        group: group("course"),
+        label: t("palette.commands.continueCourse", lessonNumber(course.next)),
+        hotkey: "continueCourse",
+        run: onTheTest(() => config.startLesson(course.next.id)),
+      },
+      { groupId: "course", extra: words("palette.keywords.course") }
+    );
+    for (const lesson of LESSONS) {
+      if (!course.unlocked[lesson.id]) continue;
+      add(
+        {
+          id: `course:lesson:${lesson.id}`,
+          group: group("course"),
+          label: t(
+            "palette.commands.lesson",
+            lessonNumber(lesson),
+            lessonTitle(lesson, config.keyboardLayout)
+          ),
+          active: config.type === "lesson" && config.lessonId === lesson.id,
+          run: onTheTest(() => config.startLesson(lesson.id)),
+        },
+        { groupId: "course", extra: [`${lessonNumber(lesson)}`] }
       );
     }
   }
@@ -344,6 +438,7 @@ export const buildCommands = (ctx) => {
       id: "keyboard:toggle",
       group: group("keyboard"),
       label: t(`palette.commands.${keyboardShown ? "hideKeyboard" : "showKeyboard"}`),
+      hotkey: "keyboard",
       run: onTheTest(() => config.toggleKeyboard()),
     },
     { groupId: "keyboard", extra: words("palette.keywords.keyboard") }
@@ -485,6 +580,7 @@ export const buildCommands = (ctx) => {
       id: "appearance:theme",
       group: group("appearance"),
       label: t(`palette.commands.${theme.isDark ? "lightTheme" : "darkTheme"}`),
+      hotkey: "theme",
       run: () => theme.toggleTheme(),
     },
     { extra: words("palette.keywords.theme") }
@@ -517,6 +613,7 @@ export const buildCommands = (ctx) => {
         id: `go:${page.id}`,
         group: group("go"),
         label: t(`palette.commands.${page.id}`),
+        hotkey: `go:${page.id}`,
         run: () => router.push(page.path),
       },
       { groupId: "go", labelPath: `palette.commands.${page.id}` }

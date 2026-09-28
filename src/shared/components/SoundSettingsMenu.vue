@@ -2,16 +2,19 @@
   <div ref="rootEl" class="relative">
     <button
       type="button"
-      class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
+      class="relative flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
       :aria-label="
         soundStore.soundEnabled
           ? t('shared.settings.button')
           : t('shared.settings.buttonMuted')
       "
+      :aria-expanded="open"
+      :aria-keyshortcuts="hotkeys.ariaFor('settings')"
       @click="open = !open"
     >
       <SpeakerWaveIcon v-if="soundStore.soundEnabled" class="w-5 h-5" />
       <SpeakerXMarkIcon v-else class="w-5 h-5" />
+      <KeyHint id="settings" corner />
     </button>
 
     <Transition
@@ -85,7 +88,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { t, locale, setLocale, LOCALES } from "@/shared/i18n";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/vue/24/outline";
@@ -96,6 +101,19 @@ const soundStore = useSoundStore();
 const configStore = useConfigStore();
 const open = ref(false);
 const rootEl = ref(null);
+
+// "Z" beside the button; in from the keyboard, the focus goes in with it
+const hotkeys = useHotkeysStore();
+useHotkey("settings", {
+  key: "z",
+  inPalette: false,
+  run: async () => {
+    open.value = !open.value;
+    if (!open.value) return;
+    await nextTick();
+    rootEl.value?.querySelectorAll("button")[1]?.focus({ preventScroll: true });
+  },
+});
 
 // Each language named in itself, so it can be found whatever is showing
 const LANGUAGE_OPTIONS = LOCALES.map(({ id, label }) => ({ value: id, label }));

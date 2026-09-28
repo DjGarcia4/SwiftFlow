@@ -151,3 +151,39 @@ Cambiar cualquier cosa sin soltar las manos del teclado.
 
 Landing: tarjeta chica "Sin soltar el teclado", novedades, botón ⌘K en la barra, logros y un
 reto diario.
+
+## Fase 15 — Cada botón con su tecla
+
+La paleta sigue, pero ya no hace falta abrirla para lo que está a la vista: cada botón muestra
+su tecla al lado y esa tecla lo presiona.
+
+- En los resultados, la letra sola: **R** otra partida, **F** dónde te frenaste, **M**
+  marcapasos, **G** fantasma, **C** compartir, **E** entrenar, **V** salir del entrenamiento,
+  **L** los retos del día
+- En el test, antes de terminar, las letras son texto: ahí la misma tecla va con **Alt** (⌥ en
+  Mac), y el chip lo dice (también **A** apariencia y **K** teclado)
+- La barra de arriba: **P** el test, **X** nivel, **Y** racha, **O** curso, **H** historial,
+  **Q** qué es SwiftFlow, **Z** sonido e idioma, **T** tema. Letras que en Mac con ⌥ no son
+  acentos (E, I, N, U)
+- El curso sin mouse: **S** sigue a la próxima lección (en el curso y al pasar una), **R** o
+  Espacio la repiten, con un botón "Repetir" en el resultado
+- Más comandos en la paleta: retos del día (desde cualquier página), logros, reto semanal,
+  seguir el curso y cada lección abierta, y todo lo que hay en pantalla con su tecla
+- Los chips solo se ven con mouse o trackpad: en el celular no hay teclado que apretar
+- La barra dice dónde estás: el botón de la página actual se ilumina, y la racha pasa junto al
+  logo, sin borde (entre los botones parecía siempre la página elegida)
+- Esc después de quedarse pensando: los 3 segundos quietos pausan solos, y ese Esc terminaba
+  la partida. Ahora solo la termina un segundo Esc sobre una pausa pedida
+- La tendencia de WPM del historial se lee: una frase con hacia dónde vas (tus últimas 10
+  contra las 10 anteriores), cada partida como un punto tenue, el promedio de 5 como la línea a
+  mirar, los wpm al costado, las fechas abajo, tu mejor marca y cada partida al pasar el mouse
+
+Landing: novedades, tarjeta "Sin soltar el teclado" actualizada.
+
+## Fase 16 — Entrenar por dedos
+
+Elegir qué dedos practicar: uno solo (el meñique izquierdo), varios, una mano entera o las dos.
+El texto sale de las teclas de esos dedos en tu distribución de teclado: palabras reales que
+se escriben solo con ellos cuando hay, y grupos de letras de esos dedos cuando no alcanzan.
+
+Landing: modo nuevo en la tira, novedades, logros y un reto diario.

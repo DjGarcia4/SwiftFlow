@@ -14,8 +14,10 @@
       :tooltip="open ? '' : t('typing.appearance.button')"
       :aria-label="t('typing.appearance.button')"
       :aria-expanded="open"
+      :aria-keyshortcuts="hotkeyAria"
       @click="toggle"
     />
+    <KeyHint id="appearance" corner />
     <Teleport to="body">
       <Transition
         enter-active-class="transition-[opacity,translate] duration-200 ease-out"
@@ -121,11 +123,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
 import { useContrastStore } from "@/shared/stores/contrast";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useHotkey } from "@/features/command-palette/hotkeys";
+import { useConfigStore } from "@/features/typing-test/store";
 import { t } from "@/shared/i18n";
 import {
   TEXT_FONTS,
@@ -138,6 +143,7 @@ import {
 } from "@/shared/utils/textAppearance";
 
 const store = useTextAppearanceStore();
+const configStore = useConfigStore();
 const contrast = useContrastStore();
 const open = ref(false);
 const root = ref(null);
@@ -170,6 +176,21 @@ const toggle = () => {
   if (!open.value) measure();
   open.value = !open.value;
 };
+
+// "A" (Apariencia) beside the button; in from the keyboard, the focus goes
+// into the menu with it
+const { aria: hotkeyAria } = useHotkey("appearance", {
+  key: "a",
+  label: "palette.commands.appearanceMenu",
+  // Hidden with the rest of the row while typing
+  enabled: () => configStore.userInput.length === 0 || configStore.isPaused,
+  run: async () => {
+    toggle();
+    if (!open.value) return;
+    await nextTick();
+    menu.value?.querySelector("select, button")?.focus({ preventScroll: true });
+  },
+});
 
 const toOptions = (options) => options.map(({ id, label }) => ({ value: id, label }));
 // Computed, so the labels follow a change of language

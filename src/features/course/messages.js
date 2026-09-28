@@ -69,6 +69,7 @@ export default {
     result: {
       stars: (n) => `${n} de 3 estrellas`,
       next: "Siguiente lección",
+      again: "Repetir",
       seeCourse: "Ver el curso",
       notYet: "Todavía no: otra vuelta",
       courseDone: "¡Terminaste el curso!",
@@ -168,6 +169,7 @@ export default {
     result: {
       stars: (n) => `${n} of 3 stars`,
       next: "Next lesson",
+      again: "Repeat",
       seeCourse: "See the course",
       notYet: "Not yet: another go",
       courseDone: "You finished the course!",

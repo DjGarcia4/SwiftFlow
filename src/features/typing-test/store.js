@@ -280,6 +280,9 @@ export const useConfigStore = defineStore("config", () => {
   const lastKeystrokeAt = ref(null);
   const timer = ref(null);
   const isPaused = ref(false);
+  // Paused on purpose (Esc, the pause button), not by 3 idle seconds: only
+  // then does a second Esc end the run
+  const pausedByUser = ref(false);
   const inactivityTimer = ref(null);
   const referenceText = ref("");
   const originalReferenceText = ref(""); // Keep track of original text
@@ -760,6 +763,7 @@ export const useConfigStore = defineStore("config", () => {
     }
     pausedAt.value = null;
     isPaused.value = false;
+    pausedByUser.value = false;
   };
 
   const clearInactivityTimer = () => {
@@ -831,6 +835,7 @@ export const useConfigStore = defineStore("config", () => {
 
   const pause = () => {
     markPaused();
+    pausedByUser.value = true;
     clearInactivityTimer();
   };
 
@@ -848,6 +853,7 @@ export const useConfigStore = defineStore("config", () => {
     elapsedMs.value = 0;
     lastKeystrokeAt.value = null;
     isPaused.value = false;
+    pausedByUser.value = false;
     pausedAt.value = null;
     zenFinished.value = false;
     endedEarly.value = false;
@@ -960,6 +966,7 @@ export const useConfigStore = defineStore("config", () => {
     elapsedMs,
     timer,
     isPaused,
+    pausedByUser,
     inactivityTimer,
     referenceText,
     originalReferenceText,

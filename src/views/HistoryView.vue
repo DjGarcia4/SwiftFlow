@@ -22,7 +22,8 @@
 
     <template v-else>
       <div
-        class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray mb-6 animate-rise"
+        id="nivel"
+        class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray mb-6 scroll-mt-4 animate-rise"
       >
         <XpProgress />
 
@@ -312,20 +313,18 @@
       <!-- Consistency, on the whole history: what you practised is what you
            practised, whatever mode it was in -->
       <div
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:400ms]"
+        id="racha"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 scroll-mt-4 animate-rise [animation-delay:400ms]"
       >
         <ActivityCalendar :activity="dailyActivity" />
       </div>
 
       <!-- Trend -->
       <div
-        v-if="trendValues.length >= 2"
+        v-if="trendPoints.length >= 2"
         class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:450ms]"
       >
-        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          {{ t("history.view.wpmTrend") }}
-        </div>
-        <TrendSparkline :values="trendValues" />
+        <WpmTrendChart :points="trendPoints" />
       </div>
 
       <!-- When in the day you type best -- and until there's enough to
@@ -493,8 +492,8 @@
         </div>
       </div>
 
-      <!-- Achievements -->
-      <div class="mb-6 animate-rise [animation-delay:600ms]">
+      <!-- Achievements (#logros: the palette's "see your achievements") -->
+      <div id="logros" class="mb-6 scroll-mt-4 animate-rise [animation-delay:600ms]">
         <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
           {{
             t(
@@ -727,14 +726,14 @@ import { useConfigStore } from "@/features/typing-test/store";
 const currentMonthName = computed(() =>
   new Date().toLocaleDateString(localeTag(), { month: "long" })
 );
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { FireIcon, SparklesIcon } from "@heroicons/vue/24/outline";
 import ButtonCustom from "@/shared/components/ButtonCustom.vue";
 import IconButton from "@/shared/components/IconButton.vue";
 import AnimatedNumber from "@/shared/components/AnimatedNumber.vue";
 import { staggerStyle } from "@/shared/utils/motion";
-import TrendSparkline from "@/features/history/components/TrendSparkline.vue";
+import WpmTrendChart from "@/features/history/components/WpmTrendChart.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
 import DayConsistencyCard from "@/features/history/components/DayConsistencyCard.vue";
@@ -807,9 +806,22 @@ const handleKeydown = (event) => {
   router.push("/");
 };
 
+// Arriving at #logros (from the palette): straight down to the achievements
+const route = useRoute();
+const scrollToHash = () => {
+  if (!route.hash) return;
+  requestAnimationFrame(() =>
+    document
+      .getElementById(route.hash.slice(1))
+      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+  );
+};
+watch(() => route.hash, scrollToHash);
+
 onMounted(() => {
   document.addEventListener("keydown", handleKeydown);
   historyStore.refreshDay();
+  scrollToHash();
 });
 
 const formatDuration = (seconds) => {
@@ -972,10 +984,16 @@ const showAllAchievements = ref(false);
 // Trend chart reads chronologically (oldest -> newest); results are stored
 // most-recent-first, so reverse the last 30 sessions.
 const TREND_SESSIONS = 30;
-const trendValues = computed(() =>
+const trendPoints = computed(() =>
   filteredCurrent.value
     .slice(0, TREND_SESSIONS)
-    .map((r) => r.wpm)
+    .map((r) => ({
+      wpm: r.wpm,
+      accuracy: r.accuracy,
+      date: r.date,
+      mode: r.mode,
+      label: formatModeLabelUtil(r),
+    }))
     .reverse()
 );
 

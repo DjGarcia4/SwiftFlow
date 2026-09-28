@@ -7,6 +7,10 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        keyHints: {
+          title: "Cada botón con su tecla",
+          text: "Al lado de cada botón está la tecla que lo presiona: L abre los retos, F muestra dónde te frenaste, C comparte, H va al historial. En el test van con Alt (⌥ en Mac). Y el curso se hace entero sin mouse: S sigue a la próxima lección, R la repite.",
+        },
         commandPalette: {
           title: "Todo con el teclado",
           text: "Ctrl/⌘ K abre los comandos: cambiá el tiempo, el modo, el tema, el idioma, el teclado o la fuente escribiendo, sin soltar las manos. Tab empieza de nuevo a mitad de una partida. Con un logro y un reto nuevos.",
@@ -134,6 +138,10 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        keyHints: {
+          title: "Every button, its key",
+          text: "Beside each button is the key that presses it: L opens the challenges, F shows where you slowed down, C shares, H goes to the history. On the test they take Alt (⌥ on a Mac). And the course needs no mouse at all: S moves on to the next lesson, R repeats it.",
+        },
         commandPalette: {
           title: "All from the keyboard",
           text: "Ctrl/⌘ K opens the commands: change the time, mode, theme, language, keyboard or font by typing, hands never leaving the keys. Tab starts over mid-run. With a new achievement and challenge.",

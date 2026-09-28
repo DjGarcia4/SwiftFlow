@@ -92,6 +92,12 @@
             : t("typing.drillSummary.backTo", leaveLabel)
         }}
         <ArrowRightIcon class="w-3.5 h-3.5" />
+        <KeyHint
+          v-if="leaveHotkey && readiness.verdict !== 'keep'"
+          :id="leaveHotkey"
+          tone="onPrimary"
+          small
+        />
       </button>
     </div>
   </div>
@@ -107,6 +113,7 @@ import {
   ArrowRightIcon,
 } from "@heroicons/vue/24/outline";
 import { MIN_DAY_ATTEMPTS } from "@/features/history/utils/drillReadiness";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
 
 const props = defineProps({
   // computeDrillReadiness
@@ -115,6 +122,8 @@ const props = defineProps({
   reviewChanges: { type: Array, default: () => [] },
   // Name of the mode to go back to
   leaveLabel: { type: String, default: "Tiempo" },
+  // The id of the key that presses "back to", when there is one
+  leaveHotkey: { type: String, default: null },
 });
 
 const emit = defineEmits(["again", "leave"]);

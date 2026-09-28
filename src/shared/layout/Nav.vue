@@ -3,20 +3,63 @@
     <div
       class="max-w-[1200px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2"
     >
-      <router-link to="/" class="flex items-center gap-2.5 group" aria-label="SwiftFlow">
-        <div
-          class="flex items-center justify-center w-9 h-9 rounded-xl bg-primary border-2 border-b-4 border-primary-dark transition-transform duration-150 group-hover:scale-105 group-active:translate-y-0.5 group-active:border-b-2"
+      <div class="flex items-center gap-2 sm:gap-3">
+        <router-link
+          to="/"
+          active-class=""
+          exact-active-class=""
+          class="flex items-center gap-2.5 group"
+          aria-label="SwiftFlow"
+          :aria-keyshortcuts="hotkeys.ariaFor('go:test')"
         >
-          <BoltIcon class="w-5 h-5 text-white" />
-        </div>
-        <!-- Just the mark on a phone: with every button on the right, the
+          <div
+            class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-primary border-2 border-b-4 border-primary-dark transition-transform duration-150 group-hover:scale-105 group-active:translate-y-0.5 group-active:border-b-2"
+          >
+            <BoltIcon class="w-5 h-5 text-white" />
+            <KeyHint id="go:test" corner />
+          </div>
+          <!-- Just the mark on a phone: with every button on the right, the
              name pushed the last one off the edge -->
-        <span
-          class="hidden xs:inline font-display text-lg font-extrabold tracking-tight text-charcoal"
+          <span
+            class="hidden xs:inline font-display text-lg font-extrabold tracking-tight text-charcoal"
+          >
+            SwiftFlow
+          </span>
+        </router-link>
+        <!-- Daily streak: a glanceable reminder even outside /historial,
+             colored with the same flame ramp as the in-session badge. Next
+             to the name and without a border: it's a number to see, and a
+             bordered chip among the page buttons read as the page you're on. -->
+        <Transition
+          enter-active-class="transition-[opacity,scale] duration-500 ease-spring"
+          enter-from-class="opacity-0 scale-50"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="transition-[opacity,scale] duration-200 ease-in"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-50"
         >
-          SwiftFlow
-        </span>
-      </router-link>
+          <router-link
+            v-if="historyStore.dailyStreak > 0"
+            :to="{ path: '/historial', hash: '#racha' }"
+            :style="streakStyle"
+            active-class=""
+            exact-active-class=""
+            class="relative flex items-center gap-1 h-8 px-2 rounded-lg text-sm font-extrabold transition-[scale,color,background-color] duration-300 ease-spring hover:scale-105 active:scale-95"
+            :aria-label="t('shared.nav.streak', historyStore.dailyStreak)"
+            :title="
+              streakReminder.risk.atRisk
+                ? t('shared.nav.streakAtRisk', streakReminder.timeLeft)
+                : t('shared.nav.streak', historyStore.dailyStreak)
+            "
+            :class="{ 'animate-streak-risk': streakReminder.risk.atRisk }"
+            :aria-keyshortcuts="hotkeys.ariaFor('go:streak')"
+          >
+            <FireIcon class="w-4 h-4" />
+            <AnimatedNumber :value="historyStore.dailyStreak" :duration="600" />
+            <KeyHint id="go:streak" corner />
+          </router-link>
+        </Transition>
+      </div>
 
       <div class="flex items-center gap-2">
         <!-- The command palette, and the keys that open it: there's no
@@ -36,71 +79,53 @@
         <!-- Level, once there's any experience to show -->
         <LevelBadge v-if="historyStore.experience > 0" />
 
-        <!-- Daily streak: a glanceable reminder even outside /historial,
-             colored with the same flame ramp as the in-session badge. -->
-        <Transition
-          enter-active-class="transition-[opacity,scale] duration-500 ease-spring"
-          enter-from-class="opacity-0 scale-50"
-          enter-to-class="opacity-100 scale-100"
-          leave-active-class="transition-[opacity,scale] duration-200 ease-in"
-          leave-from-class="opacity-100 scale-100"
-          leave-to-class="opacity-0 scale-50"
-        >
-          <router-link
-            v-if="historyStore.dailyStreak > 0"
-            to="/historial"
-            :style="streakStyle"
-            class="flex items-center gap-1 h-9 px-2.5 rounded-xl border-2 text-xs font-extrabold transition-[scale,color,border-color,background-color] duration-300 ease-spring hover:scale-105 active:scale-95"
-            :aria-label="t('shared.nav.streak', historyStore.dailyStreak)"
-            :title="
-              streakReminder.risk.atRisk
-                ? t('shared.nav.streakAtRisk', streakReminder.timeLeft)
-                : t('shared.nav.streak', historyStore.dailyStreak)
-            "
-            :class="{ 'animate-streak-risk': streakReminder.risk.atRisk }"
-          >
-            <FireIcon class="w-4 h-4" />
-            <AnimatedNumber :value="historyStore.dailyStreak" :duration="600" />
-          </router-link>
-        </Transition>
-
         <!-- The course; on a phone it's reached from the home screen and the
              landing, where there's room -->
         <router-link
           to="/curso"
-          class="hidden sm:flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
+          :active-class="ACTIVE_PAGE"
+          class="relative hidden sm:flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
           :aria-label="t('shared.nav.course')"
           :title="t('shared.nav.course')"
+          :aria-keyshortcuts="hotkeys.ariaFor('go:course')"
         >
           <AcademicCapIcon class="w-5 h-5" />
+          <KeyHint id="go:course" corner />
         </router-link>
 
         <router-link
           to="/historial"
-          class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
+          :active-class="ACTIVE_PAGE"
+          class="relative flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
           :aria-label="t('shared.nav.history')"
+          :aria-keyshortcuts="hotkeys.ariaFor('go:history')"
         >
           <ChartBarIcon class="w-5 h-5" />
+          <KeyHint id="go:history" corner />
         </router-link>
 
         <!-- The landing: what SwiftFlow is, for whoever hasn't seen it -->
         <router-link
           to="/sobre"
-          class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
+          :active-class="ACTIVE_PAGE"
+          class="relative flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
           :aria-label="t('shared.nav.about')"
           :title="t('shared.nav.about')"
+          :aria-keyshortcuts="hotkeys.ariaFor('go:about')"
         >
           <InformationCircleIcon class="w-5 h-5" />
+          <KeyHint id="go:about" corner />
         </router-link>
 
         <SoundSettingsMenu />
 
         <button
           type="button"
-          class="flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
+          class="relative flex items-center justify-center w-9 h-9 rounded-xl border-2 border-faded-gray text-pencil-gray hover:text-primary hover:bg-primary-tint/60 transition-[color,background-color,scale] duration-200 ease-spring active:scale-90"
           :aria-label="
             themeStore.isDark ? t('shared.nav.lightMode') : t('shared.nav.darkMode')
           "
+          :aria-keyshortcuts="hotkeys.ariaFor('theme')"
           @click="themeStore.toggleTheme"
         >
           <Transition
@@ -115,6 +140,7 @@
             <SunIcon v-if="themeStore.isDark" class="w-5 h-5" />
             <MoonIcon v-else class="w-5 h-5" />
           </Transition>
+          <KeyHint id="theme" corner />
         </button>
       </div>
     </div>
@@ -123,6 +149,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { BoltIcon } from "@heroicons/vue/24/solid";
 import {
   SunIcon,
@@ -144,8 +171,49 @@ import { useStreakReminderStore } from "@/features/history/streakReminder";
 import LevelBadge from "@/features/history/components/LevelBadge.vue";
 import { usePaletteStore } from "@/features/command-palette/store";
 import { paletteKeys } from "@/features/command-palette/keys";
+import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
 
 const themeStore = useThemeStore();
+
+// The page you're on: its button lit up, the way a picked option is
+const ACTIVE_PAGE = "!border-primary/60 !bg-primary-tint !text-primary";
+const hotkeys = useHotkeysStore();
+const router = useRouter();
+const route = useRoute();
+
+// The nav's own keys, a badge on each button. On the test they take Alt
+// like every other button's there; the letters dodge the ones a Mac turns
+// into an accent with ⌥ (E, I, N, U).
+const goTo = (id, key, to, { name, keepHere = false, shown = () => true } = {}) =>
+  useHotkey(id, {
+    key,
+    inPalette: false,
+    // A section of a page can be gone to from that page; a page, not
+    enabled: () => shown() && (keepHere || route.name !== name),
+    run: () => router.push(to),
+  });
+goTo("go:test", "p", "/", { name: "home" });
+goTo(
+  "go:level",
+  "x",
+  { path: "/historial", hash: "#nivel" },
+  { keepHere: true, shown: () => historyStore.experience > 0 }
+);
+goTo(
+  "go:streak",
+  "y",
+  { path: "/historial", hash: "#racha" },
+  { keepHere: true, shown: () => historyStore.dailyStreak > 0 }
+);
+goTo("go:course", "o", "/curso", { name: "course" });
+goTo("go:history", "h", "/historial", { name: "history" });
+goTo("go:about", "q", "/sobre", { name: "about" });
+useHotkey("theme", {
+  key: "t",
+  inPalette: false,
+  run: () => themeStore.toggleTheme(),
+});
 const palette = usePaletteStore();
 const historyStore = useHistoryStore();
 // Today not practiced yet: the streak chip pulses until it is
@@ -157,8 +225,7 @@ const streakStyle = computed(() => {
   return {
     // The number in the text color when it has to be readable above all
     color: contrast.high ? "var(--color-charcoal)" : `rgb(${r} ${g} ${b})`,
-    borderColor: `rgb(${r} ${g} ${b})`,
-    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.1)`,
   };
 });
 </script>

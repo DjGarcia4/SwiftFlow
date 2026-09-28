@@ -79,6 +79,7 @@
                   >{{ row.command.group }}</span
                 >
                 <span class="flex-1 font-bold truncate">{{ row.command.label }}</span>
+                <KeyHint v-if="row.command.hotkey" :id="row.command.hotkey" small />
                 <span
                   v-if="row.command.active"
                   class="flex items-center gap-1 text-xs font-extrabold text-success-dark"
@@ -164,6 +165,9 @@ import { useSoundStore } from "@/shared/stores/sound";
 import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
 import { usePaletteStore } from "@/features/command-palette/store";
 import { buildCommands } from "@/features/command-palette/commands";
+import { useHotkeysStore, altLabel } from "@/features/command-palette/hotkeys";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useCourseProgress } from "@/features/course/useCourse";
 import { searchCommands, withRecentFirst } from "@/features/command-palette/search";
 import {
   isPaletteShortcut,
@@ -172,6 +176,8 @@ import {
 } from "@/features/command-palette/keys";
 
 const palette = usePaletteStore();
+const hotkeys = useHotkeysStore();
+const courseProgress = useCourseProgress();
 const config = useConfigStore();
 const theme = useThemeStore();
 const contrast = useContrastStore();
@@ -206,6 +212,8 @@ const commands = computed(() =>
         locale: locale.value,
         setLocale,
         canSpeak,
+        hotkeys: hotkeys.paletteEntries,
+        course: courseProgress.value,
       })
     : []
 );
@@ -294,6 +302,8 @@ const shortcuts = computed(() => [
   { keys: [t("typing.results.space")], label: t("palette.shortcuts.again") },
   { keys: ["Esc"], label: t("palette.shortcuts.pause") },
   { keys: ["?"], label: t("palette.shortcuts.help") },
+  { keys: ["A–Z"], label: t("palette.shortcuts.buttons") },
+  { keys: [`${altLabel().trim()}`, "A–Z"], label: t("palette.shortcuts.buttonsTyping") },
 ]);
 
 // Focus moves in, stays in, and goes back where it was on close
@@ -342,6 +352,21 @@ const onKeydown = (event) => {
     if (!event.repeat) palette.toggle();
     return;
   }
+  // A button's own key, shown beside it. Not while a dialog is up: its
+  // buttons are the only ones that should answer.
+  if (!palette.isOpen && !document.querySelector("[aria-modal='true']")) {
+    const hotkey = hotkeys.match(event);
+    if (hotkey) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!event.repeat) {
+        // Pressed from the keyboard, same as a command: the mouse stays out
+        palette.keyboardOnly = true;
+        hotkey.run();
+      }
+      return;
+    }
+  }
   // "?" for the keys -- where it can't be text being typed. The test takes
   // any key as typing, so there it's only in the palette.
   if (
@@ -354,6 +379,15 @@ const onKeydown = (event) => {
     palette.open("shortcuts");
   }
 };
+
+// On the typing screen, letters are typing: there a button's key takes Alt
+watch(
+  () => route.name === "home" && !config.isCompleted,
+  (typing) => {
+    hotkeys.captured = typing;
+  },
+  { immediate: true }
+);
 
 // The mouse (or a finger) on the page: whatever's played next wasn't
 // keyboard-only any more

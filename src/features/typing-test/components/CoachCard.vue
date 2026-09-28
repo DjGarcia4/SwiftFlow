@@ -24,10 +24,12 @@
     <button
       type="button"
       class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-extrabold text-white border-b-2 border-primary-dark transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
+      :aria-keyshortcuts="hotkey ? hotkeys.ariaFor(hotkey) : undefined"
       @click="emit('train', coach.keys)"
     >
       <BoltIcon class="w-3.5 h-3.5" />
       {{ t("typing.liveCoach.trainNow") }}
+      <KeyHint v-if="hotkey" :id="hotkey" tone="onPrimary" small class="ml-0.5" />
     </button>
 
     <button
@@ -46,11 +48,17 @@
 import { ViewfinderCircleIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { t } from "@/shared/i18n";
 import { BoltIcon } from "@heroicons/vue/24/solid";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useHotkeysStore } from "@/features/command-palette/hotkeys";
+
+const hotkeys = useHotkeysStore();
 
 defineProps({
   // { keys, title, detail }, as computeLiveCoach returns it
   coach: { type: Object, required: true },
   dismissible: { type: Boolean, default: false },
+  // The id of the key that presses "train", when the card has one
+  hotkey: { type: String, default: null },
 });
 
 const emit = defineEmits(["train", "dismiss"]);

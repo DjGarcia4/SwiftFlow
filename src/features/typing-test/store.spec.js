@@ -397,6 +397,27 @@ describe("useConfigStore", () => {
     }
   });
 
+  it("tells a pause asked for from one that came from idling", () => {
+    vi.useFakeTimers();
+    try {
+      const store = useConfigStore();
+      store.setReferenceText("texto");
+      store.userInput = "t";
+      store.handleTyping();
+
+      vi.advanceTimersByTime(3000); // idle: paused by itself
+      expect(store.isPaused).toBe(true);
+      expect(store.pausedByUser).toBe(false);
+
+      store.pause(); // then Esc: now it's on purpose
+      expect(store.pausedByUser).toBe(true);
+      store.play();
+      expect(store.pausedByUser).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   describe("wpm timing", () => {
     const T0 = 1_700_000_000_000;
     beforeEach(() => {

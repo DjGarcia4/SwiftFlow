@@ -33,6 +33,7 @@
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-xl border-b-4 border-primary-dark bg-primary px-4 py-2 text-sm font-extrabold text-white transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
+          :aria-keyshortcuts="hotkeys.ariaFor('continueCourse')"
           @click="start(progress.next)"
         >
           {{
@@ -42,6 +43,7 @@
             )
           }}
           <ArrowRightIcon class="h-4 w-4" />
+          <KeyHint id="continueCourse" tone="onPrimary" small />
         </button>
       </div>
       <div
@@ -159,6 +161,8 @@ import KeyboardLayout from "@/features/typing-test/components/KeyboardLayout.vue
 import KeyboardLayoutPicker from "@/features/typing-test/components/KeyboardLayoutPicker.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import { useCourseProgress } from "@/features/course/useCourse";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
 import {
   STAGES,
   LESSONS,
@@ -209,4 +213,12 @@ const start = (lesson) => {
   configStore.startLesson(lesson.id);
   router.push("/");
 };
+
+// "S" (Seguir) for the next lesson to do
+const hotkeys = useHotkeysStore();
+useHotkey("continueCourse", {
+  key: "s",
+  inPalette: false,
+  run: () => start(progress.value.next),
+});
 </script>

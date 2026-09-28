@@ -115,6 +115,21 @@ export default {
       noReminder: "no avisar",
       hideToday: "Ocultar por hoy",
     },
+    trendChart: {
+      each: "cada partida",
+      average: (n) => `promedio de ${n}`,
+      best: (wpm) => `mejor: ${wpm}`,
+      accuracy: (accuracy) => `${accuracy}% precisión`,
+      up: (recent, change, n) =>
+        `Vas mejorando: ${recent} wpm de promedio en tus últimas ${n} partidas, ${change} más que en las ${n} anteriores.`,
+      down: (recent, change, n) =>
+        `Bajaste un poco: ${recent} wpm de promedio en tus últimas ${n} partidas, ${change} menos que en las ${n} anteriores.`,
+      steady: (recent, change, n) =>
+        `Parejo: ${recent} wpm de promedio en tus últimas ${n} partidas, lo mismo que en las ${n} anteriores.`,
+      few: "Jugá unas partidas más para ver hacia dónde vas.",
+      mixed:
+        "Mezcla todos los modos: elegí uno arriba para comparar partidas del mismo tipo.",
+    },
     timeOfDay: {
       title: "Tu mejor momento",
       sessions: (n) => `${n} ${n === 1 ? "sesión" : "sesiones"}`,
@@ -826,6 +841,21 @@ export default {
       hour: (h) => `${h}:00`,
       noReminder: "don't remind",
       hideToday: "Hide for today",
+    },
+    trendChart: {
+      each: "each run",
+      average: (n) => `average of ${n}`,
+      best: (wpm) => `best: ${wpm}`,
+      accuracy: (accuracy) => `${accuracy}% accuracy`,
+      up: (recent, change, n) =>
+        `Getting better: ${recent} wpm on average over your last ${n} runs, ${change} more than the ${n} before.`,
+      down: (recent, change, n) =>
+        `A bit down: ${recent} wpm on average over your last ${n} runs, ${change} less than the ${n} before.`,
+      steady: (recent, change, n) =>
+        `Steady: ${recent} wpm on average over your last ${n} runs, the same as the ${n} before.`,
+      few: "Play a few more runs to see where you're heading.",
+      mixed:
+        "Every mode mixed together: pick one above to compare runs of the same kind.",
     },
     timeOfDay: {
       title: "Your best time",

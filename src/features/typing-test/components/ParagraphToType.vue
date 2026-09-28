@@ -163,9 +163,11 @@
               v-if="configStore.errorKeystrokes > 0 && configStore.progressSamples.length"
               type="button"
               class="font-bold text-primary underline underline-offset-2 hover:text-primary-dark"
+              :aria-keyshortcuts="hotkeys.ariaFor('whereSlowed')"
               @click="openReplay"
             >
               {{ t("typing.results.seeWhere") }}
+              <KeyHint id="whereSlowed" small class="ml-1 no-underline" />
             </button>
           </div>
         </div>
@@ -314,10 +316,12 @@
             type="button"
             class="inline-flex items-center gap-1.5 rounded-xl border-2 border-primary/40 bg-primary-tint/40 px-3 py-1.5 font-bold text-primary transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-tint active:scale-95 animate-pop-in"
             :style="staggerStyle(4, { step: 70, base: 400 })"
+            :aria-keyshortcuts="hotkeys.ariaFor('whereSlowed')"
             @click="openReplay"
           >
             <MagnifyingGlassIcon class="w-4 h-4" />
             {{ t("typing.results.whereSlowed") }}
+            <KeyHint id="whereSlowed" small />
           </button>
         </div>
       </Transition>
@@ -347,11 +351,13 @@
             :readiness="drillReadiness"
             :review-changes="reviewChanges"
             :leave-label="formatModeName(configStore.previousType ?? 'time')"
+            leave-hotkey="leaveDrill"
             @again="restart"
             @leave="leaveDrill"
           />
           <CoachCard
             v-if="resultsCoach"
+            hotkey="train"
             class="flex-1 min-w-0"
             :coach="resultsCoach"
             @train="trainNow"
@@ -786,17 +792,21 @@
         ]"
         :aria-hidden="isTypingActive"
       >
-        <IconButton
-          icon="restart"
-          variant="secondary"
-          size="lg"
-          :tooltip="t('typing.buttons.restart')"
-          @click="restart"
-        />
+        <div class="relative">
+          <IconButton
+            icon="restart"
+            variant="secondary"
+            size="lg"
+            :tooltip="t('typing.buttons.restart')"
+            :aria-keyshortcuts="hotkeys.ariaFor('restart')"
+            @click="restart"
+          />
+          <KeyHint id="restart" corner />
+        </div>
 
         <TextAppearanceMenu v-if="!isCompleted" />
 
-        <div v-if="!isCompleted" class="hidden sm:block">
+        <div v-if="!isCompleted" class="relative hidden sm:block">
           <IconButton
             icon="keyboard"
             :variant="configStore.keyboardVisible ? 'primary' : 'secondary'"
@@ -806,21 +816,26 @@
                 ? t('typing.buttons.hideKeyboard')
                 : t('typing.buttons.showKeyboard')
             "
+            :aria-keyshortcuts="hotkeys.ariaFor('keyboard')"
             @click="toggleKeyboard"
           />
+          <KeyHint id="keyboard" corner />
         </div>
 
-        <IconButton
-          v-if="raceKey"
-          icon="ghost"
-          :variant="
-            configStore.raceMode === 'ghost' && availableGhost ? 'primary' : 'secondary'
-          "
-          size="lg"
-          :disabled="!availableGhost"
-          :tooltip="ghostTooltip"
-          @click="toggleRace('ghost')"
-        />
+        <div v-if="raceKey" class="relative">
+          <IconButton
+            icon="ghost"
+            :variant="
+              configStore.raceMode === 'ghost' && availableGhost ? 'primary' : 'secondary'
+            "
+            size="lg"
+            :disabled="!availableGhost"
+            :tooltip="ghostTooltip"
+            :aria-keyshortcuts="hotkeys.ariaFor('ghost')"
+            @click="toggleRace('ghost')"
+          />
+          <KeyHint id="ghost" corner />
+        </div>
 
         <!-- The pacer: a steady speed to keep up with, picked from a menu -->
         <div ref="pacerMenuRoot" class="relative">
@@ -829,8 +844,11 @@
             :variant="configStore.raceMode === 'pacer' ? 'primary' : 'secondary'"
             size="lg"
             :tooltip="pacerMenuOpen ? '' : pacerTooltip"
+            :aria-expanded="pacerMenuOpen"
+            :aria-keyshortcuts="hotkeys.ariaFor('pacer')"
             @click="pacerMenuOpen = !pacerMenuOpen"
           />
+          <KeyHint id="pacer" corner />
           <Transition
             enter-active-class="transition-[opacity,translate] duration-200 ease-out"
             enter-from-class="opacity-0 translate-y-1"
@@ -841,6 +859,7 @@
           >
             <div
               v-if="pacerMenuOpen"
+              ref="pacerMenu"
               class="absolute bottom-full left-1/2 z-40 mb-3 w-max -translate-x-1/2 rounded-card border-2 border-faded-gray bg-paper-white p-3 shadow-xl"
             >
               <p class="mb-2 text-center text-xs font-bold text-pencil-gray">
@@ -915,14 +934,17 @@
           @click="finishZen"
         />
 
-        <IconButton
-          v-if="isCompleted"
-          icon="share"
-          variant="primary"
-          size="lg"
-          :tooltip="t('typing.buttons.share')"
-          @click="handleShare"
-        />
+        <div v-if="isCompleted" class="relative">
+          <IconButton
+            icon="share"
+            variant="primary"
+            size="lg"
+            :tooltip="t('typing.buttons.share')"
+            :aria-keyshortcuts="hotkeys.ariaFor('share')"
+            @click="handleShare"
+          />
+          <KeyHint id="share" corner />
+        </div>
       </div>
 
       <ReplayModal
@@ -1048,6 +1070,8 @@ import { useCustomizationStore } from "@/shared/stores/customization";
 import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
 import { usePaletteStore } from "@/features/command-palette/store";
 import TextAppearanceMenu from "./TextAppearanceMenu.vue";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
 import { textStyleFor } from "@/shared/utils/textAppearance";
 import {
   playKeystrokeSound,
@@ -1126,13 +1150,15 @@ const updateViewportStyle = () => {
   });
 };
 
-// Esc pauses a running session; Esc again while paused ends it.
+// Esc pauses a running session; Esc again while paused ends it. A pause
+// that came by itself (3 idle seconds) doesn't count as the first Esc:
+// stopping to think and then pressing Esc to pause shouldn't end the run.
 const handleEscapeKeydown = (event) => {
   if (event.key !== "Escape") return;
   if (isCompleted.value || configStore.userInput.length === 0) return;
 
   event.preventDefault();
-  if (configStore.isPaused) {
+  if (configStore.isPaused && configStore.pausedByUser) {
     configStore.endSession();
   } else {
     configStore.pause();
@@ -2286,6 +2312,70 @@ const shareText = () => {
     ? t("typing.share.record", configStore.wpm)
     : t("typing.share.plain", configStore.wpm);
 };
+
+// Each button's own key, shown beside it (see hotkeys.js). Only while the
+// button is there to press: the row hides while typing.
+const hotkeys = useHotkeysStore();
+const buttonsShown = () => !isTypingActive.value;
+
+useHotkey("restart", {
+  key: "r",
+  inPalette: false,
+  enabled: buttonsShown,
+  run: () => restart(),
+});
+useHotkey("keyboard", {
+  key: "k",
+  inPalette: false,
+  enabled: () => buttonsShown() && !isCompleted.value,
+  run: () => toggleKeyboard(),
+});
+useHotkey("whereSlowed", {
+  key: "f",
+  label: "palette.commands.whereSlowed",
+  enabled: () => isCompleted.value && configStore.progressSamples.length > 0,
+  run: () => openReplay(),
+});
+useHotkey("ghost", {
+  key: "g",
+  label: "palette.commands.ghost",
+  enabled: () => buttonsShown() && Boolean(raceKey.value && availableGhost.value),
+  run: () => toggleRace("ghost"),
+});
+const pacerMenu = ref(null);
+useHotkey("pacer", {
+  key: "m",
+  label: "palette.commands.pickPacer",
+  enabled: buttonsShown,
+  run: async () => {
+    pacerMenuOpen.value = !pacerMenuOpen.value;
+    if (!pacerMenuOpen.value) return;
+    // In from the keyboard: on to the speeds, Tab between them
+    await nextTick();
+    pacerMenu.value?.querySelector("button")?.focus({ preventScroll: true });
+  },
+});
+useHotkey("share", {
+  key: "c",
+  label: "palette.commands.share",
+  enabled: () => isCompleted.value,
+  run: () => handleShare(),
+});
+useHotkey("train", {
+  key: "e",
+  label: "palette.commands.train",
+  enabled: () => isCompleted.value && Boolean(resultsCoach.value),
+  run: () => trainNow(resultsCoach.value.keys),
+});
+useHotkey("leaveDrill", {
+  key: "v",
+  label: "palette.commands.leaveDrill",
+  enabled: () =>
+    isCompleted.value &&
+    Boolean(drillReadiness.value) &&
+    drillReadiness.value.verdict !== "keep",
+  run: () => leaveDrill(),
+});
 
 const handleShare = () => {
   const canvas = document.createElement("canvas");

@@ -71,7 +71,7 @@ export default {
       },
       keyboardOnly: {
         title: "Sin soltar el teclado",
-        text: "Ctrl/⌘ K y escribí lo que buscás: 30 segundos, palabras 50, tema oscuro, historial. Tab empieza de nuevo.",
+        text: "Cada botón muestra su tecla al lado, y Ctrl/⌘ K para todo lo demás: 30 segundos, palabras 50, tema oscuro. Tab empieza de nuevo.",
       },
       appearance: {
         title: "Texto a tu gusto",
@@ -205,7 +205,7 @@ export default {
       },
       keyboardOnly: {
         title: "Hands stay on the keys",
-        text: "Ctrl/⌘ K and type what you're after: 30 seconds, words 50, dark theme, history. Tab starts over.",
+        text: "Every button shows its key beside it, and Ctrl/⌘ K for the rest: 30 seconds, words 50, dark theme. Tab starts over.",
       },
       focus: {
         title: "Focus mode",

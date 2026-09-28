@@ -18,14 +18,36 @@
     </p>
     <p class="text-sm font-bold text-pencil-gray">{{ detail }}</p>
     <div class="mt-1 flex flex-wrap justify-center gap-2">
+      <!-- The same lesson again: what space does too -->
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-extrabold transition-[background-color,border-color,scale] duration-200 ease-spring active:scale-95"
+        :class="
+          grade.passed && nextLesson
+            ? 'border-2 border-faded-gray text-charcoal hover:border-primary/50'
+            : 'border-b-4 border-primary-dark bg-primary text-white hover:bg-primary-dark'
+        "
+        :aria-keyshortcuts="hotkeys.ariaFor('restart')"
+        @click="palette.requestRestart()"
+      >
+        <ArrowPathIcon class="h-4 w-4" />
+        {{ t("course.result.again") }}
+        <KeyHint
+          id="restart"
+          :tone="grade.passed && nextLesson ? 'default' : 'onPrimary'"
+          small
+        />
+      </button>
       <button
         v-if="grade.passed && nextLesson"
         type="button"
         class="inline-flex items-center gap-2 rounded-xl border-b-4 border-primary-dark bg-primary px-4 py-2 text-sm font-extrabold text-white transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
+        :aria-keyshortcuts="nextAria"
         @click="configStore.startLesson(nextLesson.id)"
       >
         {{ t("course.result.next") }}
         <ArrowRightIcon class="h-4 w-4" />
+        <KeyHint id="nextLesson" tone="onPrimary" small />
       </button>
       <RouterLink
         to="/curso"
@@ -33,6 +55,7 @@
       >
         <AcademicCapIcon class="h-4 w-4" />
         {{ t("course.result.seeCourse") }}
+        <KeyHint id="go:course" small />
       </RouterLink>
     </div>
   </div>
@@ -42,10 +65,17 @@
 import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
-import { ArrowRightIcon, AcademicCapIcon } from "@heroicons/vue/24/outline";
+import {
+  ArrowRightIcon,
+  ArrowPathIcon,
+  AcademicCapIcon,
+} from "@heroicons/vue/24/outline";
 import { StarIcon } from "@heroicons/vue/24/solid";
 import { useConfigStore } from "@/features/typing-test/store";
 import { useCurrentLesson } from "@/features/course/useCourse";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
+import { usePaletteStore } from "@/features/command-palette/store";
 import {
   LESSONS,
   PASS_ACCURACY,
@@ -55,6 +85,8 @@ import {
 
 const configStore = useConfigStore();
 const lesson = useCurrentLesson();
+const hotkeys = useHotkeysStore();
+const palette = usePaletteStore();
 
 const grade = computed(() =>
   gradeLesson(lesson.value, { wpm: configStore.wpm, accuracy: configStore.accuracy })
@@ -79,5 +111,13 @@ const detail = computed(() => {
     return t("course.result.forThree");
   }
   return t("course.result.three");
+});
+
+// "S" (Siguiente) for the next lesson
+const { aria: nextAria } = useHotkey("nextLesson", {
+  key: "s",
+  label: "palette.commands.nextLesson",
+  enabled: () => grade.value.passed && Boolean(nextLesson.value),
+  run: () => configStore.startLesson(nextLesson.value.id),
 });
 </script>

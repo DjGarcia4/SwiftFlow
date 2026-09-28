@@ -1,7 +1,9 @@
 <template>
   <!-- The level with a ring filling toward the next one, for the nav -->
   <router-link
-    to="/historial"
+    :to="{ path: '/historial', hash: '#nivel' }"
+    active-class=""
+    exact-active-class=""
     class="group relative flex h-9 items-center gap-1.5 rounded-xl border-2 border-faded-gray pl-1 pr-2.5 text-xs font-extrabold text-charcoal transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-primary/60 active:scale-95"
     :aria-label="`Nivel ${level.level}, ${level.title}`"
   >
@@ -38,6 +40,7 @@
       </text>
     </svg>
     <span class="hidden sm:inline">{{ level.title }}</span>
+    <KeyHint id="go:level" corner />
 
     <div
       class="pointer-events-none absolute top-full right-0 z-50 mt-2 w-max rounded-xl bg-night-ink px-3 py-1.5 text-xs font-bold text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
@@ -60,6 +63,7 @@
 </template>
 
 <script setup>
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
 import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useHistoryStore } from "@/features/history/store";
