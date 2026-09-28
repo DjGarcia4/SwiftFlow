@@ -88,6 +88,18 @@ describe("useHotkeysStore", () => {
     expect(hotkeys.match(press("s"))).toBe(older);
   });
 
+  it("hands an id back to the copy still on screen when the newer one goes", () => {
+    const hotkeys = useHotkeysStore();
+    const bar = { key: "m", run: vi.fn() };
+    const sheet = { key: "m", run: vi.fn() };
+    hotkeys.register("modeMenu", bar);
+    hotkeys.register("modeMenu", sheet);
+    expect(hotkeys.match(press("m"))).toBe(sheet);
+    hotkeys.unregister("modeMenu", sheet);
+    expect(hotkeys.match(press("m"))).toBe(bar);
+    expect(hotkeys.comboFor("modeMenu")).toBe("M");
+  });
+
   it("offers the ones with a label in the palette", () => {
     const hotkeys = useHotkeysStore();
     hotkeys.register("share", {

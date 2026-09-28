@@ -413,6 +413,18 @@ describe("computeImprovementTips · speed patterns", () => {
     });
   });
 
+  it("names the one bad finger of an otherwise clean typist, like the card", () => {
+    const stats = [..."qwertyuiopasdfghjklzxcvbnm"].map((key) => ({
+      key,
+      attempts: 100,
+      misses: "qaz".includes(key) ? 6 : 0,
+      rate: "qaz".includes(key) ? 0.06 : 0,
+    }));
+    const tip = computeImprovementTips(stats).tips.find((t) => t.id === "finger");
+    expect(tip.title).toBe("Tu meñique izquierdo falla más");
+    expect(tip.detail).toContain("contra menos del 1% de un dedo típico");
+  });
+
   it("sends a weaker hand to practice on its own", () => {
     const left = new Set([..."qwertasdfgzxcvb"]);
     const stats = [..."qwertyuiopasdfghjklzxcvbnm"].map((key) => ({

@@ -236,3 +236,34 @@ Seguir cada dedo, no solo cada tecla, y mandarte a practicar el que se queda atr
 Landing: la tarjeta "Tus dedos" en la vitrina de estadísticas, y de paso dos gráficas del
 historial que no estaban: "¿Vas mejorando?" (la tendencia de WPM) y "Las letras vuelven solas"
 (el repaso). Fila de la comparación ampliada, novedades, README.
+
+## Fase 18 — Un historial que se recorre
+
+El historial creció hasta ser una pared de tarjetas. Sigue siendo una sola página, pero en
+nueve capítulos, cada uno con su título y una línea de qué muestra: **Tu nivel**, **Hoy** (retos, meta,
+repaso), **Tu velocidad** (el filtro por modo, los números, la tendencia, la constancia),
+**Tus récords**, **Tus teclas**, **Tus dedos**, **Tus hábitos**, **Logros** y **Tus partidas**.
+
+- Una guía que acompaña: en compu, los capítulos al costado, fijos, con el actual marcado, los
+  ya pasados en verde y cuánto de la página llevás; en el celular, una tira debajo de la barra
+- **1–9** van a cada capítulo, con su tecla al lado
+- **Tus récords**, con protagonismo: tu mejor marca en grande con su trofeo, y cada modo con
+  todas sus categorías (Tiempo 15/30/60/120, Palabras y Números 10/25/50/100, y el resto como
+  una). Con récord: los wpm, la precisión, hace cuánto y **Retar**, que abre esa categoría con
+  el marcapasos a la velocidad del récord; sin récord, **Estrenar**. Las rondas perfectas, ahí
+- Saltar a un capítulo (o a #logros, #nivel, #racha) mueve solo la caja de la app. La página
+  entera ya no puede correrse: el texto para lectores de pantalla la estiraba de más
+- El consejo de "tu dedo falla más" usa la misma regla que la tarjeta de dedos
+- La tarjeta de dedos trae el teclado debajo, cada tecla del color de su dedo: pasando el mouse
+  por un dedo se iluminan las suyas, y si no, se destacan las del que falla más
+- El menú de apariencia, con una tecla por fila: F fuente, T tamaño, I interlineado, C cursor,
+  O foco, A alto contraste
+- La configuración en el celular, con el mismo orden que la barra de compu: los modos agrupados
+  (pruebas, textos, práctica) con su línea de qué es cada uno, la cantidad o el tiempo en una
+  tira, lo del modo (los dedos, las teclas, tus textos) y, al final y plegadas, las opciones
+- Un botón que aparece dos veces (la barra y su copia en la hoja del celular) ya no le borra la
+  tecla al otro cuando se va
+- Y el de sonido e idioma (⌥Z): I idioma, P textos para practicar, S sonido general, T tecleo,
+  E errores, L logros y récords
+
+Landing: novedades.

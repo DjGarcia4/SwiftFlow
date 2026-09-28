@@ -32,9 +32,9 @@
         <!-- The app's language, and apart from it, the texts' -->
         <div class="mb-2 space-y-2 border-b-2 border-faded-gray/40 pb-3">
           <div class="flex items-center justify-between gap-3">
-            <span class="text-xs font-bold text-charcoal">{{
-              t("shared.language")
-            }}</span>
+            <span class="flex items-center gap-2 text-xs font-bold text-charcoal"
+              >{{ t("shared.language") }}<KeyCap>I</KeyCap></span
+            >
             <SegmentedControl
               :label="t('shared.language')"
               :options="LANGUAGE_OPTIONS"
@@ -43,8 +43,8 @@
             />
           </div>
           <div class="flex items-center justify-between gap-3">
-            <span class="text-xs font-bold text-charcoal">
-              {{ t("shared.practiceLanguage") }}
+            <span class="flex items-center gap-2 text-xs font-bold text-charcoal">
+              {{ t("shared.practiceLanguage") }}<KeyCap>P</KeyCap>
             </span>
             <SegmentedControl
               :label="t('shared.practiceLanguage')"
@@ -60,14 +60,14 @@
           class="flex items-center justify-between gap-3 py-1.5"
         >
           <span
-            class="text-xs font-bold"
+            class="flex items-center gap-2 text-xs font-bold"
             :class="
               toggleItem.key !== 'soundEnabled' && !soundStore.soundEnabled
                 ? 'text-pencil-gray/50'
                 : 'text-charcoal'
             "
           >
-            {{ toggleItem.label }}
+            {{ toggleItem.label }}<KeyCap>{{ toggleItem.letter }}</KeyCap>
           </span>
           <button
             type="button"
@@ -90,7 +90,12 @@
 <script setup>
 import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
 import KeyHint from "@/features/command-palette/components/KeyHint.vue";
-import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
+import {
+  useHotkey,
+  useHotkeysStore,
+  useMenuKeys,
+} from "@/features/command-palette/hotkeys";
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { t, locale, setLocale, LOCALES } from "@/shared/i18n";
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from "@heroicons/vue/24/outline";
@@ -119,11 +124,36 @@ useHotkey("settings", {
 const LANGUAGE_OPTIONS = LOCALES.map(({ id, label }) => ({ value: id, label }));
 
 const toggles = computed(() => [
-  { key: "soundEnabled", label: t("shared.settings.all") },
-  { key: "keystrokeSound", label: t("shared.settings.keystrokes") },
-  { key: "errorSound", label: t("shared.settings.errors") },
-  { key: "celebrationSound", label: t("shared.settings.celebrations") },
+  { key: "soundEnabled", letter: "S", label: t("shared.settings.all") },
+  { key: "keystrokeSound", letter: "T", label: t("shared.settings.keystrokes") },
+  { key: "errorSound", letter: "E", label: t("shared.settings.errors") },
+  { key: "celebrationSound", letter: "L", label: t("shared.settings.celebrations") },
 ]);
+
+// Open, each row by its letter: I the app's language, P the texts', and
+// S, T, E, L the sounds -- the languages flip to the other one
+const otherLanguage = (current) => {
+  const ids = LOCALES.map(({ id }) => id);
+  return ids[(ids.indexOf(current) + 1) % ids.length];
+};
+useMenuKeys(
+  () => open.value,
+  (event) => {
+    const key = event.key.toUpperCase();
+    if (key === "I") {
+      setLocale(otherLanguage(locale.value));
+      return true;
+    }
+    if (key === "P") {
+      configStore.setTextLanguage(otherLanguage(configStore.textLanguage));
+      return true;
+    }
+    const toggle = toggles.value.find((entry) => entry.letter === key);
+    if (!toggle) return false;
+    soundStore.toggle(toggle.key);
+    return true;
+  }
+);
 
 // Sub-toggles stay independently readable/writable even while the master
 // switch is off — their dimmed label is just a hint that they won't

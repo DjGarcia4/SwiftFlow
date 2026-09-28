@@ -210,3 +210,31 @@ test("paused: P picks it back up, and in zen the finish button says Esc", async 
   await expect(page.getByRole("button", { name: "Continuar" })).toBeHidden();
   await expect(field).toHaveValue("ab");
 });
+
+test("inside the text menu, each row by its letter", async ({ page }) => {
+  await openTest(page);
+  const field = page.locator("textarea");
+  await field.focus();
+  await page.keyboard.press("Alt+KeyA");
+  const size = page.getByRole("radiogroup", { name: "Tamaño" });
+  const before = await size.locator("[aria-checked=true]").textContent();
+  await page.keyboard.press("t");
+  await expect(size.locator("[aria-checked=true]")).not.toHaveText(before);
+  await page.keyboard.press("a");
+  await expect(page.locator("html")).toHaveAttribute("data-contrast", "more");
+  await expect(field).toHaveValue("");
+});
+
+test("inside the sound and language menu, each row by its letter", async ({ page }) => {
+  await page.goto("/historial");
+  await page.keyboard.press("z");
+  await page.keyboard.press("t");
+  await expect(page.getByRole("button", { name: /^Tecleo: / })).toHaveAccessibleName(
+    "Tecleo: desactivado"
+  );
+  // P is the texts' language here, not "go to the test"
+  await page.keyboard.press("p");
+  await expect(page).toHaveURL(/historial/);
+  await page.keyboard.press("i");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+});

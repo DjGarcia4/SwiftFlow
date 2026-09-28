@@ -1,184 +1,70 @@
 <template>
   <div class="bg-paper-white rounded-card p-3 sm:px-3 sm:py-2 border-2 border-faded-gray">
-    <!-- Mobile Layout (stacked) -->
-    <div class="flex flex-col gap-3 sm:hidden">
-      <!-- Content type (code and the weekly text are typed as-is) and
-           "sin red", which goes with any mode -->
-      <div class="flex flex-wrap items-center justify-center gap-2">
-        <template v-if="punctuationApplies">
-          <IconButton
-            v-for="contentType in configStore.contentTypes"
-            :key="contentType"
-            :value="contentType"
-            :icon="contentType === 'punctuation' ? 'punctuation' : 'number'"
-            :variant="
-              configStore.selectedContentTypes === contentType ? 'primary' : 'secondary'
-            "
-            :aria-pressed="configStore.selectedContentTypes === contentType"
-            size="sm"
-            :text="
-              contentType == 'punctuation'
-                ? t('typing.toolbar.punctuation')
-                : t('typing.toolbar.numbers')
-            "
-            @click="configStore.handleContentTypes(contentType)"
-          />
-        </template>
-        <IconButton
-          icon="eye-slash"
-          :variant="configStore.blindMode ? 'primary' : 'secondary'"
-          :aria-pressed="configStore.blindMode"
-          size="sm"
-          :text="t('typing.toolbar.blind')"
-          @click="configStore.toggleBlindMode"
-        />
-      </div>
-
-      <!-- Divisor -->
-      <div class="h-px w-full bg-faded-gray"></div>
-
-      <StrictModePicker inline />
-
-      <!-- Divisor -->
-      <div class="h-px w-full bg-faded-gray"></div>
-
-      <!-- Type selection -->
-      <div
-        role="group"
-        :aria-label="t('typing.toolbar.mode')"
-        class="flex flex-wrap items-center justify-center gap-2"
-      >
-        <IconButton
-          v-for="type in offeredTypes"
-          :key="type"
-          :value="type"
-          :icon="typeMeta[type].icon"
-          :variant="configStore.type === type ? 'primary' : 'secondary'"
-          :aria-pressed="configStore.type === type"
-          size="sm"
-          :text="t(`shared.modes.${type}`)"
-          @click="configStore.handleType(type)"
-        />
-      </div>
-
-      <!-- Value selection (no limit to pick in zen mode) -->
-      <template
-        v-if="
-          configStore.type === 'time' ||
-          configStore.type === 'words' ||
-          configStore.type === 'numbers' ||
-          configStore.type === 'code' ||
-          configStore.type === 'drill' ||
-          configStore.type === 'fingers' ||
-          configStore.type === 'custom' ||
-          configStore.type === 'dictation' ||
-          configStore.type === 'lesson'
-        "
-      >
-        <!-- Divisor -->
-        <div class="h-px w-full bg-faded-gray"></div>
-
-        <div
-          :key="configStore.type"
-          role="group"
-          :aria-label="valueOptions?.label ?? t('typing.toolbar.text')"
-          class="flex flex-wrap items-center justify-center gap-2 animate-rise [animation-duration:400ms]"
+    <!-- Phone: stacked, in the order things are picked -- the mode, what
+         that mode lets you choose, and (at the bottom, folded) the options
+         that go with any mode. The same pieces as the desktop bar. -->
+    <div class="flex flex-col gap-4 sm:hidden">
+      <section>
+        <p
+          class="mb-1.5 text-[10px] font-extrabold uppercase tracking-wide text-pencil-gray"
         >
-          <template v-if="configStore.type === 'time'">
-            <IconButton
-              v-for="time in configStore.times"
-              :key="time"
-              :value="time"
-              :variant="configStore.selectedTime === time ? 'primary' : 'secondary'"
-              :aria-pressed="configStore.selectedTime === time"
-              size="sm"
-              :text="`${time}s`"
-              @click="configStore.handleTime(time)"
-            />
-          </template>
-          <template
-            v-if="
-              configStore.type === 'words' ||
-              configStore.type === 'numbers' ||
-              configStore.type === 'drill' ||
-              configStore.type === 'fingers'
-            "
-          >
-            <IconButton
-              v-for="word in configStore.words"
-              :key="word"
-              :value="word"
-              :variant="configStore.selectedWords === word ? 'primary' : 'secondary'"
-              :aria-pressed="configStore.selectedWords === word"
-              size="sm"
-              :text="`${word} `"
-              @click="configStore.handleWords(word)"
-            />
-          </template>
-          <LessonChip v-if="configStore.type === 'lesson'" />
-          <template v-if="configStore.type === 'dictation'">
-            <IconButton
-              v-for="count in DICTATION_SENTENCE_COUNTS"
-              :key="count"
-              :variant="
-                configStore.dictationSentences === count ? 'primary' : 'secondary'
-              "
-              :aria-pressed="configStore.dictationSentences === count"
-              size="sm"
-              :text="t('typing.toolbar.sentenceCount', count)"
-              @click="configStore.handleDictationSentences(count)"
-            />
-          </template>
-          <template v-if="configStore.type === 'code'">
-            <IconButton
-              :variant="!configStore.selectedCodeLanguage ? 'primary' : 'secondary'"
-              :aria-pressed="!configStore.selectedCodeLanguage"
-              size="sm"
-              :text="t('typing.toolbar.allLanguages')"
-              @click="configStore.handleCodeLanguage(null)"
-            />
-            <IconButton
-              v-for="language in configStore.languages"
-              :key="language"
-              :value="language"
-              :variant="
-                configStore.selectedCodeLanguage === language ? 'primary' : 'secondary'
-              "
-              :aria-pressed="configStore.selectedCodeLanguage === language"
-              size="sm"
-              :text="language"
-              @click="configStore.handleCodeLanguage(language)"
-            />
-          </template>
-          <template v-if="configStore.type === 'custom'">
-            <IconButton
-              v-for="entry in configStore.customTexts"
-              :key="entry.id"
-              :variant="
-                configStore.selectedCustomText?.id === entry.id ? 'primary' : 'secondary'
-              "
-              :aria-pressed="configStore.selectedCustomText?.id === entry.id"
-              size="sm"
-              :text="entry.name"
-              @click="configStore.selectCustomText(entry.id)"
-            />
-            <IconButton
-              v-if="configStore.selectedCustomText"
-              variant="secondary"
-              size="sm"
-              :text="t('typing.toolbar.edit')"
-              @click="configStore.openCustomEditor(configStore.selectedCustomText.id)"
-            />
-            <IconButton
-              icon="plus"
-              variant="secondary"
-              size="sm"
-              :text="t('typing.toolbar.new')"
-              @click="configStore.openCustomEditor()"
-            />
-          </template>
+          {{ t("typing.toolbar.mode") }}
+        </p>
+        <ModePicker inline :options="modeOptions" />
+      </section>
+
+      <section
+        v-if="valueOptions"
+        :key="configStore.type"
+        class="animate-rise [animation-duration:400ms]"
+      >
+        <p
+          class="mb-1.5 text-[10px] font-extrabold uppercase tracking-wide text-pencil-gray"
+        >
+          {{ valueOptions.label }}
+        </p>
+        <div class="overflow-x-auto">
+          <SegmentedControl
+            :label="valueOptions.label"
+            :options="valueOptions.options"
+            :model-value="valueOptions.selected"
+            @select="valueOptions.select"
+          />
         </div>
-      </template>
+      </section>
+
+      <LessonChip v-if="configStore.type === 'lesson'" class="self-center" />
+
+      <section
+        v-if="configStore.type === 'custom'"
+        class="flex flex-wrap items-center gap-2"
+      >
+        <IconButton
+          v-for="entry in configStore.customTexts"
+          :key="entry.id"
+          :variant="
+            configStore.selectedCustomText?.id === entry.id ? 'primary' : 'secondary'
+          "
+          :aria-pressed="configStore.selectedCustomText?.id === entry.id"
+          size="sm"
+          :text="entry.name"
+          @click="configStore.selectCustomText(entry.id)"
+        />
+        <IconButton
+          v-if="configStore.selectedCustomText"
+          variant="secondary"
+          size="sm"
+          :text="t('typing.toolbar.edit')"
+          @click="configStore.openCustomEditor(configStore.selectedCustomText.id)"
+        />
+        <IconButton
+          icon="plus"
+          variant="secondary"
+          size="sm"
+          :text="t('typing.toolbar.new')"
+          @click="configStore.openCustomEditor()"
+        />
+      </section>
     </div>
 
     <!-- Desktop: one line, always, and a short one: the mode as one button
@@ -438,19 +324,21 @@
         class="animate-rise"
       />
     </div>
+
+    <!-- Phone: the options for any mode, folded at the bottom of the sheet -->
+    <div class="sm:hidden mt-4 pt-4 border-t-2 border-faded-gray">
+      <ToolbarOptions inline :punctuation-applies="punctuationApplies" />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { isSpeechSupported } from "@/shared/utils/speech";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
-import StrictModePicker from "./StrictModePicker.vue";
 import { t } from "@/shared/i18n";
 import LessonChip from "@/features/course/components/LessonChip.vue";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import {
-  AtSymbolIcon,
-  EyeSlashIcon,
   ClockIcon,
   HashtagIcon,
   ChatBubbleBottomCenterTextIcon,

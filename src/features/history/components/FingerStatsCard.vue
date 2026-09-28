@@ -45,6 +45,8 @@
               :style="fingerStyle(stat.finger)"
               :aria-label="ariaFor(stat)"
               role="img"
+              @mouseenter="hovered = stat.finger"
+              @mouseleave="hovered = null"
             >
               <span class="text-sm font-extrabold tabular-nums text-charcoal">{{
                 stat.measured ? percent(stat.rate) : "—"
@@ -81,6 +83,25 @@
       {{ t("history.fingers.legend") }}
     </p>
 
+    <!-- Which keys each finger types, in its color: the one under the
+         pointer lit, the rest stepping back -->
+    <div class="mt-5 hidden sm:flex justify-center overflow-x-auto" aria-hidden="true">
+      <KeyboardLayout
+        compact
+        :key-style="keyStyle"
+        :key-class="
+          () => 'transition-[opacity,background-color,border-color] duration-200'
+        "
+      />
+    </div>
+    <p class="mt-2 hidden sm:block text-center text-[11px] font-bold text-pencil-gray">
+      {{
+        hovered
+          ? t("history.fingers.keysOf", FINGERS[hovered].name)
+          : t("history.fingers.keysHint")
+      }}
+    </p>
+
     <!-- The one to work on, and the way in -->
     <div
       v-if="focus"
@@ -106,12 +127,17 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ArrowDownIcon, ArrowUpIcon, HandRaisedIcon } from "@heroicons/vue/24/outline";
 import { t } from "@/shared/i18n";
 import { useConfigStore } from "@/features/typing-test/store";
-import { FINGERS, fingerRgb } from "@/features/typing-test/utils/keyboardMap";
+import {
+  FINGERS,
+  fingerRgb,
+  fingerOfKey,
+} from "@/features/typing-test/utils/keyboardMap";
+import KeyboardLayout from "@/features/typing-test/components/KeyboardLayout.vue";
 import { FINGER_IDS } from "@/features/typing-test/content/fingers";
 import {
   computeFingerStats,
@@ -156,6 +182,31 @@ const HEIGHTS = {
 };
 
 // A finger that almost never misses reads "<1%", not a flat "0%"
+// The finger under the pointer, its keys lit on the keyboard below
+const hovered = ref(null);
+
+// Each key in its finger's color. One finger picked out (the one under the
+// pointer, or else the one that misses most): its keys stronger, the
+// others' fainter.
+const keyStyle = (key) => {
+  const finger = fingerOfKey(key, configStore.keyboardLayout);
+  if (!finger || finger === "thumb") return { opacity: 0.35 };
+  const [r, g, b] = fingerRgb(finger);
+  const focus = hovered.value ?? stats.value.weakest?.finger ?? null;
+  const picked = focus === finger;
+  if (focus && !picked && hovered.value)
+    return {
+      opacity: 0.2,
+      borderColor: `rgba(${r}, ${g}, ${b}, 0.4)`,
+      color: `rgb(${r} ${g} ${b})`,
+    };
+  return {
+    backgroundColor: `rgba(${r}, ${g}, ${b}, ${picked ? 0.35 : 0.12})`,
+    borderColor: `rgba(${r}, ${g}, ${b}, ${picked ? 0.95 : 0.5})`,
+    color: `rgb(${r} ${g} ${b})`,
+  };
+};
+
 const percent = (rate) =>
   rate > 0 && rate < 0.005 ? "<1%" : `${Math.round(rate * 100)}%`;
 const points = (change) => `${Math.abs(Math.round(change * 100))}`;

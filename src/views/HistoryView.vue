@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+  <div class="max-w-3xl lg:max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
     <div class="flex items-center justify-between gap-3 mb-6 animate-rise">
       <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-charcoal">
         {{ t("history.view.title") }}
@@ -21,687 +21,746 @@
     </div>
 
     <template v-else>
-      <div
-        id="nivel"
-        class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray mb-6 scroll-mt-4 animate-rise"
-      >
-        <XpProgress />
-
-        <!-- This month, told as a story -->
-        <RouterLink
-          to="/resumen"
-          class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-primary-tint/50 px-3 py-2 text-sm font-extrabold text-primary transition-colors duration-200 hover:bg-primary-tint"
-        >
-          <span class="flex items-center gap-2">
-            <SparklesIcon class="h-4 w-4" />
-            {{ t("history.view.monthSummary", currentMonthName) }}
-          </span>
-          <ArrowRightIcon class="h-4 w-4" />
-        </RouterLink>
-
-        <!-- Two panels under the level, one open at a time -->
-        <div class="mt-3 flex justify-center gap-4">
-          <button
-            type="button"
-            class="text-xs font-bold text-primary hover:text-primary-dark"
-            :aria-expanded="levelPanel === 'levels'"
-            @click="toggleLevelPanel('levels')"
-          >
-            {{
-              levelPanel === "levels"
-                ? t("history.view.hideLevels")
-                : t("history.view.showLevels")
-            }}
-          </button>
-          <button
-            type="button"
-            class="text-xs font-bold text-primary hover:text-primary-dark"
-            :aria-expanded="levelPanel === 'customize'"
-            @click="toggleLevelPanel('customize')"
-          >
-            {{
-              levelPanel === "customize"
-                ? t("history.view.hide")
-                : t("history.view.customize")
-            }}
-          </button>
-        </div>
-        <Transition
-          enter-active-class="transition-[opacity,translate] duration-300 ease-smooth"
-          enter-from-class="opacity-0 -translate-y-2"
-          enter-to-class="opacity-100 translate-y-0"
-          leave-active-class="transition-opacity duration-150 ease-in"
-          leave-from-class="opacity-100"
-          leave-to-class="opacity-0"
-        >
-          <!-- pt makes room for the "Estás acá" tag sticking out the top -->
-          <div v-if="levelPanel === 'levels'" class="pt-5">
-            <LevelRoadmap />
-          </div>
-          <div v-else-if="levelPanel === 'customize'" class="pt-4">
-            <CustomizePanel />
-          </div>
-        </Transition>
-      </div>
-
-      <!-- Which mode the numbers below are about -->
-      <div
-        v-if="availableModes.length > 1"
-        class="flex flex-wrap items-center gap-1.5 mb-4 animate-rise"
-      >
-        <IconButton
-          :variant="selectedMode === null ? 'primary' : 'secondary'"
-          size="xs"
-          :text="t('history.view.allModes')"
-          @click="selectedMode = null"
-        />
-        <IconButton
-          v-for="mode in availableModes"
-          :key="mode"
-          :value="mode"
-          :variant="selectedMode === mode ? 'primary' : 'secondary'"
-          size="xs"
-          :text="modeName(mode)"
-          @click="selectedMode = mode"
-        />
-      </div>
-
-      <!-- And which language, once there are runs in more than one: an
-           English text and a Spanish one aren't the same exercise either -->
-      <div
-        v-if="availableLanguages.length > 1"
-        role="group"
-        :aria-label="t('history.view.languageFilter')"
-        class="flex flex-wrap items-center gap-1.5 -mt-2 mb-4 animate-rise"
-      >
-        <IconButton
-          :variant="selectedLanguage === null ? 'primary' : 'secondary'"
-          size="xs"
-          :text="t('history.view.allLanguages')"
-          @click="selectedLanguage = null"
-        />
-        <IconButton
-          v-for="language in availableLanguages"
-          :key="language"
-          :value="language"
-          :variant="selectedLanguage === language ? 'primary' : 'secondary'"
-          size="xs"
-          :text="languageName(language)"
-          @click="selectedLanguage = language"
-        />
-      </div>
-
-      <!-- Summary cards -->
-      <div
-        class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6 [&>*]:animate-rise [&>*:nth-child(2)]:[animation-delay:50ms] [&>*:nth-child(3)]:[animation-delay:100ms] [&>*:nth-child(4)]:[animation-delay:150ms] [&>*:nth-child(5)]:[animation-delay:200ms]"
-      >
-        <div
-          class="bg-gradient-to-br from-primary-tint to-primary/10 rounded-card p-4 sm:p-6 border-2 border-primary text-center shadow-sm shadow-primary/20"
-        >
-          <div
-            class="flex items-center justify-center gap-1 text-2xl sm:text-3xl font-display font-extrabold text-primary-dark mb-1"
-          >
-            <FireIcon
-              v-if="historyStore.dailyStreak > 0"
-              class="w-5 h-5 sm:w-6 sm:h-6 animate-pop-in [animation-delay:500ms]"
-            />
-            <AnimatedNumber :value="historyStore.dailyStreak" />
-          </div>
-          <div
-            class="text-xs sm:text-sm text-primary-dark font-bold uppercase tracking-wide"
-          >
-            {{ t("history.view.streak") }}
-          </div>
-        </div>
-        <div
-          class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
-        >
-          <div
-            class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
-          >
-            <AnimatedNumber :value="summary.sessions" />
-          </div>
-          <div
-            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
-          >
-            {{ t("history.view.sessions") }}
-          </div>
-        </div>
-        <div
-          class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
-        >
-          <div class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1">
-            <AnimatedNumber v-if="hasCurrent" :value="summary.bestWpm" />
-            <template v-else>—</template>
-          </div>
-          <div
-            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
-          >
-            {{ t("history.view.bestWpm") }}
-          </div>
-        </div>
-        <div
-          class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
-        >
-          <div
-            class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
-          >
-            <AnimatedNumber v-if="hasCurrent" :value="summary.averageWpm" />
-            <template v-else>—</template>
-          </div>
-          <div
-            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
-          >
-            {{ t("history.view.averageWpm") }}
-          </div>
-        </div>
-        <div
-          class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
-        >
-          <div
-            class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
-          >
-            <template v-if="hasCurrent">
-              <AnimatedNumber :value="summary.averageAccuracy" />%
-            </template>
-            <template v-else>—</template>
-          </div>
-          <div
-            class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
-          >
-            {{ t("history.view.averageAccuracy") }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Today's challenges: for the whole day, whatever the filter says -->
-      <div
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:220ms]"
-      >
-        <div class="flex items-baseline justify-between gap-3 mb-3">
-          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            {{ t("history.view.todaysChallenges") }}
-          </div>
-          <div
-            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
-          >
-            {{
-              t(
-                "history.view.challengeCounts",
-                historyStore.challengeStats.completed,
-                historyStore.challengeStats.fullDays
-              )
-            }}
-          </div>
-        </div>
-        <ReviewToday v-if="historyStore.reviewToday.keys.length" class="mb-2" />
-        <DailyChallengesList :challenges="historyStore.dailyChallenges" />
-        <WeeklyChallengeCard class="mt-2" />
-
-        <!-- Past weeks of the shared text, for comparing with a friend's -->
-        <div v-if="pastWeeklyChallenges.length" class="mt-4">
-          <div
-            class="mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
-          >
-            {{ t("history.view.pastWeeks") }}
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <div
-              v-for="week in pastWeeklyChallenges"
-              :key="`${week.key}:${week.language}`"
-              class="flex items-center gap-2 rounded-xl border-2 border-faded-gray px-3 py-1.5"
-            >
-              <span class="font-display font-extrabold text-charcoal">{{
-                week.best.wpm
-              }}</span>
-              <span class="text-xs font-bold text-pencil-gray">{{
-                week.language === "es"
-                  ? weeklyLabel(week.key)
-                  : t(
-                      "history.inLanguage",
-                      weeklyLabel(week.key),
-                      t(`history.languages.${week.language}`)
-                    )
-              }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Weekly goal, with the picker for it -->
-      <div
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:240ms]"
-      >
-        <div class="flex items-baseline justify-between gap-3 mb-3">
-          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            {{ t("history.view.weeklyGoal") }}
-          </div>
-          <div
-            v-if="historyStore.weeksCompleted"
-            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
-          >
-            {{ t("history.view.weeksDone", historyStore.weeksCompleted) }}
-          </div>
-        </div>
-        <WeeklyGoal editable />
-      </div>
-
-      <!-- Totals / per-keystroke stats -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
-        <div
-          v-for="(stat, index) in extraStats"
-          :key="stat.label"
-          class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray text-center animate-rise"
-          :style="staggerStyle(index, { step: 50, base: 250 })"
-        >
-          <div class="text-xl sm:text-2xl font-display font-extrabold text-charcoal mb-1">
-            <AnimatedNumber
-              v-if="typeof stat.value === 'number'"
-              :value="stat.value"
-              :format="formatThousands"
-            />
-            <template v-else>{{ stat.value }}</template>
-          </div>
-          <div
-            class="text-[10px] sm:text-xs text-pencil-gray font-bold uppercase tracking-wide"
-          >
-            {{ stat.label }}
-          </div>
-        </div>
-      </div>
-
-      <!-- Consistency, on the whole history: what you practised is what you
-           practised, whatever mode it was in -->
-      <div
-        id="racha"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 scroll-mt-4 animate-rise [animation-delay:400ms]"
-      >
-        <ActivityCalendar :activity="dailyActivity" />
-      </div>
-
-      <!-- Trend -->
-      <div
-        v-if="trendPoints.length >= 2"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:450ms]"
-      >
-        <WpmTrendChart :points="trendPoints" />
-      </div>
-
-      <!-- When in the day you type best -- and until there's enough to
-           say, what's still missing, so the card isn't a secret -->
-      <div
-        v-if="timeOfDay.parts.some((part) => part.sessions > 0)"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:470ms]"
-      >
-        <TimeOfDayCard :data="timeOfDay" />
-      </div>
-
-      <!-- Most-missed keys -->
-      <div
-        v-if="keyErrorStats.length"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:500ms]"
-      >
-        <div class="flex items-baseline justify-between gap-3 mb-3">
-          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            {{ t("history.view.mostMissed") }}
-          </div>
-          <div class="flex items-baseline gap-2">
-            <KeyboardLayoutPicker class="hidden sm:inline-flex" />
-            <div
-              class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
-            >
-              {{ t("history.view.lastSessions", keyStatsResults.length) }}
-            </div>
-          </div>
-        </div>
-        <KeyErrorHeatmap :stats="keyErrorStats" :trends="keyTrends" />
-        <ImprovementTips
-          :stats="keyErrorStats"
-          :average-accuracy="recentAccuracy"
-          :confusions="confusionStats"
-          :transpositions="transpositionStats"
-          :key-timing="keyTimingStats"
-          :bigram-timing="bigramTimingStats"
-          :problem-words="problemWords"
-        />
-      </div>
-
-      <!-- Finger by finger: which one misses, which one lags -->
-      <div
-        v-if="keyErrorStats.length"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:502ms]"
-      >
-        <FingerStatsCard :results="filteredResults" />
-      </div>
-
-      <!-- How the keys are going: better and worse, lately -->
-      <div
-        v-if="keyTrends"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:505ms]"
-      >
-        <KeyTrendCard :trends="keyTrends" />
-      </div>
-
-      <!-- How steady you are from day to day -->
-      <div
-        v-if="dayConsistency"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:507ms]"
-      >
-        <DayConsistencyCard :data="dayConsistency" />
-      </div>
-
-      <!-- Whole words you stumble on, with a drill on them -->
-      <div
-        v-if="problemWords.length"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:510ms]"
-      >
-        <ProblemWordsCard :words="problemWords" />
-      </div>
-
-      <!-- Where the time goes: slow keys and slow transitions. Separate
-           panel from the missed keys, because being slow on a key and
-           getting it wrong are different problems. -->
-      <div
-        v-if="keyTimingStats.length || bigramTimingStats.length"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:520ms]"
-      >
-        <div class="space-y-6">
-          <TimingBars
-            v-if="keyTimingStats.length"
-            :stats="keyTimingStats"
-            :title="t('history.view.slowestKeys')"
-          />
-          <TimingBars
-            v-if="bigramTimingStats.length"
-            :stats="bigramTimingStats"
-            :title="t('history.view.slowestPairs')"
-            :unit-label="t('history.view.comboUnit')"
-          />
-        </div>
-      </div>
-
-      <!-- Letters in spaced review -->
-      <div
-        v-if="historyStore.reviewKeys.length"
-        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:530ms]"
-      >
-        <div class="flex items-baseline justify-between gap-3 mb-3">
-          <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
-            {{ t("history.view.inReview") }}
-          </div>
-          <div
-            class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
-          >
-            {{ t("history.view.reviewSteps") }}
-          </div>
-        </div>
-        <ReviewKeysList :entries="historyStore.reviewKeys" />
-      </div>
-
-      <!-- Personal bests -->
-      <div
-        v-if="filteredPersonalBests.length"
-        class="mb-6 animate-rise [animation-delay:550ms]"
-      >
-        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          {{ t("history.view.personalBests") }}
-        </div>
-        <TransitionGroup
-          tag="div"
-          class="flex flex-wrap gap-2"
-          enter-active-class="transition-all duration-300 ease-out"
-          enter-from-class="opacity-0 scale-90"
-          enter-to-class="opacity-100 scale-100"
-          leave-active-class="transition-all duration-200 ease-in"
-          leave-from-class="opacity-100 scale-100"
-          leave-to-class="opacity-0 scale-90"
-          move-class="transition-transform duration-300 ease-out"
-        >
-          <div
-            v-for="best in filteredPersonalBests"
-            :key="sessionKind(best)"
-            class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3 transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-success"
-          >
-            <div class="font-display font-extrabold text-success text-lg">
-              {{ best.wpm }}
-            </div>
-            <div class="text-xs text-pencil-gray font-bold">
-              {{ formatModeLabel(best) }}
-            </div>
-          </div>
-        </TransitionGroup>
-      </div>
-
-      <!-- Perfect rounds: kept apart from the history, so the count survives
-           old sessions dropping off the end of it -->
-      <div
-        v-if="filteredPerfectRounds.length"
-        class="mb-6 animate-rise [animation-delay:575ms]"
-      >
-        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          {{ t("history.view.perfectRounds", filteredPerfectTotal) }}
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <div
-            v-for="entry in filteredPerfectRounds"
-            :key="sessionKind(entry)"
-            class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3 transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-success"
+      <!-- Seven chapters, and a guide that goes along: where you are, how
+           far down, and a way to any of them -->
+      <div class="lg:grid lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-8">
+        <HistoryGuide :chapters="chapters" />
+        <div class="min-w-0">
+          <HistoryChapter
+            :id="CHAPTER_IDS[0]"
+            :number="1"
+            :title="chapters[0].title"
+            :intro="chapters[0].intro"
           >
             <div
-              class="flex items-center gap-1 font-display font-extrabold text-success text-lg"
+              id="nivel"
+              class="bg-paper-white rounded-card p-4 sm:p-5 border-2 border-faded-gray mb-6 scroll-mt-4 animate-rise"
             >
-              <SparklesIcon class="w-4 h-4" />
-              {{ entry.count }}
-            </div>
-            <div class="text-xs text-pencil-gray font-bold">
-              {{ formatModeLabel(entry) }}
-            </div>
-          </div>
-        </div>
-      </div>
+              <XpProgress />
 
-      <!-- Achievements (#logros: the palette's "see your achievements") -->
-      <div id="logros" class="mb-6 scroll-mt-4 animate-rise [animation-delay:600ms]">
-        <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2">
-          {{
-            t(
-              "history.view.achievements",
-              historyStore.unlockedAchievementsCount,
-              historyStore.achievements.length
-            )
-          }}
-        </div>
+              <!-- This month, told as a story -->
+              <RouterLink
+                to="/resumen"
+                class="mt-3 flex items-center justify-between gap-3 rounded-xl bg-primary-tint/50 px-3 py-2 text-sm font-extrabold text-primary transition-colors duration-200 hover:bg-primary-tint"
+              >
+                <span class="flex items-center gap-2">
+                  <SparklesIcon class="h-4 w-4" />
+                  {{ t("history.view.monthSummary", currentMonthName) }}
+                </span>
+                <ArrowRightIcon class="h-4 w-4" />
+              </RouterLink>
 
-        <!-- Collapsed: clipped to ~2 rows with a fade at the bottom (same
-             mask-image trick as the typing paragraph box) so a sliver of
-             the next row peeks through as a hint there's more. All cards
-             stay in the DOM either way — this only changes how much is
-             visible, so expanding never re-fetches/re-renders anything. -->
-        <div
-          class="relative overflow-hidden transition-[max-height] duration-700 ease-smooth"
-          :class="
-            showAllAchievements
-              ? 'max-h-[3000px]'
-              : 'max-h-[560px] [mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)]'
-          "
-        >
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <div
-              v-for="(achievement, index) in historyStore.achievements"
-              :key="achievement.id"
-              class="group relative rounded-card p-3 border-2 flex items-center gap-2.5 transition-[opacity,background-color,border-color,color,scale] duration-300 ease-spring hover:scale-[1.03] animate-pop-in"
-              :style="{
-                ...achievementStyle(achievement),
-                ...staggerStyle(index, { step: 25, base: 650, max: 1200 }),
-              }"
-              :class="
-                achievement.unlocked
-                  ? ''
-                  : 'bg-faded-gray/10 border-faded-gray opacity-40'
-              "
-            >
-              <component
-                :is="achievementIcons[achievement.icon]"
-                class="w-5 h-5 flex-shrink-0"
-                :class="achievement.unlocked ? '' : 'text-pencil-gray'"
-              />
-              <div class="min-w-0">
-                <div
-                  class="text-xs font-bold truncate"
-                  :class="achievement.unlocked ? '' : 'text-pencil-gray'"
+              <!-- Two panels under the level, one open at a time -->
+              <div class="mt-3 flex justify-center gap-4">
+                <button
+                  type="button"
+                  class="text-xs font-bold text-primary hover:text-primary-dark"
+                  :aria-expanded="levelPanel === 'levels'"
+                  @click="toggleLevelPanel('levels')"
                 >
-                  {{ achievement.title }}
-                </div>
-                <div class="text-[10px] text-pencil-gray truncate">
-                  {{ achievement.description }}
-                </div>
+                  {{
+                    levelPanel === "levels"
+                      ? t("history.view.hideLevels")
+                      : t("history.view.showLevels")
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="text-xs font-bold text-primary hover:text-primary-dark"
+                  :aria-expanded="levelPanel === 'customize'"
+                  @click="toggleLevelPanel('customize')"
+                >
+                  {{
+                    levelPanel === "customize"
+                      ? t("history.view.hide")
+                      : t("history.view.customize")
+                  }}
+                </button>
               </div>
-
-              <!-- Hover tooltip: the full "how to earn it" text, since the
-                   line above truncates on smaller cards. -->
-              <div
-                class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 translate-y-1 rounded-xl bg-night-ink px-3 py-2 text-center text-xs font-bold text-white opacity-0 transition-[opacity,translate] duration-200 ease-smooth group-hover:translate-y-0 group-hover:opacity-100"
+              <Transition
+                enter-active-class="transition-[opacity,translate] duration-300 ease-smooth"
+                enter-from-class="opacity-0 -translate-y-2"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-opacity duration-150 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
               >
-                {{ achievement.description }}
-                <div
-                  class="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-night-ink"
-                ></div>
-              </div>
+                <!-- pt makes room for the "Estás acá" tag sticking out the top -->
+                <div v-if="levelPanel === 'levels'" class="pt-5">
+                  <LevelRoadmap />
+                </div>
+                <div v-else-if="levelPanel === 'customize'" class="pt-4">
+                  <CustomizePanel />
+                </div>
+              </Transition>
             </div>
-          </div>
-        </div>
+          </HistoryChapter>
 
-        <div
-          v-if="historyStore.achievements.length > ACHIEVEMENTS_COLLAPSED_COUNT"
-          class="text-center mt-2"
-        >
-          <button
-            type="button"
-            class="text-xs font-bold text-primary hover:text-primary-dark"
-            @click="showAllAchievements = !showAllAchievements"
+          <HistoryChapter
+            :id="CHAPTER_IDS[1]"
+            :number="2"
+            :title="chapters[1].title"
+            :intro="chapters[1].intro"
           >
-            {{
-              showAllAchievements
-                ? t("history.view.showLess")
-                : t(
-                    "history.view.showMore",
-                    historyStore.achievements.length - ACHIEVEMENTS_COLLAPSED_COUNT
+            <!-- Today's challenges: for the whole day, whatever the filter says -->
+            <div
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:220ms]"
+            >
+              <div class="flex items-baseline justify-between gap-3 mb-3">
+                <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+                  {{ t("history.view.todaysChallenges") }}
+                </div>
+                <div
+                  class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+                >
+                  {{
+                    t(
+                      "history.view.challengeCounts",
+                      historyStore.challengeStats.completed,
+                      historyStore.challengeStats.fullDays
+                    )
+                  }}
+                </div>
+              </div>
+              <ReviewToday v-if="historyStore.reviewToday.keys.length" class="mb-2" />
+              <DailyChallengesList :challenges="historyStore.dailyChallenges" />
+              <WeeklyChallengeCard class="mt-2" />
+
+              <!-- Past weeks of the shared text, for comparing with a friend's -->
+              <div v-if="pastWeeklyChallenges.length" class="mt-4">
+                <div
+                  class="mb-2 text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+                >
+                  {{ t("history.view.pastWeeks") }}
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <div
+                    v-for="week in pastWeeklyChallenges"
+                    :key="`${week.key}:${week.language}`"
+                    class="flex items-center gap-2 rounded-xl border-2 border-faded-gray px-3 py-1.5"
+                  >
+                    <span class="font-display font-extrabold text-charcoal">{{
+                      week.best.wpm
+                    }}</span>
+                    <span class="text-xs font-bold text-pencil-gray">{{
+                      week.language === "es"
+                        ? weeklyLabel(week.key)
+                        : t(
+                            "history.inLanguage",
+                            weeklyLabel(week.key),
+                            t(`history.languages.${week.language}`)
+                          )
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Weekly goal, with the picker for it -->
+            <div
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:240ms]"
+            >
+              <div class="flex items-baseline justify-between gap-3 mb-3">
+                <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+                  {{ t("history.view.weeklyGoal") }}
+                </div>
+                <div
+                  v-if="historyStore.weeksCompleted"
+                  class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+                >
+                  {{ t("history.view.weeksDone", historyStore.weeksCompleted) }}
+                </div>
+              </div>
+              <WeeklyGoal editable />
+            </div>
+
+            <!-- Letters in spaced review -->
+            <div
+              v-if="historyStore.reviewKeys.length"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:530ms]"
+            >
+              <div class="flex items-baseline justify-between gap-3 mb-3">
+                <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+                  {{ t("history.view.inReview") }}
+                </div>
+                <div
+                  class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+                >
+                  {{ t("history.view.reviewSteps") }}
+                </div>
+              </div>
+              <ReviewKeysList :entries="historyStore.reviewKeys" />
+            </div>
+          </HistoryChapter>
+
+          <HistoryChapter
+            :id="CHAPTER_IDS[2]"
+            :number="3"
+            :title="chapters[2].title"
+            :intro="chapters[2].intro"
+          >
+            <!-- Which mode the numbers below are about -->
+            <div
+              v-if="availableModes.length > 1"
+              class="flex flex-wrap items-center gap-1.5 mb-4 animate-rise"
+            >
+              <IconButton
+                :variant="selectedMode === null ? 'primary' : 'secondary'"
+                size="xs"
+                :text="t('history.view.allModes')"
+                @click="selectedMode = null"
+              />
+              <IconButton
+                v-for="mode in availableModes"
+                :key="mode"
+                :value="mode"
+                :variant="selectedMode === mode ? 'primary' : 'secondary'"
+                size="xs"
+                :text="modeName(mode)"
+                @click="selectedMode = mode"
+              />
+            </div>
+
+            <!-- And which language, once there are runs in more than one: an
+               English text and a Spanish one aren't the same exercise either -->
+            <div
+              v-if="availableLanguages.length > 1"
+              role="group"
+              :aria-label="t('history.view.languageFilter')"
+              class="flex flex-wrap items-center gap-1.5 -mt-2 mb-4 animate-rise"
+            >
+              <IconButton
+                :variant="selectedLanguage === null ? 'primary' : 'secondary'"
+                size="xs"
+                :text="t('history.view.allLanguages')"
+                @click="selectedLanguage = null"
+              />
+              <IconButton
+                v-for="language in availableLanguages"
+                :key="language"
+                :value="language"
+                :variant="selectedLanguage === language ? 'primary' : 'secondary'"
+                size="xs"
+                :text="languageName(language)"
+                @click="selectedLanguage = language"
+              />
+            </div>
+
+            <!-- Summary cards -->
+            <div
+              class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6 [&>*]:animate-rise [&>*:nth-child(2)]:[animation-delay:50ms] [&>*:nth-child(3)]:[animation-delay:100ms] [&>*:nth-child(4)]:[animation-delay:150ms] [&>*:nth-child(5)]:[animation-delay:200ms]"
+            >
+              <div
+                class="bg-gradient-to-br from-primary-tint to-primary/10 rounded-card p-4 sm:p-6 border-2 border-primary text-center shadow-sm shadow-primary/20"
+              >
+                <div
+                  class="flex items-center justify-center gap-1 text-2xl sm:text-3xl font-display font-extrabold text-primary-dark mb-1"
+                >
+                  <FireIcon
+                    v-if="historyStore.dailyStreak > 0"
+                    class="w-5 h-5 sm:w-6 sm:h-6 animate-pop-in [animation-delay:500ms]"
+                  />
+                  <AnimatedNumber :value="historyStore.dailyStreak" />
+                </div>
+                <div
+                  class="text-xs sm:text-sm text-primary-dark font-bold uppercase tracking-wide"
+                >
+                  {{ t("history.view.streak") }}
+                </div>
+              </div>
+              <div
+                class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
+              >
+                <div
+                  class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
+                >
+                  <AnimatedNumber :value="summary.sessions" />
+                </div>
+                <div
+                  class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+                >
+                  {{ t("history.view.sessions") }}
+                </div>
+              </div>
+              <div
+                class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
+              >
+                <div
+                  class="text-2xl sm:text-3xl font-display font-extrabold text-success mb-1"
+                >
+                  <AnimatedNumber v-if="hasCurrent" :value="summary.bestWpm" />
+                  <template v-else>—</template>
+                </div>
+                <div
+                  class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+                >
+                  {{ t("history.view.bestWpm") }}
+                </div>
+              </div>
+              <div
+                class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
+              >
+                <div
+                  class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
+                >
+                  <AnimatedNumber v-if="hasCurrent" :value="summary.averageWpm" />
+                  <template v-else>—</template>
+                </div>
+                <div
+                  class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+                >
+                  {{ t("history.view.averageWpm") }}
+                </div>
+              </div>
+              <div
+                class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray text-center"
+              >
+                <div
+                  class="text-2xl sm:text-3xl font-display font-extrabold text-charcoal mb-1"
+                >
+                  <template v-if="hasCurrent">
+                    <AnimatedNumber :value="summary.averageAccuracy" />%
+                  </template>
+                  <template v-else>—</template>
+                </div>
+                <div
+                  class="text-xs sm:text-sm text-pencil-gray font-bold uppercase tracking-wide"
+                >
+                  {{ t("history.view.averageAccuracy") }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Totals / per-keystroke stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+              <div
+                v-for="(stat, index) in extraStats"
+                :key="stat.label"
+                class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray text-center animate-rise"
+                :style="staggerStyle(index, { step: 50, base: 250 })"
+              >
+                <div
+                  class="text-xl sm:text-2xl font-display font-extrabold text-charcoal mb-1"
+                >
+                  <AnimatedNumber
+                    v-if="typeof stat.value === 'number'"
+                    :value="stat.value"
+                    :format="formatThousands"
+                  />
+                  <template v-else>{{ stat.value }}</template>
+                </div>
+                <div
+                  class="text-[10px] sm:text-xs text-pencil-gray font-bold uppercase tracking-wide"
+                >
+                  {{ stat.label }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Trend -->
+            <div
+              v-if="trendPoints.length >= 2"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:450ms]"
+            >
+              <WpmTrendChart :points="trendPoints" />
+            </div>
+
+            <!-- How steady you are from day to day -->
+            <div
+              v-if="dayConsistency"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:507ms]"
+            >
+              <DayConsistencyCard :data="dayConsistency" />
+            </div>
+          </HistoryChapter>
+
+          <HistoryChapter
+            :id="CHAPTER_IDS[3]"
+            :number="4"
+            :title="chapters[3].title"
+            :intro="chapters[3].intro"
+          >
+            <RecordsBoard
+              class="mb-6"
+              :bests="historyStore.personalBests"
+              :language="recordsLanguage"
+            />
+
+            <!-- Perfect rounds: kept apart from the history, so the count survives
+               old sessions dropping off the end of it -->
+            <div
+              v-if="filteredPerfectRounds.length"
+              class="mb-6 animate-rise [animation-delay:575ms]"
+            >
+              <div
+                class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2"
+              >
+                {{ t("history.view.perfectRounds", filteredPerfectTotal) }}
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <div
+                  v-for="entry in filteredPerfectRounds"
+                  :key="sessionKind(entry)"
+                  class="bg-paper-white rounded-card px-4 py-3 border-2 border-faded-gray flex items-center gap-3 transition-[scale,border-color] duration-300 ease-spring hover:scale-105 hover:border-success"
+                >
+                  <div
+                    class="flex items-center gap-1 font-display font-extrabold text-success text-lg"
+                  >
+                    <SparklesIcon class="w-4 h-4" />
+                    {{ entry.count }}
+                  </div>
+                  <div class="text-xs text-pencil-gray font-bold">
+                    {{ formatModeLabel(entry) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </HistoryChapter>
+
+          <HistoryChapter
+            :id="CHAPTER_IDS[4]"
+            :number="5"
+            :title="chapters[4].title"
+            :intro="chapters[4].intro"
+          >
+            <!-- Most-missed keys -->
+            <div
+              v-if="keyErrorStats.length"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:500ms]"
+            >
+              <div class="flex items-baseline justify-between gap-3 mb-3">
+                <div class="text-xs font-bold uppercase tracking-wide text-pencil-gray">
+                  {{ t("history.view.mostMissed") }}
+                </div>
+                <div class="flex items-baseline gap-2">
+                  <KeyboardLayoutPicker class="hidden sm:inline-flex" />
+                  <div
+                    class="text-[0.65rem] font-bold uppercase tracking-wide text-pencil-gray/70"
+                  >
+                    {{ t("history.view.lastSessions", keyStatsResults.length) }}
+                  </div>
+                </div>
+              </div>
+              <KeyErrorHeatmap :stats="keyErrorStats" :trends="keyTrends" />
+              <ImprovementTips
+                :stats="keyErrorStats"
+                :average-accuracy="recentAccuracy"
+                :confusions="confusionStats"
+                :transpositions="transpositionStats"
+                :key-timing="keyTimingStats"
+                :bigram-timing="bigramTimingStats"
+                :problem-words="problemWords"
+              />
+            </div>
+
+            <!-- How the keys are going: better and worse, lately -->
+            <div
+              v-if="keyTrends"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:505ms]"
+            >
+              <KeyTrendCard :trends="keyTrends" />
+            </div>
+
+            <!-- Where the time goes: slow keys and slow transitions. Separate
+               panel from the missed keys, because being slow on a key and
+               getting it wrong are different problems. -->
+            <div
+              v-if="keyTimingStats.length || bigramTimingStats.length"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:520ms]"
+            >
+              <div class="space-y-6">
+                <TimingBars
+                  v-if="keyTimingStats.length"
+                  :stats="keyTimingStats"
+                  :title="t('history.view.slowestKeys')"
+                />
+                <TimingBars
+                  v-if="bigramTimingStats.length"
+                  :stats="bigramTimingStats"
+                  :title="t('history.view.slowestPairs')"
+                  :unit-label="t('history.view.comboUnit')"
+                />
+              </div>
+            </div>
+
+            <!-- Whole words you stumble on, with a drill on them -->
+            <div
+              v-if="problemWords.length"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:510ms]"
+            >
+              <ProblemWordsCard :words="problemWords" />
+            </div>
+          </HistoryChapter>
+
+          <HistoryChapter
+            :id="CHAPTER_IDS[5]"
+            :number="6"
+            :title="chapters[5].title"
+            :intro="chapters[5].intro"
+          >
+            <!-- Finger by finger: which one misses, which one lags -->
+            <div
+              v-if="keyErrorStats.length"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:502ms]"
+            >
+              <FingerStatsCard :results="filteredResults" />
+            </div>
+          </HistoryChapter>
+
+          <HistoryChapter
+            :id="CHAPTER_IDS[6]"
+            :number="7"
+            :title="chapters[6].title"
+            :intro="chapters[6].intro"
+          >
+            <!-- Consistency, on the whole history: what you practised is what you
+               practised, whatever mode it was in -->
+            <div
+              id="racha"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 scroll-mt-4 animate-rise [animation-delay:400ms]"
+            >
+              <ActivityCalendar :activity="dailyActivity" />
+            </div>
+
+            <!-- When in the day you type best -- and until there's enough to
+               say, what's still missing, so the card isn't a secret -->
+            <div
+              v-if="timeOfDay.parts.some((part) => part.sessions > 0)"
+              class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:470ms]"
+            >
+              <TimeOfDayCard :data="timeOfDay" />
+            </div>
+          </HistoryChapter>
+
+          <HistoryChapter
+            :id="CHAPTER_IDS[7]"
+            :number="8"
+            :title="chapters[7].title"
+            :intro="chapters[7].intro"
+          >
+            <!-- Achievements (#logros: the palette's "see your achievements") -->
+            <div
+              id="logros"
+              class="mb-6 scroll-mt-4 animate-rise [animation-delay:600ms]"
+            >
+              <div
+                class="text-xs font-bold uppercase tracking-wide text-pencil-gray mb-2"
+              >
+                {{
+                  t(
+                    "history.view.achievements",
+                    historyStore.unlockedAchievementsCount,
+                    historyStore.achievements.length
                   )
-            }}
-          </button>
-        </div>
-      </div>
+                }}
+              </div>
 
-      <!-- Sessions list. Capped and scrolled on its own so a long history
-           doesn't bury the buttons underneath it; the extra right padding
-           keeps the cards clear of the scrollbar, and the negative margin
-           puts the block back where it would have sat. Focusable, so it
-           can be scrolled from the keyboard too. -->
-      <TransitionGroup
-        tag="div"
-        role="region"
-        :aria-label="t('history.view.yourSessions')"
-        tabindex="0"
-        class="space-y-2 mb-6 max-h-[32rem] overflow-y-auto overscroll-contain pr-2 -mr-2 rounded-card"
-        enter-active-class="transition-all duration-500 ease-smooth"
-        enter-from-class="opacity-0 -translate-y-2"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition-all duration-300 ease-in"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 translate-x-6"
-        move-class="transition-transform duration-500 ease-smooth"
-      >
-        <div
-          v-for="(result, index) in filteredResults"
-          :key="result.id"
-          class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray flex items-center justify-between gap-3 animate-rise transition-[border-color,translate] duration-300 ease-smooth hover:border-primary/50 hover:-translate-y-0.5"
-          :style="staggerStyle(index, { step: 40, base: 700, max: 1100 })"
-        >
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 font-bold text-charcoal min-w-0">
-              <span class="truncate">{{ formatModeLabel(result) }}</span>
-              <span
-                v-if="result.blind"
-                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
-                :title="t('history.view.blindHint')"
-                >{{ t("history.view.blindBadge") }}</span
+              <!-- Collapsed: clipped to ~2 rows with a fade at the bottom (same
+                 mask-image trick as the typing paragraph box) so a sliver of
+                 the next row peeks through as a hint there's more. All cards
+                 stay in the DOM either way — this only changes how much is
+                 visible, so expanding never re-fetches/re-renders anything. -->
+              <div
+                class="relative overflow-hidden transition-[max-height] duration-700 ease-smooth"
+                :class="
+                  showAllAchievements
+                    ? 'max-h-[3000px]'
+                    : 'max-h-[560px] [mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)]'
+                "
               >
-              <span
-                v-if="strictModeById(result.strict)"
-                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
-                :title="strictModeById(result.strict).detail"
-                >{{ strictModeById(result.strict).label.toLowerCase() }}</span
-              >
-              <span
-                v-if="result.minAccuracy"
-                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
-                :title="t('history.view.minAccuracyHint', result.minAccuracy)"
-                >≥{{ result.minAccuracy }}%</span
-              >
-              <span
-                v-if="!isCurrentMetrics(result)"
-                class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
-                :title="t('history.view.oldMetricsHint')"
-                >v1</span
-              >
-            </div>
-            <div class="text-xs text-pencil-gray">{{ formatDate(result.date) }}</div>
-          </div>
-          <div class="flex items-center gap-4 flex-shrink-0 text-right">
-            <div>
-              <div class="font-display font-extrabold text-success">{{ result.wpm }}</div>
-              <div class="text-[10px] text-pencil-gray uppercase font-bold">
-                {{ t("history.view.wpm") }}
-              </div>
-            </div>
-            <div>
-              <div class="font-display font-extrabold text-charcoal">
-                {{ result.accuracy }}%
-              </div>
-              <div class="text-[10px] text-pencil-gray uppercase font-bold">
-                {{ t("history.view.accuracy") }}
-              </div>
-            </div>
-            <div>
-              <div class="font-display font-extrabold text-charcoal">
-                {{ result.errors }}
-              </div>
-              <div class="text-[10px] text-pencil-gray uppercase font-bold">
-                {{ t("history.view.errors") }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </TransitionGroup>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div
+                    v-for="(achievement, index) in historyStore.achievements"
+                    :key="achievement.id"
+                    class="group relative rounded-card p-3 border-2 flex items-center gap-2.5 transition-[opacity,background-color,border-color,color,scale] duration-300 ease-spring hover:scale-[1.03] animate-pop-in"
+                    :style="{
+                      ...achievementStyle(achievement),
+                      ...staggerStyle(index, { step: 25, base: 650, max: 1200 }),
+                    }"
+                    :class="
+                      achievement.unlocked
+                        ? ''
+                        : 'bg-faded-gray/10 border-faded-gray opacity-40'
+                    "
+                  >
+                    <component
+                      :is="achievementIcons[achievement.icon]"
+                      class="w-5 h-5 flex-shrink-0"
+                      :class="achievement.unlocked ? '' : 'text-pencil-gray'"
+                    />
+                    <div class="min-w-0">
+                      <div
+                        class="text-xs font-bold truncate"
+                        :class="achievement.unlocked ? '' : 'text-pencil-gray'"
+                      >
+                        {{ achievement.title }}
+                      </div>
+                      <div class="text-[10px] text-pencil-gray truncate">
+                        {{ achievement.description }}
+                      </div>
+                    </div>
 
-      <div class="flex flex-wrap items-center justify-center gap-2">
-        <ButtonCustom
-          :text="t('history.view.export')"
-          variant="secondary"
-          size="sm"
-          @click="handleExport"
-        />
-        <ButtonCustom
-          :text="t('history.view.import')"
-          variant="secondary"
-          size="sm"
-          @click="fileInput?.click()"
-        />
-        <ButtonCustom
-          :text="
-            confirmingClear ? t('history.view.confirmClear') : t('history.view.clear')
-          "
-          variant="secondary"
-          size="sm"
-          @click="handleClearClick"
-        />
-        <input
-          ref="fileInput"
-          type="file"
-          accept="application/json,.json"
-          class="hidden"
-          @change="handleImport"
-        />
+                    <!-- Hover tooltip: the full "how to earn it" text, since the
+                       line above truncates on smaller cards. -->
+                    <div
+                      class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 translate-y-1 rounded-xl bg-night-ink px-3 py-2 text-center text-xs font-bold text-white opacity-0 transition-[opacity,translate] duration-200 ease-smooth group-hover:translate-y-0 group-hover:opacity-100"
+                    >
+                      {{ achievement.description }}
+                      <div
+                        class="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-night-ink"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-if="historyStore.achievements.length > ACHIEVEMENTS_COLLAPSED_COUNT"
+                class="text-center mt-2"
+              >
+                <button
+                  type="button"
+                  class="text-xs font-bold text-primary hover:text-primary-dark"
+                  @click="showAllAchievements = !showAllAchievements"
+                >
+                  {{
+                    showAllAchievements
+                      ? t("history.view.showLess")
+                      : t(
+                          "history.view.showMore",
+                          historyStore.achievements.length - ACHIEVEMENTS_COLLAPSED_COUNT
+                        )
+                  }}
+                </button>
+              </div>
+            </div>
+          </HistoryChapter>
+
+          <HistoryChapter
+            :id="CHAPTER_IDS[8]"
+            :number="9"
+            :title="chapters[8].title"
+            :intro="chapters[8].intro"
+          >
+            <!-- Sessions list. Capped and scrolled on its own so a long history
+               doesn't bury the buttons underneath it; the extra right padding
+               keeps the cards clear of the scrollbar, and the negative margin
+               puts the block back where it would have sat. Focusable, so it
+               can be scrolled from the keyboard too. -->
+            <TransitionGroup
+              tag="div"
+              role="region"
+              :aria-label="t('history.view.yourSessions')"
+              tabindex="0"
+              class="space-y-2 mb-6 max-h-[32rem] overflow-y-auto overscroll-contain pr-2 -mr-2 rounded-card"
+              enter-active-class="transition-all duration-500 ease-smooth"
+              enter-from-class="opacity-0 -translate-y-2"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition-all duration-300 ease-in"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-x-6"
+              move-class="transition-transform duration-500 ease-smooth"
+            >
+              <div
+                v-for="(result, index) in filteredResults"
+                :key="result.id"
+                class="bg-paper-white rounded-card p-3 sm:p-4 border-2 border-faded-gray flex items-center justify-between gap-3 animate-rise transition-[border-color,translate] duration-300 ease-smooth hover:border-primary/50 hover:-translate-y-0.5"
+                :style="staggerStyle(index, { step: 40, base: 700, max: 1100 })"
+              >
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 font-bold text-charcoal min-w-0">
+                    <span class="truncate">{{ formatModeLabel(result) }}</span>
+                    <span
+                      v-if="result.blind"
+                      class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                      :title="t('history.view.blindHint')"
+                      >{{ t("history.view.blindBadge") }}</span
+                    >
+                    <span
+                      v-if="strictModeById(result.strict)"
+                      class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                      :title="strictModeById(result.strict).detail"
+                      >{{ strictModeById(result.strict).label.toLowerCase() }}</span
+                    >
+                    <span
+                      v-if="result.minAccuracy"
+                      class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                      :title="t('history.view.minAccuracyHint', result.minAccuracy)"
+                      >≥{{ result.minAccuracy }}%</span
+                    >
+                    <span
+                      v-if="!isCurrentMetrics(result)"
+                      class="flex-shrink-0 rounded-md border border-faded-gray px-1 text-[10px] text-pencil-gray"
+                      :title="t('history.view.oldMetricsHint')"
+                      >v1</span
+                    >
+                  </div>
+                  <div class="text-xs text-pencil-gray">
+                    {{ formatDate(result.date) }}
+                  </div>
+                </div>
+                <div class="flex items-center gap-4 flex-shrink-0 text-right">
+                  <div>
+                    <div class="font-display font-extrabold text-success">
+                      {{ result.wpm }}
+                    </div>
+                    <div class="text-[10px] text-pencil-gray uppercase font-bold">
+                      {{ t("history.view.wpm") }}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="font-display font-extrabold text-charcoal">
+                      {{ result.accuracy }}%
+                    </div>
+                    <div class="text-[10px] text-pencil-gray uppercase font-bold">
+                      {{ t("history.view.accuracy") }}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="font-display font-extrabold text-charcoal">
+                      {{ result.errors }}
+                    </div>
+                    <div class="text-[10px] text-pencil-gray uppercase font-bold">
+                      {{ t("history.view.errors") }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TransitionGroup>
+
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <ButtonCustom
+                :text="t('history.view.export')"
+                variant="secondary"
+                size="sm"
+                @click="handleExport"
+              />
+              <ButtonCustom
+                :text="t('history.view.import')"
+                variant="secondary"
+                size="sm"
+                @click="fileInput?.click()"
+              />
+              <ButtonCustom
+                :text="
+                  confirmingClear
+                    ? t('history.view.confirmClear')
+                    : t('history.view.clear')
+                "
+                variant="secondary"
+                size="sm"
+                @click="handleClearClick"
+              />
+              <input
+                ref="fileInput"
+                type="file"
+                accept="application/json,.json"
+                class="hidden"
+                @change="handleImport"
+              />
+            </div>
+          </HistoryChapter>
+        </div>
       </div>
 
       <p class="mt-8 text-center text-xs font-bold text-pencil-gray">
@@ -745,6 +804,10 @@ import WpmTrendChart from "@/features/history/components/WpmTrendChart.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
 import FingerStatsCard from "@/features/history/components/FingerStatsCard.vue";
+import HistoryChapter from "@/features/history/components/HistoryChapter.vue";
+import HistoryGuide from "@/features/history/components/HistoryGuide.vue";
+import RecordsBoard from "@/features/history/components/RecordsBoard.vue";
+import { scrollToElement } from "@/shared/utils/scrollTo";
 import DayConsistencyCard from "@/features/history/components/DayConsistencyCard.vue";
 import { computeDayConsistency } from "@/features/history/utils/dayConsistency";
 import { computeKeyTrends } from "@/features/history/utils/keyTrends";
@@ -800,6 +863,31 @@ import {
 } from "@/features/history/achievementPresentation";
 
 const historyStore = useHistoryStore();
+
+// The page in nine chapters, each with a line on what it shows (see
+// HistoryGuide). Ids apart from the old anchors (#nivel, #racha, #logros),
+// which still point at their own cards.
+const CHAPTER_IDS = [
+  "nivel",
+  "hoy",
+  "velocidad",
+  "records",
+  "teclas",
+  "dedos",
+  "habitos",
+  "logros",
+  "partidas",
+].map((id) => `capitulo-${id}`);
+const chapters = computed(() =>
+  CHAPTER_IDS.map((id) => {
+    const key = id.replace("capitulo-", "");
+    return {
+      id,
+      title: t(`history.chapters.${key}.title`),
+      intro: t(`history.chapters.${key}.intro`),
+    };
+  })
+);
 const configStore = useConfigStore();
 const router = useRouter();
 
@@ -820,9 +908,7 @@ const route = useRoute();
 const scrollToHash = () => {
   if (!route.hash) return;
   requestAnimationFrame(() =>
-    document
-      .getElementById(route.hash.slice(1))
-      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+    scrollToElement(document.getElementById(route.hash.slice(1)), { offset: 72 })
   );
 };
 watch(() => route.hash, scrollToHash);
@@ -874,8 +960,10 @@ const inFilters = (entry) =>
 
 const filteredResults = computed(() => historyStore.results.filter(inFilters));
 
-const filteredPersonalBests = computed(() =>
-  historyStore.personalBests.filter(inFilters)
+// The records board goes by category, so only the language filter applies:
+// the one picked, or else the language the texts come in now
+const recordsLanguage = computed(
+  () => selectedLanguage.value ?? configStore.textLanguage
 );
 
 // Sessions measured with the current formula, within the current filter --

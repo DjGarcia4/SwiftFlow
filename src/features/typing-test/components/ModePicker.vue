@@ -3,9 +3,12 @@
     The mode, on desktop: one button saying which it is, opening every mode
     grouped by what it's for, each with a line on what it does. A dozen
     modes side by side made the bar a wall; this keeps it to what's on.
+    `inline`, for the phone's settings sheet: the same groups, laid out in
+    place.
   -->
-  <div ref="root" class="relative">
+  <div ref="root" :class="inline ? '' : 'relative'">
     <button
+      v-if="!inline"
       ref="button"
       type="button"
       aria-haspopup="true"
@@ -34,24 +37,30 @@
       leave-to-class="opacity-0"
     >
       <div
-        v-if="open"
+        v-if="inline || open"
         ref="menu"
         role="radiogroup"
         :aria-label="t('typing.toolbar.mode')"
-        class="absolute left-0 top-full z-40 mt-3 w-[34rem] max-w-[90vw] rounded-card border-2 border-faded-gray bg-paper-white p-3 shadow-xl"
+        :class="
+          inline
+            ? ''
+            : 'absolute left-0 top-full z-40 mt-3 w-[34rem] max-w-[90vw] rounded-card border-2 border-faded-gray bg-paper-white p-3 shadow-xl'
+        "
         @keydown="onMenuKeydown"
       >
         <div
           v-for="group in groups"
           :key="group.id"
-          class="grid grid-cols-[5.5rem_1fr] items-start gap-2 py-1.5 [&:not(:first-child)]:border-t-2 [&:not(:first-child)]:border-faded-gray/50"
+          class="grid items-start gap-2 py-1.5 [&:not(:first-child)]:border-t-2 [&:not(:first-child)]:border-faded-gray/50"
+          :class="inline ? 'grid-cols-1' : 'grid-cols-[5.5rem_1fr]'"
         >
           <div
-            class="pt-2.5 text-[10px] font-extrabold uppercase tracking-wide text-pencil-gray"
+            class="text-[10px] font-extrabold uppercase tracking-wide text-pencil-gray"
+            :class="inline ? 'pt-1' : 'pt-2.5'"
           >
             {{ t(`typing.modeMenu.groups.${group.id}`) }}
           </div>
-          <div class="grid grid-cols-3 gap-1">
+          <div class="grid gap-1" :class="inline ? 'grid-cols-2' : 'grid-cols-3'">
             <button
               v-for="mode in group.modes"
               :key="mode.id"
@@ -110,6 +119,8 @@ import {
 const props = defineProps({
   // [{ value, label, icon }]: the modes on offer right now, from the bar
   options: { type: Array, required: true },
+  // Laid out in place, no button: the phone's settings sheet
+  inline: { type: Boolean, default: false },
 });
 
 const configStore = useConfigStore();
@@ -194,7 +205,7 @@ const toggle = async () => {
 };
 
 const pick = (mode) => {
-  open.value = false;
+  if (!props.inline) open.value = false;
   if (configStore.type !== mode) configStore.handleType(mode);
 };
 
@@ -216,12 +227,14 @@ const onMenuKeydown = (event) => {
 
 // "M" (Modo) opens it, on the mode that's on
 const hotkeys = useHotkeysStore();
-useHotkey("modeMenu", {
-  key: "m",
-  label: "typing.modeMenu.hotkey",
-  enabled: () => configStore.settingsShown,
-  run: () => toggle(),
-});
+if (!props.inline) {
+  useHotkey("modeMenu", {
+    key: "m",
+    label: "typing.modeMenu.hotkey",
+    enabled: () => configStore.settingsShown,
+    run: () => toggle(),
+  });
+}
 
 useMenuKeys(
   () => open.value,

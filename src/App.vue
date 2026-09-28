@@ -2,8 +2,10 @@
   <div class="h-screen flex flex-col bg-paper-white">
     <SplashScreen v-if="showSplash" @done="showSplash = false" />
     <Nav />
-    <!-- The page scrolls in here, not the window -->
-    <div ref="scroller" class="flex-1 overflow-y-auto overflow-x-hidden">
+    <!-- The page scrolls in here, not the window. Relative, so whatever is
+         placed absolutely inside it (screen-reader-only text most of all)
+         stays in it too, instead of stretching the window past the screen -->
+    <div ref="scroller" class="relative flex-1 overflow-y-auto overflow-x-hidden">
       <div class="max-w-[1200px] mx-auto w-full">
         <RouterView v-slot="{ Component }">
           <!--

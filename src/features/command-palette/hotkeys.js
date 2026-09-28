@@ -25,10 +25,21 @@ export const altLabel = () => (isApple() ? "⌥" : "Alt ");
 export const RESULTS_GRACE_MS = 2000;
 
 export const useHotkeysStore = defineStore("hotkeys", () => {
-  // id -> hotkey. Replaced whole on every change, so the chips update; not
-  // deep, so each hotkey stays the very object registered (unregistering
-  // checks it's still its own)
+  // id -> the hotkey answering to it. Replaced whole on every change, so
+  // the chips update; not deep, so each hotkey stays the very object
+  // registered.
   const registry = shallowRef(new Map());
+  // Every copy registered under an id, oldest first: the same button can be
+  // on screen twice (the bar, and its copy in the phone's settings sheet),
+  // and the newest answers. One going away hands the id back to the other.
+  const stacks = new Map();
+  const publish = (id) => {
+    const next = new Map(registry.value);
+    const stack = stacks.get(id);
+    if (stack?.length) next.set(id, stack[stack.length - 1]);
+    else next.delete(id);
+    registry.value = next;
+  };
   // Letters are typing right now: a key needs Alt to be a hotkey
   const captured = ref(false);
   // Just after a run: keys do nothing yet (RESULTS_GRACE_MS)
@@ -43,17 +54,18 @@ export const useHotkeysStore = defineStore("hotkeys", () => {
   };
 
   const register = (id, hotkey) => {
-    const next = new Map(registry.value);
-    next.set(id, hotkey);
-    registry.value = next;
+    stacks.set(id, [...(stacks.get(id) ?? []), hotkey]);
+    publish(id);
   };
 
   const unregister = (id, hotkey) => {
-    // Only its own: a newer copy of the same button may have taken the id
-    if (registry.value.get(id) !== hotkey) return;
-    const next = new Map(registry.value);
-    next.delete(id);
-    registry.value = next;
+    const stack = stacks.get(id) ?? [];
+    if (!stack.includes(hotkey)) return;
+    stacks.set(
+      id,
+      stack.filter((entry) => entry !== hotkey)
+    );
+    publish(id);
   };
 
   const isEnabled = (hotkey) => !hotkey.enabled || hotkey.enabled();

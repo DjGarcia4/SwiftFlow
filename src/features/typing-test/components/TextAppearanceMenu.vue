@@ -52,9 +52,9 @@
           </div>
 
           <label class="mb-3 block">
-            <span class="mb-1 block text-xs font-bold text-pencil-gray">{{
-              t("typing.appearance.font")
-            }}</span>
+            <span class="mb-1 flex items-center gap-2 text-xs font-bold text-pencil-gray"
+              >{{ t("typing.appearance.font") }}<KeyCap>F</KeyCap></span
+            >
             <select
               :value="store.appearance.font"
               class="w-full cursor-pointer rounded-xl border-2 border-faded-gray bg-paper-white px-2.5 py-1.5 text-sm font-bold text-charcoal focus:border-primary focus:outline-none"
@@ -71,7 +71,9 @@
             :key="setting.field"
             class="mb-3 flex items-center justify-between gap-3 last:mb-0"
           >
-            <span class="text-xs font-bold text-pencil-gray">{{ setting.label }}</span>
+            <span class="flex items-center gap-2 text-xs font-bold text-pencil-gray"
+              >{{ setting.label }}<KeyCap>{{ SETTING_KEYS[setting.field] }}</KeyCap></span
+            >
             <SegmentedControl
               :label="setting.label"
               :options="setting.options"
@@ -85,7 +87,9 @@
             class="mt-4 flex items-center justify-between gap-3 border-t-2 border-faded-gray/40 pt-3"
           >
             <span id="contrast-label" class="text-xs font-bold text-pencil-gray">
-              {{ t("typing.appearance.contrast") }}
+              <span class="flex items-center gap-2"
+                >{{ t("typing.appearance.contrast") }}<KeyCap>A</KeyCap></span
+              >
               <span class="block">{{ t("typing.appearance.contrastScope") }}</span>
             </span>
             <button
@@ -129,7 +133,8 @@ import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
 import { useContrastStore } from "@/shared/stores/contrast";
 import KeyHint from "@/features/command-palette/components/KeyHint.vue";
-import { useHotkey } from "@/features/command-palette/hotkeys";
+import { useHotkey, useMenuKeys } from "@/features/command-palette/hotkeys";
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 import { t } from "@/shared/i18n";
 import {
@@ -191,6 +196,31 @@ const { aria: hotkeyAria } = useHotkey("appearance", {
     menu.value?.querySelector("select, button")?.focus({ preventScroll: true });
   },
 });
+
+// Open, each row by its letter, each press on to its next option: F font,
+// T size, I line spacing, C caret, O focus, A high contrast
+const SETTING_KEYS = { size: "T", lineHeight: "I", caretMotion: "C", focus: "O" };
+const next = (options, current) =>
+  options[(options.findIndex((option) => option.id === current) + 1) % options.length].id;
+useMenuKeys(
+  () => open.value,
+  (event) => {
+    const key = event.key.toUpperCase();
+    if (key === "F") {
+      store.set("font", next(TEXT_FONTS, store.appearance.font));
+      return true;
+    }
+    if (key === "A") {
+      contrast.setHigh(!contrast.high);
+      return true;
+    }
+    const setting = settings.value.find((entry) => SETTING_KEYS[entry.field] === key);
+    if (!setting) return false;
+    const options = setting.options.map((option) => ({ id: option.value }));
+    store.set(setting.field, next(options, store.appearance[setting.field]));
+    return true;
+  }
+);
 
 const toOptions = (options) => options.map(({ id, label }) => ({ value: id, label }));
 // Computed, so the labels follow a change of language

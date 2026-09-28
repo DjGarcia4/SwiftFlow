@@ -3,20 +3,24 @@
     How any mode is played, on desktop: punctuation, "sin red" and the
     demanding modes, together behind one button that says how many are on.
     They go with every mode, so they don't need to sit in the bar.
+    `inline`, for the phone's settings sheet: a section that folds open in
+    place.
   -->
-  <div ref="root" class="relative">
+  <div ref="root" :class="inline ? '' : 'relative'">
     <button
       type="button"
       :aria-expanded="open"
       :aria-label="t('typing.options.label', activeCount)"
       :aria-keyshortcuts="hotkeys.ariaFor('options')"
-      data-options-button
+      :data-options-button="inline ? undefined : ''"
+      :data-options-inline="inline ? '' : undefined"
       class="relative flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
-      :class="
+      :class="[
         open || activeCount
           ? 'border-primary/50 bg-primary-tint text-primary'
-          : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
-      "
+          : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal',
+        inline ? 'w-full py-2.5 text-sm' : '',
+      ]"
       @click="open = !open"
     >
       <AdjustmentsHorizontalIcon class="w-4 h-4" />
@@ -29,9 +33,9 @@
       >
       <ChevronDownIcon
         class="w-3.5 h-3.5 transition-transform duration-200"
-        :class="{ 'rotate-180': open }"
+        :class="[{ 'rotate-180': open }, inline ? 'ml-auto' : '']"
       />
-      <KeyHint id="options" corner />
+      <KeyHint v-if="!inline" id="options" corner />
     </button>
 
     <Transition
@@ -45,7 +49,11 @@
       <div
         v-if="open"
         ref="panel"
-        class="absolute right-0 top-full z-40 mt-3 w-80 rounded-card border-2 border-faded-gray bg-paper-white p-4 shadow-xl"
+        :class="
+          inline
+            ? 'mt-3'
+            : 'absolute right-0 top-full z-40 mt-3 w-80 rounded-card border-2 border-faded-gray bg-paper-white p-4 shadow-xl'
+        "
       >
         <div class="mb-4 flex flex-col gap-1.5">
           <button
@@ -118,6 +126,8 @@ import { STRICT_KEYS, ACCURACY_KEYS } from "@/features/typing-test/utils/strictM
 const props = defineProps({
   // Whether punctuation is a choice in this mode (code is typed as-is)
   punctuationApplies: { type: Boolean, default: true },
+  // Folding open in place: the phone's settings sheet
+  inline: { type: Boolean, default: false },
 });
 
 const configStore = useConfigStore();
@@ -159,21 +169,23 @@ const activeCount = computed(
 // "W" opens them, with the focus on the first one: Space flips it
 const hotkeys = useHotkeysStore();
 const panel = ref(null);
-useHotkey("options", {
-  key: "w",
-  label: "typing.options.button",
-  enabled: () => configStore.settingsShown,
-  run: async () => {
-    open.value = !open.value;
-    if (!open.value) return;
-    await nextTick();
-    panel.value?.querySelector("button")?.focus({ preventScroll: true });
-  },
-});
+if (!props.inline) {
+  useHotkey("options", {
+    key: "w",
+    label: "typing.options.button",
+    enabled: () => configStore.settingsShown,
+    run: async () => {
+      open.value = !open.value;
+      if (!open.value) return;
+      await nextTick();
+      panel.value?.querySelector("button")?.focus({ preventScroll: true });
+    },
+  });
+}
 
 // Open, each option by its key: P, S, M, C, and 0/9/5/8 for the accuracy
 useMenuKeys(
-  () => open.value,
+  () => open.value && !props.inline,
   (event) => {
     const key = event.key.toLowerCase();
     const toggle = toggles.value.find((entry) => entry.key === key);
@@ -198,6 +210,7 @@ useMenuKeys(
 );
 
 const closeOutside = (event) => {
+  if (props.inline) return;
   if (open.value && !root.value?.contains(event.target)) open.value = false;
 };
 const closeOnEscape = (event) => {

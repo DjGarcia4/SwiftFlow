@@ -7,6 +7,10 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        historyChapters: {
+          title: "Un historial que se recorre",
+          text: "El historial, en nueve capítulos, cada uno con una línea de qué muestra, y una guía al costado que marca por dónde vas (los números del 1 al 9 te llevan a cualquiera). Tus récords tienen el suyo: tu mejor marca en grande, cada categoría con su récord para retarlo con el marcapasos, y las que todavía no tienen, listas para estrenar.",
+        },
         yourFingers: {
           title: "Tus dedos",
           text: "En el historial, tus dos manos: cuánto falla y cuánto tarda cada dedo, y cómo viene contra antes. El que se queda atrás aparece marcado, con un botón que lo pone a practicar solo en el modo Dedos. Los consejos de dedo y de mano también te llevan ahí. Con un logro nuevo: Dedo domado.",
@@ -150,6 +154,10 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        historyChapters: {
+          title: "A history you can find your way in",
+          text: "The history in nine chapters, each with a line on what it shows, and a guide at the side marking where you are (the numbers 1 to 9 take you to any of them). Your records got their own: your best mark up big, every category with its record to race with the pacer, and the ones without one yet, ready to try.",
+        },
         yourFingers: {
           title: "Your fingers",
           text: "In the history, your two hands: how much each finger misses and how long it takes, and how it's going against before. The one lagging behind is marked, with a button that has it practice alone in Fingers mode. The finger and hand tips take you there too. With a new achievement: Tamed finger.",

@@ -6,6 +6,64 @@ const list = (items, and) =>
 
 export default {
   es: {
+    records: {
+      top: "Tu mejor marca",
+      beat: "Retar",
+      start: "Estrenar",
+      best: "Mejor",
+      none: "Sin récord todavía",
+      count: (held, total) => `Tenés récord en ${held} de ${total} categorías.`,
+      beatNamed: (mode, label, wpm) =>
+        `Retar tu récord de ${mode} (${label}): ${wpm} wpm`,
+      startNamed: (mode, label) => `Estrenar ${mode} (${label})`,
+    },
+    chapters: {
+      nav: "En esta página",
+      position: (n, total) => `Capítulo ${n} de ${total}`,
+      goTo: (title) => `Historial: ${title}`,
+      hoy: {
+        title: "Hoy",
+        intro:
+          "Lo que te toca hoy: los retos del día, tu meta de la semana y las letras que vuelven a repaso.",
+      },
+      nivel: {
+        title: "Tu nivel",
+        intro:
+          "Cuánta experiencia llevás y cuánto te falta para el próximo nivel, tu resumen del mes y lo que ya desbloqueaste para personalizar.",
+      },
+      records: {
+        title: "Tus récords",
+        intro:
+          "Lo mejor que hiciste en cada categoría. Retá cualquiera con el marcapasos a su velocidad, o estrená una que todavía no tiene récord.",
+      },
+      velocidad: {
+        title: "Tu velocidad",
+        intro:
+          "Cuánto escribís y hacia dónde vas. Elegí un modo para ver solo el suyo: el filtro vale para todo lo que sigue.",
+      },
+      teclas: {
+        title: "Tus teclas",
+        intro:
+          "Qué teclas fallás, cuáles te frenan y qué palabras se te traban, con consejos armados con tus datos.",
+      },
+      dedos: {
+        title: "Tus dedos",
+        intro:
+          "Las mismas teclas, sumadas por el dedo que las escribe: cuál falla, cuál se queda atrás.",
+      },
+      habitos: {
+        title: "Tus hábitos",
+        intro: "Cuándo practicás y a qué hora del día te sale mejor.",
+      },
+      logros: {
+        title: "Logros",
+        intro: "Lo que ya desbloqueaste y lo que te falta, con cómo conseguirlo.",
+      },
+      partidas: {
+        title: "Tus partidas",
+        intro: "Cada partida, de la más nueva a la más vieja, y tu copia de seguridad.",
+      },
+    },
     calendar: {
       title: "Actividad",
       totals: (sessions, days) =>
@@ -136,6 +194,9 @@ export default {
       legend:
         "% de error de cada dedo y cuánto tarda por tecla. La flecha: cómo viene contra las sesiones anteriores.",
       weakest: "falla más",
+      keysHint:
+        "Cada tecla, del color del dedo que la escribe. Pasá el mouse por un dedo para ver las suyas.",
+      keysOf: (finger) => `Las teclas de tu ${finger}`,
       slowest: "más lento",
       practice: (finger) => `Practicar el ${finger}`,
       weakText: (finger, rate, typical) =>
@@ -440,7 +501,9 @@ export default {
       finger: {
         title: (finger) => `Tu ${finger} falla más`,
         detail: (rate, keys, typical) =>
-          `Errás el ${rate} de las teclas que le tocan (${list(keys, "y")}) contra el ${typical} de un dedo típico tuyo. Practicalo solo, con sus letras y nada más.`,
+          `Errás el ${rate} de las teclas que le tocan (${list(keys, "y")}) contra ${typical} de un dedo típico tuyo. Practicalo solo, con sus letras y nada más.`,
+        typical: (rate) => `el ${rate}`,
+        underOne: "menos del 1%",
         action: "Practicar ese dedo",
       },
       slowFinger: {
@@ -779,6 +842,63 @@ export default {
     },
   },
   en: {
+    records: {
+      top: "Your best mark",
+      beat: "Race it",
+      start: "Try it",
+      best: "Best",
+      none: "No record yet",
+      count: (held, total) => `You hold a record in ${held} of ${total} categories.`,
+      beatNamed: (mode, label, wpm) => `Race your ${mode} record (${label}): ${wpm} wpm`,
+      startNamed: (mode, label) => `Try ${mode} (${label})`,
+    },
+    chapters: {
+      nav: "On this page",
+      position: (n, total) => `Chapter ${n} of ${total}`,
+      goTo: (title) => `History: ${title}`,
+      hoy: {
+        title: "Today",
+        intro:
+          "What's up for today: the day's challenges, your weekly goal and the letters due for review.",
+      },
+      nivel: {
+        title: "Your level",
+        intro:
+          "How much experience you have and how far the next level is, your month's summary and what you've unlocked to customize.",
+      },
+      records: {
+        title: "Your records",
+        intro:
+          "Your best in every category. Race any of them with the pacer at its speed, or open one that has no record yet.",
+      },
+      velocidad: {
+        title: "Your speed",
+        intro:
+          "How fast you type and where you're heading. Pick a mode to see only its runs: the filter holds for everything below.",
+      },
+      teclas: {
+        title: "Your keys",
+        intro:
+          "Which keys you miss, which slow you down and which words trip you up, with tips built from your own data.",
+      },
+      dedos: {
+        title: "Your fingers",
+        intro:
+          "The same keys, added up by the finger that types them: which one misses, which one lags.",
+      },
+      habitos: {
+        title: "Your habits",
+        intro: "When you practice and what time of day you type best.",
+      },
+      logros: {
+        title: "Achievements",
+        intro: "What you've unlocked and what's left, with how to get it.",
+      },
+      partidas: {
+        title: "Your runs",
+        intro: "Every run, newest first, and your backup.",
+      },
+    },
     calendar: {
       title: "Activity",
       totals: (sessions, days) =>
@@ -908,6 +1028,9 @@ export default {
       legend:
         "Each finger's miss rate and how long it takes per key. The arrow: how it's going against the sessions before.",
       weakest: "misses most",
+      keysHint:
+        "Each key in the color of the finger that types it. Hover over a finger to see its keys.",
+      keysOf: (finger) => `Your ${finger}'s keys`,
       slowest: "slowest",
       practice: (finger) => `Practice the ${finger}`,
       weakText: (finger, rate, typical) =>
@@ -1213,6 +1336,8 @@ export default {
         title: (finger) => `Your ${finger} misses more`,
         detail: (rate, keys, typical) =>
           `You miss ${rate} of the keys it covers (${list(keys, "and")}) against ${typical} for a typical finger of yours. Practice it alone, with its letters and nothing else.`,
+        typical: (rate) => rate,
+        underOne: "under 1%",
         action: "Practice that finger",
       },
       slowFinger: {

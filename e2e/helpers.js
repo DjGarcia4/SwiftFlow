@@ -30,28 +30,23 @@ export const closeSettings = async (page) => {
   }
 };
 
-// One option of a settings strip, like ("Modo", "Palabras"). Desktop draws
-// each strip as radios; the phone sheet as a group of toggle buttons.
+// One option of a settings strip, like ("Modo", "Palabras"): radios, on
+// the desktop bar and in the phone's settings sheet alike
 export const option = (page, group, name) =>
-  isPhone(page)
-    ? page.getByRole("group", { name: group }).getByRole("button", { name, exact: true })
-    : page
-        .getByRole("radiogroup", { name: group })
-        .locator("visible=true")
-        .getByRole("radio", { name, exact: true });
+  page
+    .getByRole("radiogroup", { name: group })
+    .locator("visible=true")
+    .getByRole("radio", { name, exact: true });
 
 // On desktop the mode is one button opening the menu of modes, which says
-// the one that's on
+// the one that's on; on a phone the modes are laid out in the sheet
 const modeButton = (page) => page.locator("[data-mode-button]").locator("visible=true");
 const isModeMenu = (page, group) => group === "Modo" && !isPhone(page);
 
 export const expectChosen = (page, group, name) =>
   isModeMenu(page, group)
     ? expect(modeButton(page)).toHaveAccessibleName(`Modo: ${name}. Cambiar de modo`)
-    : expect(option(page, group, name)).toHaveAttribute(
-        isPhone(page) ? "aria-pressed" : "aria-checked",
-        "true"
-      );
+    : expect(option(page, group, name)).toHaveAttribute("aria-checked", "true");
 
 export const choose = async (page, group, name) => {
   if (isModeMenu(page, group)) await modeButton(page).click();
@@ -60,9 +55,13 @@ export const choose = async (page, group, name) => {
 };
 
 // The options that go with any mode (punctuation, "sin red", the demanding
-// modes): behind the bar's "Opciones" on desktop, in the sheet on a phone
+// modes): behind the bar's "Opciones" on desktop, folded at the bottom of
+// the sheet on a phone
 export const openOptions = async (page) => {
-  if (!isPhone(page)) await page.locator("[data-options-button]").click();
+  const button = isPhone(page)
+    ? page.locator("[data-options-inline]").locator("visible=true")
+    : page.locator("[data-options-button]");
+  if ((await button.getAttribute("aria-expanded")) !== "true") await button.click();
 };
 export const closeOptions = async (page) => {
   if (!isPhone(page)) await page.keyboard.press("Escape");

@@ -28,7 +28,7 @@ test("the history shows each finger, and sends the weak one to practice", async 
   });
   await page.goto("/historial");
 
-  await expect(page.getByText("Tus dedos", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tus dedos", level: 2 })).toBeVisible();
   await expect(
     page.getByRole("img", { name: /^meñique izquierdo\. 19% de error/ })
   ).toBeVisible();

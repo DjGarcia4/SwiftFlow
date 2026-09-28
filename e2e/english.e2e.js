@@ -141,7 +141,7 @@ test.describe("the landing in English", () => {
     await page.goto("/sobre");
     await expect(page).toHaveTitle("What is SwiftFlow · SwiftFlow");
     await expect(
-      page.getByRole("heading", { name: "Your fingers" }).first()
+      page.getByRole("heading", { name: "A history you can find your way in" })
     ).toBeVisible();
     await expect(page.getByText("Qué es SwiftFlow")).toHaveCount(0);
   });

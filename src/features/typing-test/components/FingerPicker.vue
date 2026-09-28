@@ -9,7 +9,7 @@
       {{ t("typing.fingerPicker.hint") }}
     </p>
 
-    <div class="flex items-end gap-5 sm:gap-7">
+    <div class="flex items-end gap-3 sm:gap-7">
       <div
         v-for="hand in HANDS"
         :key="hand.id"
@@ -17,12 +17,12 @@
         :aria-label="t(`typing.fingerPicker.${hand.id}`)"
         class="flex flex-col items-center gap-1.5"
       >
-        <div class="flex items-end gap-1.5">
+        <div class="flex items-end gap-1 sm:gap-1.5">
           <button
             v-for="finger in hand.fingers"
             :key="finger"
             type="button"
-            class="flex w-10 flex-col items-center justify-end gap-0.5 rounded-t-full rounded-b-xl border-2 pb-1.5 transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
+            class="flex w-8 sm:w-10 flex-col items-center justify-end gap-0.5 rounded-t-full rounded-b-xl border-2 pb-1.5 transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
             :class="HEIGHTS[FINGERS[finger].kind]"
             :style="fingerStyle(finger)"
             :aria-pressed="isOn(finger)"

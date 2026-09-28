@@ -31,6 +31,25 @@ const median = (values) => {
   return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
 };
 
+// The finger that stands out for missing, among ones measured enough
+// ({ finger, attempts, misses, rate }), or null: needs four to compare, and
+// the worst clearly above your middle finger -- or, when most barely miss
+// at all, above the rest of them together, so a clean typist's one bad
+// finger still shows. { ...finger, typical, gap }. The card and the tips
+// both ask this, so they never disagree about which finger it is.
+export const pickWeakestFinger = (measured) => {
+  if (measured.length < 4) return null;
+  const worst = [...measured].sort((a, b) => b.rate - a.rate)[0];
+  const others = measured.filter((f) => f !== worst);
+  const pooled =
+    others.reduce((sum, f) => sum + f.misses, 0) /
+    others.reduce((sum, f) => sum + f.attempts, 0);
+  const typical = median(measured.map((f) => f.rate)) || pooled;
+  const standsOut = typical > 0 ? worst.rate / typical >= FINGER_GAP : true;
+  if (worst.misses < MIN_FINGER_MISSES || !standsOut) return null;
+  return { ...worst, typical, gap: typical ? worst.rate / typical : Infinity };
+};
+
 const emptyFinger = (finger) => ({
   finger,
   attempts: 0,
@@ -84,21 +103,7 @@ export const computeFingerStats = (results, layout) => {
 
   // Standing out needs a field to stand out from: four fingers at least
   const measured = fingers.filter((f) => f.measured);
-  let weakest = null;
-  if (measured.length >= 4) {
-    const worst = [...measured].sort((a, b) => b.rate - a.rate)[0];
-    // Your middle finger -- or, when most barely miss at all, the rest of
-    // them together, so a clean typist's one bad finger still shows
-    const others = measured.filter((f) => f !== worst);
-    const pooled =
-      others.reduce((sum, f) => sum + f.misses, 0) /
-      others.reduce((sum, f) => sum + f.attempts, 0);
-    const typical = median(measured.map((f) => f.rate)) || pooled;
-    const standsOut = typical > 0 ? worst.rate / typical >= FINGER_GAP : true;
-    if (worst.misses >= MIN_FINGER_MISSES && standsOut) {
-      weakest = { ...worst, typical, gap: typical ? worst.rate / typical : Infinity };
-    }
-  }
+  const weakest = pickWeakestFinger(measured);
 
   const timed = fingers.filter((f) => f.timedEnough);
   let slowest = null;

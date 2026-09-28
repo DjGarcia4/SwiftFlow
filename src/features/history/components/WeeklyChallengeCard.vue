@@ -25,7 +25,7 @@
 
     <button
       type="button"
-      class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border-2 border-amber-500 px-2.5 py-1 text-xs font-extrabold text-amber-600 transition-[background-color,color,scale] duration-200 ease-spring hover:bg-amber-500 hover:text-white active:scale-95"
+      class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border-2 border-amber-500 px-2.5 py-1 text-xs font-extrabold text-charcoal transition-[background-color,color,scale] duration-200 ease-spring hover:bg-amber-500 hover:text-white active:scale-95"
       :data-play-key="keyNumber ?? undefined"
       @click="play"
     >
