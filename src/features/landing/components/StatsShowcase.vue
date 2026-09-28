@@ -60,6 +60,21 @@
               <!-- How the keys are going -->
               <KeyTrendCard v-else-if="row.id === 'trends'" :trends="demoKeyTrends" />
 
+              <!-- Letters coming back for review -->
+              <ReviewKeysList v-else-if="row.id === 'review'" :entries="demoReviewKeys" />
+
+              <!-- Session after session -->
+              <WpmTrendChart
+                v-else-if="row.id === 'progress'"
+                :points="demoTrendPoints"
+              />
+
+              <!-- Finger by finger -->
+              <FingerStatsCard
+                v-else-if="row.id === 'fingers'"
+                :results="demoFingerResults"
+              />
+
               <!-- Day to day -->
               <DayConsistencyCard
                 v-else-if="row.id === 'steady'"
@@ -172,13 +187,22 @@ import {
   demoProblemWords,
   demoKeyTrends,
   demoDayConsistency,
+  demoFingerResults,
+  demoTrendPoints,
+  demoReviewKeys,
 } from "../demoData";
+import WpmTrendChart from "@/features/history/components/WpmTrendChart.vue";
+import ReviewKeysList from "@/features/history/components/ReviewKeysList.vue";
+import FingerStatsCard from "@/features/history/components/FingerStatsCard.vue";
 
 const ROW_HEIGHTS = {
   keys: "18rem",
   trends: "10rem",
+  fingers: "20rem",
+  review: "16rem",
   slow: "20rem",
   session: "16rem",
+  progress: "16rem",
   patterns: "18rem",
   steady: "14rem",
   habits: "18rem",

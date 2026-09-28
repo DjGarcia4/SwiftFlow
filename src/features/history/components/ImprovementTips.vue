@@ -124,6 +124,7 @@ const router = useRouter();
 const practice = (action) => {
   if (action.keys) configStore.handleDrillKeys(action.keys);
   if (action.words) configStore.handleDrillWords(action.words);
+  if (action.fingers) configStore.handleFingers(action.fingers);
   if (action.mode && configStore.type !== action.mode) {
     configStore.handleType(action.mode);
   }

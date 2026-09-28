@@ -101,6 +101,7 @@ export default {
     review: {
       ofError: "de error",
       mastered: "Dominada",
+      step: (step, total) => `Paso ${step} de ${total}`,
       today: "Hoy",
       due: (days) => (days === 1 ? "Mañana" : `En ${days} días`),
       doneToday: "Repaso de hoy hecho",
@@ -129,6 +130,24 @@ export default {
       few: "Jugá unas partidas más para ver hacia dónde vas.",
       mixed:
         "Mezcla todos los modos: elegí uno arriba para comparar partidas del mismo tipo.",
+    },
+    fingers: {
+      title: "Tus dedos",
+      legend:
+        "% de error de cada dedo y cuánto tarda por tecla. La flecha: cómo viene contra las sesiones anteriores.",
+      weakest: "falla más",
+      slowest: "más lento",
+      practice: (finger) => `Practicar el ${finger}`,
+      weakText: (finger, rate, typical) =>
+        `Tu ${finger} falla el ${rate} de sus teclas, contra ${typical} de un dedo típico tuyo. Unas rondas solo con él y sus letras.`,
+      typicalRate: (rate) => `el ${rate}`,
+      underOne: "menos del 1%",
+      slowText: (finger, ms, typical) =>
+        `Tu ${finger} tarda ${ms} ms por tecla, contra ${typical} ms de un dedo típico tuyo. Unas rondas solo con él lo ponen al día.`,
+      even: "Tus dedos andan parejos: ninguno se queda atrás.",
+      ariaRate: (rate) => `${rate} de error`,
+      ariaSpeed: (ms) => `${ms} milisegundos por tecla`,
+      ariaNoData: "todavía sin datos",
     },
     timeOfDay: {
       title: "Tu mejor momento",
@@ -410,6 +429,7 @@ export default {
         title: (name) => `Tu mano ${name} falla más`,
         detail: (worse, better) =>
           `Errás el ${worse} de sus teclas contra el ${better} de la otra. Vale la pena ejercitarla aparte.`,
+        action: "Practicar esa mano",
       },
       row: {
         names: { top: "de arriba", home: "del medio", bottom: "de abajo" },
@@ -420,7 +440,13 @@ export default {
       finger: {
         title: (finger) => `Tu ${finger} falla más`,
         detail: (rate, keys, typical) =>
-          `Errás el ${rate} de las teclas que le tocan (${list(keys, "y")}) contra el ${typical} de un dedo típico tuyo. Con los colores por dedo del teclado en pantalla vas a ver cuáles son.`,
+          `Errás el ${rate} de las teclas que le tocan (${list(keys, "y")}) contra el ${typical} de un dedo típico tuyo. Practicalo solo, con sus letras y nada más.`,
+        action: "Practicar ese dedo",
+      },
+      slowFinger: {
+        title: (finger) => `Tu ${finger} es el más lento`,
+        detail: (ms, typical) =>
+          `Tarda ${ms} ms por tecla contra ${typical} ms de un dedo típico tuyo, aunque no falle. Unas rondas solo con él lo ponen al día.`,
       },
       slowKeys: {
         title: (keys) =>
@@ -646,6 +672,10 @@ export default {
         title: "Meñiques de acero",
         description: "Solo con los meñiques: 25 palabras o más con 95% de precisión",
       },
+      finger_tamed: {
+        title: "Dedo domado",
+        description: "Que un dedo falle la mitad que antes, en tus últimas sesiones",
+      },
       keyboard_only_1: {
         title: "Sin soltar el teclado",
         description:
@@ -843,6 +873,7 @@ export default {
     review: {
       ofError: "missed",
       mastered: "Mastered",
+      step: (step, total) => `Step ${step} of ${total}`,
       today: "Today",
       due: (days) => (days === 1 ? "Tomorrow" : `In ${days} days`),
       doneToday: "Today's review done",
@@ -871,6 +902,24 @@ export default {
       few: "Play a few more runs to see where you're heading.",
       mixed:
         "Every mode mixed together: pick one above to compare runs of the same kind.",
+    },
+    fingers: {
+      title: "Your fingers",
+      legend:
+        "Each finger's miss rate and how long it takes per key. The arrow: how it's going against the sessions before.",
+      weakest: "misses most",
+      slowest: "slowest",
+      practice: (finger) => `Practice the ${finger}`,
+      weakText: (finger, rate, typical) =>
+        `Your ${finger} misses ${rate} of its keys, against ${typical} for a typical finger of yours. A few rounds with it and its letters alone.`,
+      typicalRate: (rate) => rate,
+      underOne: "under 1%",
+      slowText: (finger, ms, typical) =>
+        `Your ${finger} takes ${ms} ms per key, against ${typical} ms for a typical finger of yours. A few rounds with it alone catch it up.`,
+      even: "Your fingers are even: none of them lags behind.",
+      ariaRate: (rate) => `${rate} missed`,
+      ariaSpeed: (ms) => `${ms} milliseconds per key`,
+      ariaNoData: "no data yet",
     },
     timeOfDay: {
       title: "Your best time",
@@ -1152,6 +1201,7 @@ export default {
         title: (name) => `Your ${name} hand misses more`,
         detail: (worse, better) =>
           `You miss ${worse} of its keys against ${better} on the other one. It's worth training it on its own.`,
+        action: "Practice that hand",
       },
       row: {
         names: { top: "top", home: "home", bottom: "bottom" },
@@ -1162,7 +1212,13 @@ export default {
       finger: {
         title: (finger) => `Your ${finger} misses more`,
         detail: (rate, keys, typical) =>
-          `You miss ${rate} of the keys it covers (${list(keys, "and")}) against ${typical} for a typical finger of yours. With finger colors on the on-screen keyboard you'll see which ones they are.`,
+          `You miss ${rate} of the keys it covers (${list(keys, "and")}) against ${typical} for a typical finger of yours. Practice it alone, with its letters and nothing else.`,
+        action: "Practice that finger",
+      },
+      slowFinger: {
+        title: (finger) => `Your ${finger} is the slowest`,
+        detail: (ms, typical) =>
+          `It takes ${ms} ms per key against ${typical} ms for a typical finger of yours, even without missing. A few rounds with it alone catch it up.`,
       },
       slowKeys: {
         title: (keys) =>
@@ -1353,6 +1409,11 @@ export default {
       fingers_pinkies: {
         title: "Pinkies of steel",
         description: "Pinkies only: 25 words or more at 95% accuracy",
+      },
+      finger_tamed: {
+        title: "Tamed finger",
+        description:
+          "Get a finger to miss half as much as before, over your latest sessions",
       },
       keyboard_only_1: {
         title: "Hands on the keys",

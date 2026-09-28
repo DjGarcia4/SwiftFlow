@@ -41,7 +41,10 @@
         <!-- One dot per interval: the ones already held are filled -->
         <div
           class="mt-1 flex gap-1"
-          :aria-label="`Paso ${entry.step + 1} de ${INTERVALS}`"
+          role="img"
+          :aria-label="
+            t('history.review.step', Math.min(entry.step + 1, INTERVALS), INTERVALS)
+          "
         >
           <span
             v-for="i in INTERVALS"

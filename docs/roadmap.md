@@ -220,3 +220,19 @@ tarjeta "Sin soltar el teclado" y README. Los textos del logro y el reto sin mou
 las teclas de los botones. Logros: una partida, cada dedo por
 separado, meñiques con 95%. Reto diario: un solo dedo (desde el 29/9), y Dedos entra en el
 reto de "jugá tal modo".
+
+## Fase 17 — Tus dedos
+
+Seguir cada dedo, no solo cada tecla, y mandarte a practicar el que se queda atrás.
+
+- **Tus dedos** en el historial: las dos manos como en el selector, cada dedo con su % de
+  error y sus ms por tecla (las estadísticas por tecla, sumadas por el dedo que las escribe en
+  tu teclado), y una flecha si mejoró o empeoró contra las sesiones anteriores. El que falla
+  más y el más lento quedan marcados, con un botón que lo pone a practicar solo en Dedos
+- Los consejos: el de dedo y el de mano ahora tienen su botón a Dedos (ese dedo, esa mano), y
+  hay uno nuevo para el dedo más lento aunque no falle
+- Logro: Dedo domado (un dedo que falla la mitad que antes)
+
+Landing: la tarjeta "Tus dedos" en la vitrina de estadísticas, y de paso dos gráficas del
+historial que no estaban: "¿Vas mejorando?" (la tendencia de WPM) y "Las letras vuelven solas"
+(el repaso). Fila de la comparación ampliada, novedades, README.

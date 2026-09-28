@@ -2,7 +2,10 @@
 // components, fed what a few weeks of practice would give them. Seeded,
 // so the page looks the same on every visit.
 import { randomFrom } from "@/shared/utils/seededRandom";
-import { computeDailyActivity } from "@/features/history/utils/historyStats";
+import {
+  computeDailyActivity,
+  INSIGHTS_VERSION,
+} from "@/features/history/utils/historyStats";
 import { DAY_PARTS } from "@/features/history/utils/timeOfDay";
 import { t } from "@/shared/i18n";
 
@@ -122,6 +125,79 @@ export const demoKeyTrends = {
   worsened: [{ key: "v", before: 0.03, after: 0.06, change: 0.03 }],
   all: [],
 };
+
+// "Tus dedos": 40 sessions of a typist whose left pinky misses (less than
+// it used to) and whose right ring finger lags, for the finger card to read
+// the way it reads a real history
+export const demoFingerResults = (() => {
+  const letters = [..."qwertyuiopasdfghjklñzxcvbnm"];
+  const session = (i, missed) => ({
+    mode: "time",
+    date: new Date(Date.now() - i * 864e5).toISOString(),
+    insightsVersion: INSIGHTS_VERSION,
+    keyAttempts: Object.fromEntries(letters.map((key) => [key, 14])),
+    missedKeys: missed,
+    keyTiming: Object.fromEntries(
+      letters.map((key) => [
+        key,
+        [(("ol".includes(key) ? 225 : 150) + (i % 3) * 4) * 14, 14],
+      ])
+    ),
+  });
+  return [
+    ...Array.from({ length: 20 }, (_, i) =>
+      session(i, { q: 2, a: 2, z: 1, e: i % 2, u: i % 3 ? 0 : 1, n: i % 4 ? 0 : 1 })
+    ),
+    ...Array.from({ length: 20 }, (_, i) =>
+      session(i + 20, { q: 4, a: 3, z: 3, e: 1, u: i % 2, c: 1 })
+    ),
+  ];
+})();
+
+// "Tendencia de WPM": 30 runs of 30 seconds, a typist climbing from the low
+// 50s to the 60s with the ups and downs any real month has
+export const demoTrendPoints = (() => {
+  const wpms = [
+    52, 53, 55, 56, 49, 47, 51, 54, 55, 57, 54, 58, 60, 55, 57, 53, 58, 59, 57, 61, 56,
+    55, 60, 62, 59, 61, 64, 60, 63, 65,
+  ];
+  return wpms.map((wpm, i) => ({
+    wpm,
+    accuracy: 94 + ((i * 7) % 5),
+    date: new Date(Date.now() - (wpms.length - i) * 864e5).toISOString(),
+    mode: "time",
+    label: "30s",
+  }));
+})();
+
+// "Repaso": letters coming back on their own, at growing intervals
+export const demoReviewKeys = [
+  { key: "ñ", baselineRate: 0.14, lastRate: 0.04, step: 5, mastered: true, dueInDays: 0 },
+  {
+    key: "q",
+    baselineRate: 0.11,
+    lastRate: 0.05,
+    step: 3,
+    mastered: false,
+    dueInDays: 0,
+  },
+  {
+    key: "b",
+    baselineRate: 0.09,
+    lastRate: 0.06,
+    step: 2,
+    mastered: false,
+    dueInDays: 3,
+  },
+  {
+    key: "v",
+    baselineRate: 0.08,
+    lastRate: 0.07,
+    step: 1,
+    mastered: false,
+    dueInDays: 1,
+  },
+];
 
 // "Qué tan parejo sos": two weeks of days, a steady typist with an off day
 export const demoDayConsistency = (() => {

@@ -366,6 +366,14 @@
         />
       </div>
 
+      <!-- Finger by finger: which one misses, which one lags -->
+      <div
+        v-if="keyErrorStats.length"
+        class="bg-paper-white rounded-card p-4 sm:p-6 border-2 border-faded-gray mb-6 animate-rise [animation-delay:502ms]"
+      >
+        <FingerStatsCard :results="filteredResults" />
+      </div>
+
       <!-- How the keys are going: better and worse, lately -->
       <div
         v-if="keyTrends"
@@ -736,6 +744,7 @@ import { staggerStyle } from "@/shared/utils/motion";
 import WpmTrendChart from "@/features/history/components/WpmTrendChart.vue";
 import KeyErrorHeatmap from "@/features/history/components/KeyErrorHeatmap.vue";
 import KeyTrendCard from "@/features/history/components/KeyTrendCard.vue";
+import FingerStatsCard from "@/features/history/components/FingerStatsCard.vue";
 import DayConsistencyCard from "@/features/history/components/DayConsistencyCard.vue";
 import { computeDayConsistency } from "@/features/history/utils/dayConsistency";
 import { computeKeyTrends } from "@/features/history/utils/keyTrends";

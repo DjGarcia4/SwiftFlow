@@ -72,10 +72,10 @@ describe("in English", () => {
   });
 
   it("tells what's new, dated the English way", () => {
-    expect(CHANGELOG[0].title).toBe("Una barra más simple");
+    expect(CHANGELOG[0].title).toBe("Tus dedos");
     expect(formatChangelogDate("2026-09")).toBe("septiembre de 2026");
     setLocale("en");
-    expect(CHANGELOG[0].title).toBe("A simpler bar");
+    expect(CHANGELOG[0].title).toBe("Your fingers");
     expect(formatChangelogDate("2026-09")).toBe("September 2026");
     expect(CHANGELOG.every((entry) => !entry.text.startsWith("landing."))).toBe(true);
   });

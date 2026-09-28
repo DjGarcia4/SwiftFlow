@@ -77,6 +77,8 @@ teclado.
 - **Qué mejorar**: consejos concretos armados con tus propios datos —
   qué tecla practicar, con qué tecla la confundís, si se te adelantan los dedos,
   qué mano o fila te cuesta, y qué teclas te frenan aunque no las falles
+- **Tus dedos**: las dos manos con el error y la velocidad de cada dedo, cómo viene cada uno,
+  y el que se queda atrás con un botón para practicarlo solo en el modo Dedos
 - **Cómo van tus teclas**: qué teclas mejoraron y cuáles empeoraron, tus últimas partidas
   contra las anteriores
 - **Teclas y combinaciones más lentas**: velocidad, no precisión — lo que las

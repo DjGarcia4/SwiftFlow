@@ -7,6 +7,10 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        yourFingers: {
+          title: "Tus dedos",
+          text: "En el historial, tus dos manos: cuánto falla y cuánto tarda cada dedo, y cómo viene contra antes. El que se queda atrás aparece marcado, con un botón que lo pone a practicar solo en el modo Dedos. Los consejos de dedo y de mano también te llevan ahí. Con un logro nuevo: Dedo domado.",
+        },
         simplerBar: {
           title: "Una barra más simple",
           text: "El modo es un solo botón que abre todos, agrupados y con una línea de qué es cada uno; puntuación, sin red y los modos exigentes van juntos en Opciones. Todo con su tecla, también adentro de cada menú. Al terminar, 2 segundos en los que ninguna tecla te saca del resumen. Y la tendencia del historial ahora dice hacia dónde vas.",
@@ -146,6 +150,10 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        yourFingers: {
+          title: "Your fingers",
+          text: "In the history, your two hands: how much each finger misses and how long it takes, and how it's going against before. The one lagging behind is marked, with a button that has it practice alone in Fingers mode. The finger and hand tips take you there too. With a new achievement: Tamed finger.",
+        },
         simplerBar: {
           title: "A simpler bar",
           text: "The mode is one button opening them all, grouped, with a line on what each one is; punctuation, no net and the demanding modes sit together under Options. Everything has its key, inside every menu too. When a run ends, 2 seconds where no key takes you away from the summary. And the history's trend now says where you're heading.",

@@ -298,6 +298,22 @@ describe("computeImprovementTips · speed patterns", () => {
     expect(tip.title).toBe("Te frenan la Ñ y la Q");
   });
 
+  it("names a finger that lags behind the others, even without missing", () => {
+    // Every finger's keys at 150 ms, the right ring finger's (O, L) at 240
+    const fingerTiming = [..."qazwsxedcrfvujmikolp"].map((key) => ({
+      key,
+      meanMs: "ol".includes(key) ? 240 : 150,
+      samples: 60,
+      ratio: 1,
+    }));
+    const tip = computeImprovementTips(stats, { keyTiming: fingerTiming }).tips.find(
+      (t) => t.id === "slow-finger"
+    );
+    expect(tip.title).toBe("Tu anular derecho es el más lento");
+    expect(tip.detail).toContain("240 ms por tecla contra 150 ms");
+    expect(tip.action.fingers).toEqual(["right-ring"]);
+  });
+
   it("waits for enough measured intervals before talking about speed", () => {
     expect(
       tipIds(computeImprovementTips(stats, { keyTiming: [timing({ samples: 120 })] }))
@@ -389,5 +405,29 @@ describe("computeImprovementTips · speed patterns", () => {
     const tip = tips.find((t) => t.id === "finger");
     expect(tip.title).toBe("Tu anular izquierdo falla más");
     expect(tip.detail).toContain("S, W y X");
+    // And the way to practice it: that finger alone, in "Dedos"
+    expect(tip.action).toEqual({
+      label: "Practicar ese dedo",
+      mode: "fingers",
+      fingers: ["left-ring"],
+    });
+  });
+
+  it("sends a weaker hand to practice on its own", () => {
+    const left = new Set([..."qwertasdfgzxcvb"]);
+    const stats = [..."qwertyuiopasdfghjklzxcvbnm"].map((key) => ({
+      key,
+      attempts: 100,
+      misses: left.has(key) ? 10 : 4,
+      rate: left.has(key) ? 0.1 : 0.04,
+    }));
+    const tip = computeImprovementTips(stats).tips.find((t) => t.id === "hand");
+    expect(tip.action.mode).toBe("fingers");
+    expect(tip.action.fingers).toEqual([
+      "left-pinky",
+      "left-ring",
+      "left-middle",
+      "left-index",
+    ]);
   });
 });

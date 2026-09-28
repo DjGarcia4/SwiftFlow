@@ -23,6 +23,7 @@ import {
   INSIGHTS_VERSION,
 } from "@/features/history/utils/historyStats";
 import { computeAchievements } from "@/features/history/achievements";
+import { useConfigStore } from "@/features/typing-test/store";
 import { suggestWeeklyGoal, computeWeekProgress } from "@/features/history/weeklyGoal";
 import { loadWeeklyGoal, saveWeeklyGoal } from "@/features/history/weeklyGoalRepository";
 import {
@@ -100,10 +101,13 @@ export const useHistoryStore = defineStore("history", () => {
 
   // Weekly goal: the chosen minutes (null = "Auto") and the weeks met
   const weeklyGoalState = ref(loadWeeklyGoal());
+  // Which finger types what depends on the keyboard picked
+  const configStore = useConfigStore();
 
   const achievements = computed(() =>
     computeAchievements(results.value, {
       weeksCompleted: weeklyGoalState.value.completedWeeks.length,
+      layout: configStore.keyboardLayout,
     })
   );
   const unlockedAchievementsCount = computed(

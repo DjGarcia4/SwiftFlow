@@ -265,6 +265,30 @@ describe("computeAchievements", () => {
     const withIndex = fingerRun(["left-pinky", "left-index"], { accuracy: 99 });
     expect(isUnlocked(computeAchievements([withIndex]), "fingers_pinkies")).toBe(false);
 
+    // A finger that misses half as much as before
+    const letters = [..."qwertyuiopasdfghjklñzxcvbnm"];
+    const measuredRun = (missed) => ({
+      mode: "time",
+      wpm: 40,
+      accuracy: 95,
+      keyAttempts: Object.fromEntries(letters.map((key) => [key, 20])),
+      missedKeys: missed,
+    });
+    const earlier = Array.from({ length: 10 }, () => measuredRun({ q: 6, a: 6, z: 6 }));
+    const later = Array.from({ length: 10 }, () => measuredRun({ q: 2, a: 2, z: 2 }));
+    expect(
+      isUnlocked(
+        computeAchievements([...later, ...earlier], { layout: "latam" }),
+        "finger_tamed"
+      )
+    ).toBe(true);
+    expect(
+      isUnlocked(
+        computeAchievements([...earlier, ...later], { layout: "latam" }),
+        "finger_tamed"
+      )
+    ).toBe(false);
+
     // English texts: runs in them, and a day in both languages
     const day = "2026-09-26T12:00:00";
     const inEnglish = Array.from({ length: 25 }, () => ({

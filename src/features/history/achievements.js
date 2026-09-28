@@ -13,6 +13,7 @@ import { englishClassics } from "@/features/typing-test/content/en/classics";
 import { LANGUAGE_MODES } from "@/features/typing-test/content/practiceLanguage";
 import { courseProgress, LESSONS } from "@/features/course/course";
 import { hasTamedKey } from "@/features/history/utils/keyTrends";
+import { hasTamedFinger } from "@/features/history/utils/fingerStats";
 import { computeDayConsistency } from "@/features/history/utils/dayConsistency";
 
 // MODES_COUNT stays at 5 even though there are now 6 modes (numbers was
@@ -325,6 +326,13 @@ export const ACHIEVEMENTS = [
     category: "course",
     icon: "hand",
     check: (ctx) => ctx.cleanPinkyRun,
+  },
+  // A finger whose misses have at least halved, lately
+  {
+    id: "finger_tamed",
+    category: "course",
+    icon: "hand",
+    check: (ctx) => ctx.hasTamedFinger,
   },
 
   // Languages — practicing English too
@@ -701,7 +709,12 @@ const hourOf = (isoDate) => new Date(isoDate).getHours();
 
 // extras: stats kept outside the history (see the weekly goal), which the
 // results alone can't tell.
-export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
+// `layout`: the keyboard being typed on, which decides which finger types
+// what (the default one when left out)
+export const computeAchievements = (
+  results,
+  { weeksCompleted = 0, layout = null } = {}
+) => {
   const codeResults = results.filter((r) => r.mode === "code");
   const timeResults = results.filter((r) => r.mode === "time");
   const wordsResults = results.filter((r) => r.mode === "words");
@@ -770,6 +783,7 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
     mostDaysInAMonth: mostDaysInAMonth(results),
     course: courseProgress(results),
     hasTamedKey: hasTamedKey(results),
+    hasTamedFinger: hasTamedFinger(results, layout),
     steadyDays: (() => {
       const consistency = computeDayConsistency(results);
       return Boolean(

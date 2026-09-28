@@ -8,6 +8,8 @@ import {
   keyPosition,
   layoutRows,
 } from "@/features/typing-test/utils/keyboardMap";
+import { FINGER_PRESETS } from "@/features/typing-test/content/fingers";
+import { MIN_FINGER_TIMING, SLOW_FINGER_FACTOR } from "./fingerStats";
 
 // Turns the per-key error stats into a short list of concrete, readable
 // "work on this" tips. Pure data in, pure data out (icons are string keys),
@@ -305,6 +307,12 @@ export const computeImprovementTips = (
             percent(worse.rate),
             percent(better.rate)
           ),
+          // That hand alone, in "Dedos"
+          action: {
+            label: t("history.tips.hand.action"),
+            mode: "fingers",
+            fingers: FINGER_PRESETS[name],
+          },
         },
       });
     }
@@ -376,6 +384,12 @@ export const computeImprovementTips = (
             keys,
             percent(middle.rate)
           ),
+          // That finger alone, in "Dedos"
+          action: {
+            label: t("history.tips.finger.action"),
+            mode: "fingers",
+            fingers: [worst.finger],
+          },
         },
       });
     }
@@ -427,6 +441,45 @@ export const computeImprovementTips = (
         ),
         keys: slowKeys.map((stat) => stat.key),
       });
+    }
+
+    // A whole finger slower than your others, even where it doesn't miss:
+    // its keys' times pooled, against your middle finger
+    const byFinger = new Map();
+    for (const stat of keyTiming) {
+      const finger = fingerOfChar(stat.key, layout);
+      if (!finger || finger === "thumb") continue;
+      const group = byFinger.get(finger) ?? { finger, totalMs: 0, samples: 0 };
+      group.totalMs += stat.meanMs * stat.samples;
+      group.samples += stat.samples;
+      byFinger.set(finger, group);
+    }
+    const timedFingers = [...byFinger.values()]
+      .filter((group) => group.samples >= MIN_FINGER_TIMING)
+      .map((group) => ({ ...group, meanMs: group.totalMs / group.samples }));
+    if (timedFingers.length >= 4) {
+      const sorted = [...timedFingers].sort((a, b) => b.meanMs - a.meanMs);
+      const typical = sorted[Math.floor(sorted.length / 2)].meanMs;
+      const slowest = sorted[0];
+      const ratio = slowest.meanMs / typical;
+      if (ratio >= SLOW_FINGER_FACTOR) {
+        speedCandidates.push({
+          id: "slow-finger",
+          icon: "hand",
+          severity: ratio / SLOW_FINGER_FACTOR,
+          title: t("history.tips.slowFinger.title", FINGERS[slowest.finger].name),
+          detail: t(
+            "history.tips.slowFinger.detail",
+            Math.round(slowest.meanMs),
+            Math.round(typical)
+          ),
+          action: {
+            label: t("history.tips.finger.action"),
+            mode: "fingers",
+            fingers: [slowest.finger],
+          },
+        });
+      }
     }
 
     const slowPairs = bigramTiming

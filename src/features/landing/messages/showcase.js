@@ -30,6 +30,26 @@ export default {
             "El «antes» de cada tecla en el mapa del teclado",
           ],
         },
+        review: {
+          kicker: "Repaso",
+          title: "Las letras vuelven solas",
+          text: "Cada letra que entrenás entra en repaso: vuelve al día siguiente, a los 3 días, a la semana, y cada vez que la sostenés el próximo repaso se aleja, hasta que queda dominada.",
+          points: [
+            "De dónde partió cada letra y dónde está ahora",
+            "En qué paso del repaso va",
+            "Cuándo te toca de nuevo",
+          ],
+        },
+        fingers: {
+          kicker: "Dedo por dedo",
+          title: "Tus dedos",
+          text: "Cada tecla sumada al dedo que la escribe en tu teclado: cuánto falla y cuánto tarda cada uno, y cómo viene. El que se queda atrás, con un botón para practicarlo solo.",
+          points: [
+            "El dedo que más falla, contra uno típico tuyo",
+            "El más lento, aunque no se equivoque",
+            "Si mejoró o empeoró contra tus partidas anteriores",
+          ],
+        },
         slow: {
           kicker: "Velocidad",
           title: "Lo que te frena aunque no lo erres",
@@ -48,6 +68,16 @@ export default {
             "WPM neto (palabras correctas) y bruto (todas)",
             "Consistencia: qué tan parejo fue tu ritmo",
             "Combo máximo y errores corregidos",
+          ],
+        },
+        progress: {
+          kicker: "Partida tras partida",
+          title: "¿Vas mejorando?",
+          text: "Tus últimas partidas en un gráfico que se lee: cada una como un punto, el promedio como la línea que importa, y una frase que te dice hacia dónde vas.",
+          points: [
+            "Tus últimas 10 partidas contra las 10 anteriores",
+            "El promedio de 5, para no confundir un mal día con una tendencia",
+            "Cada partida al pasar el mouse: wpm, precisión, modo y fecha",
           ],
         },
         patterns: {
@@ -172,6 +202,26 @@ export default {
             "Each key's “before” on the keyboard map",
           ],
         },
+        review: {
+          kicker: "Review",
+          title: "Letters come back on their own",
+          text: "Every letter you drill goes into review: it comes back the next day, in 3 days, in a week, and every time you hold it the next review moves further out, until it's mastered.",
+          points: [
+            "Where each letter started and where it is now",
+            "Which step of the review it's on",
+            "When it's due again",
+          ],
+        },
+        fingers: {
+          kicker: "Finger by finger",
+          title: "Your fingers",
+          text: "Every key added up to the finger that types it on your keyboard: how much each one misses and how long it takes, and how it's going. The one lagging behind, with a button to practice it alone.",
+          points: [
+            "The finger that misses most, against a typical one of yours",
+            "The slowest, even when it doesn't miss",
+            "Whether it got better or worse against your earlier runs",
+          ],
+        },
         slow: {
           kicker: "Speed",
           title: "What slows you down even when you don't miss",
@@ -190,6 +240,16 @@ export default {
             "Net WPM (correct words) and raw (all of them)",
             "Consistency: how steady your pace was",
             "Best combo and corrected errors",
+          ],
+        },
+        progress: {
+          kicker: "Run after run",
+          title: "Are you getting better?",
+          text: "Your latest runs in a chart that reads: each one as a dot, the average as the line that matters, and a sentence telling you where you're heading.",
+          points: [
+            "Your last 10 runs against the 10 before",
+            "The average of 5, so one bad day isn't mistaken for a trend",
+            "Each run on hover: wpm, accuracy, mode and date",
           ],
         },
         patterns: {
