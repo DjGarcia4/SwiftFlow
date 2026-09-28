@@ -1,3 +1,4 @@
+import { FINGER_IDS } from "@/features/typing-test/content/fingers";
 import { describe, it, expect } from "vitest";
 import { ACHIEVEMENTS, computeAchievements } from "./achievements";
 import { classics } from "@/features/typing-test/content/classics";
@@ -240,6 +241,29 @@ describe("computeAchievements", () => {
       false
     );
     expect(isUnlocked(computeAchievements(byKeyboard), "keyboard_only_25")).toBe(true);
+
+    // "Dedos": a run, every finger alone, and the pinkies clean
+    const fingerRun = (fingers, extra = {}) => ({
+      mode: "fingers",
+      modeValue: 25,
+      wpm: 30,
+      accuracy: 90,
+      fingers,
+      ...extra,
+    });
+    const eachAlone = FINGER_IDS.map((id) => fingerRun([id]));
+    expect(isUnlocked(computeAchievements(eachAlone.slice(0, 1)), "fingers_1")).toBe(
+      true
+    );
+    expect(isUnlocked(computeAchievements(eachAlone.slice(1)), "fingers_each")).toBe(
+      false
+    );
+    expect(isUnlocked(computeAchievements(eachAlone), "fingers_each")).toBe(true);
+    expect(isUnlocked(computeAchievements(eachAlone), "fingers_pinkies")).toBe(false);
+    const pinkies = fingerRun(["left-pinky", "right-pinky"], { accuracy: 96 });
+    expect(isUnlocked(computeAchievements([pinkies]), "fingers_pinkies")).toBe(true);
+    const withIndex = fingerRun(["left-pinky", "left-index"], { accuracy: 99 });
+    expect(isUnlocked(computeAchievements([withIndex]), "fingers_pinkies")).toBe(false);
 
     // English texts: runs in them, and a day in both languages
     const day = "2026-09-26T12:00:00";

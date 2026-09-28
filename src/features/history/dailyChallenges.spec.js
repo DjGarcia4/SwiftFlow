@@ -195,6 +195,42 @@ describe("the keyboard-only challenge", () => {
   });
 });
 
+describe("the one-finger challenge", () => {
+  it("starts the day after it shipped, and counts a Dedos run on one finger", () => {
+    for (let back = 1; back <= 400; back++) {
+      const day = new Date(2026, 8, 29 - back, 12);
+      const kinds = buildDailyChallenges([], day).map((c) => c.kind);
+      expect(kinds).not.toContain("finger-alone");
+      // Nor does the mode challenge send anyone to it before then
+      const mode = buildDailyChallenges([], day).find((c) => c.kind === "mode");
+      expect(mode?.action.mode).not.toBe("fingers");
+    }
+
+    let found = null;
+    for (let i = 0; i < 400 && !found; i++) {
+      const day = new Date(2026, 8, 29 + i, 12);
+      if (buildDailyChallenges([], day).some((c) => c.kind === "finger-alone")) {
+        found = day;
+      }
+    }
+    expect(found).not.toBeNull();
+
+    const both = session(found, {
+      mode: "fingers",
+      fingers: ["left-index", "right-index"],
+    });
+    const pending = buildDailyChallenges([both], found).find(
+      (c) => c.kind === "finger-alone"
+    );
+    expect(pending.completed).toBe(false);
+    const alone = session(found, { mode: "fingers", fingers: ["left-pinky"] });
+    const done = buildDailyChallenges([alone], found).find(
+      (c) => c.kind === "finger-alone"
+    );
+    expect(done.completed).toBe(true);
+  });
+});
+
 describe("computeChallengeStats", () => {
   it("adds up the challenges completed on every day", () => {
     expect(computeChallengeStats([])).toEqual({ completed: 0, fullDays: 0 });

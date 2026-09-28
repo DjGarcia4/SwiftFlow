@@ -165,7 +165,11 @@ import { useSoundStore } from "@/shared/stores/sound";
 import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
 import { usePaletteStore } from "@/features/command-palette/store";
 import { buildCommands } from "@/features/command-palette/commands";
-import { useHotkeysStore, altLabel } from "@/features/command-palette/hotkeys";
+import {
+  useHotkeysStore,
+  altLabel,
+  RESULTS_GRACE_MS,
+} from "@/features/command-palette/hotkeys";
 import KeyHint from "@/features/command-palette/components/KeyHint.vue";
 import { useCourseProgress } from "@/features/course/useCourse";
 import { searchCommands, withRecentFirst } from "@/features/command-palette/search";
@@ -354,6 +358,18 @@ const onKeydown = (event) => {
   }
   // A button's own key, shown beside it. Not while a dialog is up: its
   // buttons are the only ones that should answer.
+  // A run just ended: whatever's still being typed goes nowhere
+  if (
+    hotkeys.quiet &&
+    !palette.isOpen &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    event.key?.length === 1
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
   if (!palette.isOpen && !document.querySelector("[aria-modal='true']")) {
     const hotkey = hotkeys.match(event);
     if (hotkey) {
@@ -387,6 +403,14 @@ watch(
     hotkeys.captured = typing;
   },
   { immediate: true }
+);
+
+// The moment a run ends, the keys go quiet for a bit
+watch(
+  () => config.isCompleted,
+  (completed) => {
+    if (completed && route.name === "home") hotkeys.quietFor(RESULTS_GRACE_MS);
+  }
 );
 
 // The mouse (or a finger) on the page: whatever's played next wasn't

@@ -40,14 +40,23 @@
         <ReviewToday
           v-if="historyStore.reviewToday.keys.length"
           class="mb-2"
+          :key-number="playKeys.review"
           @play="open = false"
         />
-        <DailyChallengesList :challenges="challenges" @play="open = false" />
+        <DailyChallengesList
+          :challenges="challenges"
+          :first-key="playKeys.challenges"
+          @play="open = false"
+        />
         <p v-if="allDone" class="mt-3 text-center text-xs font-bold text-success-dark">
           {{ t("history.challengesWidget.fullDay") }}
         </p>
 
-        <WeeklyChallengeCard class="mt-2" @play="open = false" />
+        <WeeklyChallengeCard
+          class="mt-2"
+          :key-number="playKeys.weekly"
+          @play="open = false"
+        />
 
         <div class="mt-4 pt-4 border-t-2 border-faded-gray">
           <WeeklyGoal compact />
@@ -93,7 +102,7 @@ import { useHistoryStore } from "@/features/history/store";
 import { useConfigStore } from "@/features/typing-test/store";
 import { msUntilNextDay } from "@/features/history/dailyChallenges";
 import { usePaletteStore } from "@/features/command-palette/store";
-import { useHotkey } from "@/features/command-palette/hotkeys";
+import { useHotkey, useMenuKeys } from "@/features/command-palette/hotkeys";
 import { focusableIn } from "@/shared/composables/useModalFocus";
 import KeyHint from "@/features/command-palette/components/KeyHint.vue";
 
@@ -119,6 +128,30 @@ const hidden = computed(
 watch(hidden, (isHidden) => {
   if (isHidden) open.value = false;
 });
+
+// Open, every "Jugar" by its number, top to bottom: the review, the day's
+// challenges that can be played, the weekly one
+const playKeys = computed(() => {
+  let next = 1;
+  const review =
+    historyStore.reviewToday.keys.length && !historyStore.reviewToday.completed
+      ? next++
+      : null;
+  const first = next;
+  next += challenges.value.filter((c) => c.action && !c.completed).length;
+  return { review, challenges: first, weekly: next };
+});
+
+useMenuKeys(
+  () => open.value,
+  (event) => {
+    if (!/^[1-9]$/.test(event.key)) return false;
+    const button = panel.value?.querySelector(`[data-play-key="${event.key}"]`);
+    if (!button) return false;
+    button.click();
+    return true;
+  }
+);
 
 // Opened from the keyboard, the focus goes in with it, so Tab walks the
 // challenges and Enter plays one

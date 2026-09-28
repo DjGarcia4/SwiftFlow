@@ -12,12 +12,17 @@ import { isApple, isEditable } from "@/features/command-palette/keys";
 // (the results, the other pages) the letter alone does it.
 //
 // A hotkey: { key, run, label?, enabled?, plainOnly?, inPalette? }.
-// `key` is one letter. `enabled` says whether it can be pressed now (the
+// `key` is one letter, or a digit. `enabled` says whether it can be pressed now (the
 // button is showing). `plainOnly` ones don't take Alt: the page links,
 // which have no business being pressed mid-text. The ones with a `label`
 // are offered in the palette too, unless `inPalette` is false.
 
 export const altLabel = () => (isApple() ? "⌥" : "Alt ");
+
+// Right after a run ends, keys still in flight -- the last word's letters,
+// the space after it -- would land on the results' buttons. For this long
+// no key does anything there, space included, and the chips show up after.
+export const RESULTS_GRACE_MS = 2000;
 
 export const useHotkeysStore = defineStore("hotkeys", () => {
   // id -> hotkey. Replaced whole on every change, so the chips update; not
@@ -26,6 +31,16 @@ export const useHotkeysStore = defineStore("hotkeys", () => {
   const registry = shallowRef(new Map());
   // Letters are typing right now: a key needs Alt to be a hotkey
   const captured = ref(false);
+  // Just after a run: keys do nothing yet (RESULTS_GRACE_MS)
+  const quiet = ref(false);
+  let quietTimeout = null;
+  const quietFor = (ms) => {
+    clearTimeout(quietTimeout);
+    quiet.value = true;
+    quietTimeout = setTimeout(() => {
+      quiet.value = false;
+    }, ms);
+  };
 
   const register = (id, hotkey) => {
     const next = new Map(registry.value);
@@ -46,7 +61,7 @@ export const useHotkeysStore = defineStore("hotkeys", () => {
   // What the chip beside a button says, or null when it shouldn't show one
   const comboFor = (id) => {
     const hotkey = registry.value.get(id);
-    if (!hotkey || !isEnabled(hotkey)) return null;
+    if (!hotkey || !isEnabled(hotkey) || quiet.value) return null;
     const key = hotkey.key.toUpperCase();
     if (!captured.value) return key;
     return hotkey.plainOnly ? null : `${altLabel()}${key}`;
@@ -78,8 +93,8 @@ export const useHotkeysStore = defineStore("hotkeys", () => {
     }
     let letter = null;
     if (event.altKey) {
-      const found = /^Key([A-Z])$/.exec(event.code ?? "");
-      letter = found ? found[1].toLowerCase() : null;
+      const found = /^(?:Key([A-Z])|Digit([0-9]))$/.exec(event.code ?? "");
+      letter = found ? (found[1] ?? found[2]).toLowerCase() : null;
     } else if (!captured.value && !isEditable(event.target)) {
       letter = event.key?.length === 1 ? event.key.toLowerCase() : null;
     }
@@ -100,6 +115,8 @@ export const useHotkeysStore = defineStore("hotkeys", () => {
   return {
     registry,
     captured,
+    quiet,
+    quietFor,
     register,
     unregister,
     comboFor,
@@ -124,3 +141,27 @@ export const useHotkey = (id, hotkey) => {
 // The palette's label for a hotkey, resolved now (labels follow the language)
 export const hotkeyLabel = (hotkey) =>
   typeof hotkey.label === "function" ? hotkey.label() : t(hotkey.label);
+
+// Keys inside an open menu: plain keys, no Alt, since while it's open
+// nothing typed goes to the text. `onKey(event)` returns true for a key it
+// took; that key then goes nowhere else. Arrows, Tab, Enter, Space and Esc
+// are left to the menu as they always are.
+export const useMenuKeys = (isOpen, onKey) => {
+  const listener = (event) => {
+    if (!isOpen() || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.isComposing || document.querySelector("[aria-modal='true']")) return;
+    // A held key doesn't flip an option back and forth, nor type
+    if (event.repeat) {
+      if (event.key.length === 1) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+      return;
+    }
+    if (!onKey(event)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  };
+  onMounted(() => document.addEventListener("keydown", listener, true));
+  onUnmounted(() => document.removeEventListener("keydown", listener, true));
+};

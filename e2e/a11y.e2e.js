@@ -38,7 +38,7 @@ const finishTest = async (page) => {
   await typeAll(page);
   await expect(restartHint(page)).toBeVisible();
   // Let the result cards finish rising in
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(2200);
 };
 
 // Every screen, and every dialog on the typing screen
@@ -66,7 +66,7 @@ const eachScreen = async (page, check) => {
 
   await page.goto("/historial");
   await expect(page.getByRole("heading", { name: "Historial" })).toBeVisible();
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(2200);
   await check("history");
 
   await page.goto("/resumen");

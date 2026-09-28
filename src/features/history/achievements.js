@@ -1,4 +1,5 @@
 import { t } from "@/shared/i18n";
+import { FINGER_IDS } from "@/features/typing-test/content/fingers";
 import {
   computeBestWpm,
   computeLongestDailyStreak,
@@ -305,6 +306,25 @@ export const ACHIEVEMENTS = [
     category: "course",
     icon: "academic-cap",
     check: (ctx) => ctx.course.complete,
+  },
+  // "Dedos": the fingers one by one
+  {
+    id: "fingers_1",
+    category: "course",
+    icon: "hand",
+    check: (ctx) => ctx.fingersCount >= 1,
+  },
+  {
+    id: "fingers_each",
+    category: "course",
+    icon: "hand",
+    check: (ctx) => ctx.fingersAlone >= FINGER_IDS.length,
+  },
+  {
+    id: "fingers_pinkies",
+    category: "course",
+    icon: "hand",
+    check: (ctx) => ctx.cleanPinkyRun,
   },
 
   // Languages — practicing English too
@@ -723,6 +743,20 @@ export const computeAchievements = (results, { weeksCompleted = 0 } = {}) => {
     ),
     focusCount: results.filter((r) => r.focus).length,
     keyboardOnlyCount: results.filter((r) => r.keyboard).length,
+    fingersCount: results.filter((r) => r.mode === "fingers").length,
+    fingersAlone: new Set(
+      results
+        .filter((r) => r.mode === "fingers" && r.fingers?.length === 1)
+        .map((r) => r.fingers[0])
+    ).size,
+    cleanPinkyRun: results.some(
+      (r) =>
+        r.mode === "fingers" &&
+        r.modeValue >= 25 &&
+        r.accuracy >= 95 &&
+        r.fingers?.length > 0 &&
+        r.fingers.every((finger) => finger.endsWith("-pinky"))
+    ),
     englishCount: results.filter((r) => r.textLanguage === "en").length,
     bilingualDay: hasBilingualDay(results),
     englishClassicsRead: new Set(

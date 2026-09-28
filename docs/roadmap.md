@@ -182,8 +182,41 @@ Landing: novedades, tarjeta "Sin soltar el teclado" actualizada.
 
 ## Fase 16 — Entrenar por dedos
 
-Elegir qué dedos practicar: uno solo (el meñique izquierdo), varios, una mano entera o las dos.
-El texto sale de las teclas de esos dedos en tu distribución de teclado: palabras reales que
-se escriben solo con ellos cuando hay, y grupos de letras de esos dedos cuando no alcanzan.
+Un modo nuevo, **Dedos**: elegir qué dedos practicar -- uno solo (el meñique izquierdo),
+varios, una mano entera o las dos -- en un selector con forma de manos, cada dedo en su color
+y con sus letras. Atajos: mano izquierda, mano derecha, las dos, índices, meñiques.
 
-Landing: modo nuevo en la tira, novedades, logros y un reto diario.
+- El texto sale solo de las letras de esos dedos en tu distribución de teclado (Dvorak y
+  Colemak cambian las letras, no los dedos): palabras reales que se escriben solo con ellas
+  cuando hay ("cereza", "abrazar" con la izquierda; "molino", "niño" con la derecha), y
+  grupos de sus letras cuando no alcanzan ("fgt rvb")
+- El teclado en pantalla aparece con los colores por dedo y apaga las teclas del resto
+- 10, 25, 50 o 100 palabras. El historial dice qué dedos ("Dedos · Índices · 25") y el
+  fantasma es por dedos y largo
+- En la paleta: cada atajo y cada dedo solo
+- La barra de configuración, más simple: con doce modos la tira no entraba. Ahora el modo es
+  un solo botón que abre todos agrupados (pruebas, textos, práctica), cada uno con una línea
+  de qué es; al lado, solo lo de ese modo; y puntuación, sin red y los modos exigentes van
+  juntos en "Opciones", que dice cuántas hay activas
+- Y la barra con teclas, como el resto de los botones (con Alt/⌥ en el test): **M** el menú de
+  modos (flechas y Enter adentro), **1–9** la cantidad o el tiempo en orden, **J** lo propio del
+  modo (los dedos, las teclas de Entrenar, tus textos), **W** las opciones. El marcapasos pasa
+  de M a **B**
+- Adentro de cada menú abierto, una tecla por opción y sin Alt (con el menú abierto nada va al
+  texto), escrita en la opción: en los modos su letra (T Tiempo, P Palabras, N Números, C Cita,
+  L Clásicos, D Dictado, O Código, M Mi texto, E Entrenar, F Dedos, Z Zen); en los dedos la tecla
+  de la fila guía donde descansa cada uno (A S D F · J K L Ñ) y 1–5 para los atajos; en Opciones
+  P, S, M, C y 0/9/5/8 para la precisión; en Entrenar la letra misma; en Mi texto 1–9 y N
+- En los retos abiertos (⌥L), cada "Jugar" con su número de arriba abajo: el repaso, los retos
+  del día que se juegan y el semanal
+- Al terminar una partida, 2 segundos en los que ninguna tecla hace nada (Espacio incluido): las
+  letras que todavía iban en camino ya no mandan a otro lado. Los chips aparecen recién ahí
+- En pausa, **P** sigue (escribir también) y en Zen el botón de terminar dice **Esc**, que es lo
+  que lo termina. "Entrenar ahora" pasa de E a **D**, en los resultados y en el aviso a mitad de
+  partida (con ⌥ la E es un acento en Mac), y ese aviso ya no tapa el botón de Retos
+
+Landing: modo nuevo en la tira, novedades (el modo, y la barra más simple con sus teclas),
+tarjeta "Sin soltar el teclado" y README. Los textos del logro y el reto sin mouse ya cuentan
+las teclas de los botones. Logros: una partida, cada dedo por
+separado, meñiques con 95%. Reto diario: un solo dedo (desde el 29/9), y Dedos entra en el
+reto de "jugá tal modo".

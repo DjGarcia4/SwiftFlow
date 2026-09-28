@@ -60,3 +60,14 @@ export const describeFailure = (failure) => {
     failure.minAccuracy
   );
 };
+
+// The keys for these, with the options menu open (ToolbarOptions): M for
+// sudden death (muerte súbita), C for correcting, and the accuracy by its
+// digit -- 0 for none, 9, 5 and 8 for 90, 95 and 98
+export const STRICT_KEYS = { "sudden-death": "M", "must-correct": "C" };
+export const ACCURACY_KEYS = [
+  ["0", null],
+  ["9", 90],
+  ["5", 95],
+  ["8", 98],
+];

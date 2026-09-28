@@ -62,14 +62,14 @@ test("a run set up and played on the keyboard alone earns its achievement", asyn
 }) => {
   await openTest(page);
   await runCommand(page, "palabras 10");
-  const punctuation = page
-    .getByRole("button", { name: /Puntuación/ })
-    .locator("visible=true")
-    .first();
-  if ((await punctuation.getAttribute("aria-pressed")) === "true") {
-    await runCommand(page, "puntuacion");
-  }
-  await expect(punctuation).toHaveAttribute("aria-pressed", "false");
+  // Punctuation off, from the palette too: the store says what's on
+  const punctuationOn = () =>
+    page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("swiftflow_config") ?? "{}").selectedContentTypes
+    );
+  if ((await punctuationOn()) === "punctuation") await runCommand(page, "puntuacion");
+  expect(await punctuationOn()).toBeNull();
 
   await typeAll(page);
   await expect(restartHint(page)).toBeVisible();
@@ -80,8 +80,8 @@ test("a run set up and played on the keyboard alone earns its achievement", asyn
 
   // Touching the mouse after that: the next run isn't keyboard-only
   await page.mouse.click(5, 300);
-  // Space starts over only once the results have had a second to be seen
-  await page.waitForTimeout(1100);
+  // Space starts over only once the results have had a moment to be seen
+  await page.waitForTimeout(2200);
   await page.keyboard.press(" ");
   await typeAll(page);
   await expect(restartHint(page)).toBeVisible();

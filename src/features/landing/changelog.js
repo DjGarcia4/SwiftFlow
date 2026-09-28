@@ -5,6 +5,8 @@
 import { t, localeTag } from "@/shared/i18n";
 
 export const CHANGELOG = [
+  { id: "simplerBar", date: "2026-09" },
+  { id: "fingers", date: "2026-09" },
   { id: "keyHints", date: "2026-09" },
   { id: "commandPalette", date: "2026-09" },
   { id: "recordsByLanguage", date: "2026-09" },

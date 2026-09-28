@@ -5,6 +5,7 @@ import {
   normalizeDrillKeys,
   normalizeDrillWords,
 } from "@/features/typing-test/content/drill";
+import { normalizeFingers } from "@/features/typing-test/content/fingers";
 import {
   loadCustomTexts,
   saveCustomTexts,
@@ -67,6 +68,7 @@ export const useConfigStore = defineStore("config", () => {
     "code",
     "zen",
     "drill",
+    "fingers",
     "custom",
     "weekly",
     "lesson",
@@ -100,7 +102,9 @@ export const useConfigStore = defineStore("config", () => {
   // point.
   const showKeyboard = ref(savedConfig.showKeyboard);
   const keyboardVisible = computed(
-    () => showKeyboard.value ?? (type.value === "drill" || type.value === "lesson")
+    () =>
+      showKeyboard.value ??
+      (type.value === "drill" || type.value === "lesson" || type.value === "fingers")
   );
   // The on-screen keyboard colored by which finger types each key
   const fingerColors = ref(savedConfig.fingerColors);
@@ -134,6 +138,8 @@ export const useConfigStore = defineStore("config", () => {
   const dictation = ref(null);
   // The course lesson being played ("lesson" mode), or null for the next
   const lessonId = ref(savedConfig.lessonId);
+  // "Dedos": the fingers being practiced, never none
+  const fingers = ref(savedConfig.fingers);
 
   // "Mi texto": your own saved texts, the one picked, and the editor for
   // them (null when closed, { id } -- null id for a new one -- when open)
@@ -167,6 +173,7 @@ export const useConfigStore = defineStore("config", () => {
       dictationSentences: dictationSentences.value,
       dictationRate: dictationRate.value,
       lessonId: lessonId.value,
+      fingers: fingers.value,
       selectedCustomTextId: selectedCustomTextId.value,
     });
   };
@@ -397,6 +404,15 @@ export const useConfigStore = defineStore("config", () => {
     resetTypingSession();
   };
 
+  // An empty pick keeps the one there is: there's no practice on no fingers
+  const handleFingers = (picked) => {
+    const next = normalizeFingers(picked);
+    if (!next.length) return;
+    fingers.value = next;
+    persistConfig();
+    resetTypingSession();
+  };
+
   const handleDictationSentences = (count) => {
     dictationSentences.value = count;
     persistConfig();
@@ -545,6 +561,12 @@ export const useConfigStore = defineStore("config", () => {
     // soon as the last word is started.
     return userInput.value.length >= referenceText.value.length;
   });
+
+  // The settings bar is up: not mid-run (paused is fine) and not on the
+  // results. Its buttons' keys only work while it is.
+  const settingsShown = computed(
+    () => !isCompleted.value && (userInput.value.length === 0 || isPaused.value)
+  );
 
   const progressPercentage = computed(() => {
     if (type.value === "time") {
@@ -897,6 +919,8 @@ export const useConfigStore = defineStore("config", () => {
     if (
       type.value === "code" ||
       type.value === "drill" ||
+      // Same as the drill: its ñ would lose its tilde
+      type.value === "fingers" ||
       type.value === "weekly" ||
       type.value === "custom" ||
       // Already as it's dictated: plain, but keeping its accents
@@ -997,6 +1021,8 @@ export const useConfigStore = defineStore("config", () => {
     setDictation,
     lessonId,
     startLesson,
+    fingers,
+    handleFingers,
     strictMode,
     setStrictMode,
     minAccuracy,
@@ -1023,6 +1049,7 @@ export const useConfigStore = defineStore("config", () => {
     typedCharacters,
     errors,
     isCompleted,
+    settingsShown,
     progressPercentage,
     bestWpm,
     isBeatingBest,

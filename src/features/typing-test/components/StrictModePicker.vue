@@ -52,12 +52,15 @@
 import { ref, computed, h, onMounted, onUnmounted } from "vue";
 import { HeartIcon, ChevronDownIcon } from "@heroicons/vue/24/outline";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
 import { t } from "@/shared/i18n";
 import { useConfigStore } from "@/features/typing-test/store";
 import {
   STRICT_MODES,
   MIN_ACCURACY_OPTIONS,
   strictModeById,
+  STRICT_KEYS,
+  ACCURACY_KEYS,
 } from "@/features/typing-test/utils/strictModes";
 
 defineProps({
@@ -114,18 +117,25 @@ const StrictOptions = () => [
           onClick: () => configStore.setStrictMode(mode.id),
         },
         [
-          h("span", { class: "block text-sm font-extrabold text-charcoal" }, mode.label),
+          h(
+            "span",
+            { class: "flex items-center gap-2 text-sm font-extrabold text-charcoal" },
+            [mode.label, h(KeyCap, { class: "ml-auto" }, () => STRICT_KEYS[mode.id])]
+          ),
           h("span", { class: "block text-xs font-bold text-pencil-gray" }, mode.detail),
         ]
       )
     )
   ),
   h("div", { class: "flex w-full items-center justify-between gap-3" }, [
-    h(
-      "span",
-      { class: "text-xs font-bold text-pencil-gray" },
-      t("typing.strict.minAccuracy")
-    ),
+    h("span", { class: "flex flex-col gap-1 text-xs font-bold text-pencil-gray" }, [
+      t("typing.strict.minAccuracy"),
+      h(
+        "span",
+        { class: "flex gap-0.5" },
+        ACCURACY_KEYS.map(([key]) => h(KeyCap, () => key))
+      ),
+    ]),
     h(SegmentedControl, {
       label: t("typing.strict.minAccuracy"),
       options: accuracyOptions(),

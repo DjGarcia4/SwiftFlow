@@ -46,10 +46,12 @@
         v-if="challenge.action && !challenge.completed"
         type="button"
         class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border-2 border-primary px-2.5 py-1 text-xs font-extrabold text-primary transition-[background-color,color,scale] duration-200 ease-spring hover:bg-primary hover:text-white active:scale-95"
+        :data-play-key="keyFor(challenge)"
         @click="play(challenge.action)"
       >
         {{ t("history.challengesWidget.play") }}
         <ArrowRightIcon class="w-3.5 h-3.5" />
+        <KeyCap v-if="keyFor(challenge)">{{ keyFor(challenge) }}</KeyCap>
       </button>
     </li>
   </ul>
@@ -60,12 +62,24 @@ import { t } from "@/shared/i18n";
 import { useRouter } from "vue-router";
 import { CheckIcon, ArrowRightIcon } from "@heroicons/vue/24/outline";
 import { ACHIEVEMENT_ICONS } from "@/features/history/achievementPresentation";
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
 import { useConfigStore } from "@/features/typing-test/store";
 
-defineProps({
+const props = defineProps({
   // Output of buildDailyChallenges
   challenges: { type: Array, required: true },
+  // Where the challenges widget numbers its "Jugar" buttons from, for the
+  // keys that press them; null where there are no keys (the history)
+  firstKey: { type: Number, default: null },
 });
+
+// The playable ones, numbered in order from firstKey
+const keyFor = (challenge) => {
+  if (props.firstKey === null) return null;
+  const playable = props.challenges.filter((c) => c.action && !c.completed);
+  const index = playable.indexOf(challenge);
+  return index === -1 ? null : props.firstKey + index;
+};
 
 const emit = defineEmits(["play"]);
 

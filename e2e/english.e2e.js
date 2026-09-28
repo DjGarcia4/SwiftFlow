@@ -13,10 +13,15 @@ test.describe("in English", () => {
 
     if (!isMobile) {
       await expect(
+        page.getByRole("button", { name: /^Mode: .*Change mode$/ })
+      ).toBeVisible();
+      await page.getByRole("button", { name: /^Mode: / }).click();
+      await expect(
         page
           .getByRole("radiogroup", { name: "Mode" })
           .getByRole("radio", { name: "Words" })
       ).toBeVisible();
+      await page.keyboard.press("Escape");
     }
     await expect(page.getByRole("button", { name: "Restart" })).toBeAttached();
 
@@ -135,7 +140,7 @@ test.describe("the landing in English", () => {
   test("tells what SwiftFlow is, and what's new, in English", async ({ page }) => {
     await page.goto("/sobre");
     await expect(page).toHaveTitle("What is SwiftFlow · SwiftFlow");
-    await expect(page.getByText("SwiftFlow in English")).toBeVisible();
+    await expect(page.getByText("A simpler bar")).toBeVisible();
     await expect(page.getByText("Qué es SwiftFlow")).toHaveCount(0);
   });
 });

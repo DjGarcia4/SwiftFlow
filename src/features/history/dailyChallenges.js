@@ -73,6 +73,7 @@ const CHALLENGE_MODES = [
   { mode: "classics", since: since(2026, 9, 26) },
   { mode: "dictation", since: since(2026, 9, 26) },
   { mode: "lesson", since: since(2026, 9, 26) },
+  { mode: "fingers", since: since(2026, 9, 29) },
 ];
 
 // Each template turns the baseline into a concrete goal plus a measure of
@@ -235,6 +236,19 @@ const TEMPLATES = [
       title: t("history.challenges.keyboardOnly"),
       target: 1,
       measure: (day) => (day.some((r) => r.keyboard) ? 1 : 0),
+    }),
+  },
+  // One finger on its own ("Dedos", September 2026)
+  {
+    kind: "finger-alone",
+    icon: "hand",
+    since: since(2026, 9, 29),
+    build: () => ({
+      title: t("history.challenges.fingerAlone"),
+      target: 1,
+      measure: (day) =>
+        day.some((r) => r.mode === "fingers" && r.fingers?.length === 1) ? 1 : 0,
+      action: { mode: "fingers" },
     }),
   },
 ];

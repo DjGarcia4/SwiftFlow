@@ -40,29 +40,51 @@ export const option = (page, group, name) =>
         .locator("visible=true")
         .getByRole("radio", { name, exact: true });
 
+// On desktop the mode is one button opening the menu of modes, which says
+// the one that's on
+const modeButton = (page) => page.locator("[data-mode-button]").locator("visible=true");
+const isModeMenu = (page, group) => group === "Modo" && !isPhone(page);
+
 export const expectChosen = (page, group, name) =>
-  expect(option(page, group, name)).toHaveAttribute(
-    isPhone(page) ? "aria-pressed" : "aria-checked",
-    "true"
-  );
+  isModeMenu(page, group)
+    ? expect(modeButton(page)).toHaveAccessibleName(`Modo: ${name}. Cambiar de modo`)
+    : expect(option(page, group, name)).toHaveAttribute(
+        isPhone(page) ? "aria-pressed" : "aria-checked",
+        "true"
+      );
 
 export const choose = async (page, group, name) => {
+  if (isModeMenu(page, group)) await modeButton(page).click();
   await option(page, group, name).click();
   await expectChosen(page, group, name);
 };
+
+// The options that go with any mode (punctuation, "sin red", the demanding
+// modes): behind the bar's "Opciones" on desktop, in the sheet on a phone
+export const openOptions = async (page) => {
+  if (!isPhone(page)) await page.locator("[data-options-button]").click();
+};
+export const closeOptions = async (page) => {
+  if (!isPhone(page)) await page.keyboard.press("Escape");
+};
+
+export const punctuationToggle = (page) =>
+  page
+    .getByRole("button", { name: /Puntuación/ })
+    .locator("visible=true")
+    .first();
 
 // A short words test: 10 words, no punctuation
 export const setUpShortWordsTest = async (page) => {
   await openSettings(page);
   await choose(page, "Modo", "Palabras");
   await choose(page, "Cantidad", "10");
-  const punctuation = page
-    .getByRole("button", { name: /Puntuación/ })
-    .locator("visible=true")
-    .first();
+  await openOptions(page);
+  const punctuation = punctuationToggle(page);
   if ((await punctuation.getAttribute("aria-pressed")) === "true") {
     await punctuation.click();
   }
+  await closeOptions(page);
   await closeSettings(page);
 };
 

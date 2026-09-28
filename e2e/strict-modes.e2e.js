@@ -7,14 +7,15 @@ import {
   closeSettings,
   isPhone,
   restartHint,
+  openOptions,
+  closeOptions,
 } from "./helpers";
 
-// Picks the demanding modes: on desktop from the bar's chip, on a phone
+// Picks the demanding modes: on desktop from the bar's options, on a phone
 // from the settings sheet
 const pickStrict = async (page, { mode, minAccuracy }) => {
   await openSettings(page);
-  if (!isPhone(page))
-    await page.getByRole("button", { name: /^Modos exigentes/ }).click();
+  await openOptions(page);
   if (mode) {
     await page
       .getByRole("group", { name: "Un error…" })
@@ -29,7 +30,7 @@ const pickStrict = async (page, { mode, minAccuracy }) => {
       .getByRole("radio", { name: `${minAccuracy}%` })
       .click();
   }
-  if (!isPhone(page)) await page.keyboard.press("Escape");
+  await closeOptions(page);
   await closeSettings(page);
 };
 

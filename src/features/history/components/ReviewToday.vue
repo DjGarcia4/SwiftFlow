@@ -45,15 +45,18 @@
       v-if="!review.completed"
       type="button"
       class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-xs font-extrabold text-white border-b-2 border-primary-dark transition-[background-color,scale] duration-200 ease-spring hover:bg-primary-dark active:scale-95"
+      :data-play-key="keyNumber ?? undefined"
       @click="startReview"
     >
       {{ t("history.review.start") }}
       <ArrowRightIcon class="w-3.5 h-3.5" />
+      <KeyCap v-if="keyNumber" on-primary>{{ keyNumber }}</KeyCap>
     </button>
   </div>
 </template>
 
 <script setup>
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
 import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -64,6 +67,11 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useHistoryStore } from "@/features/history/store";
 import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
+
+defineProps({
+  // The key that presses "Jugar" in the challenges widget; none elsewhere
+  keyNumber: { type: Number, default: null },
+});
 
 const emit = defineEmits(["play"]);
 

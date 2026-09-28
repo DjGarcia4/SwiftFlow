@@ -51,6 +51,7 @@ import {
   ALTGR_KEY,
   FINGERS,
   fingerOfKey,
+  fingerRgb,
 } from "@/features/typing-test/utils/keyboardMap";
 import { layoutById } from "@/features/typing-test/utils/keyboardLayouts";
 
@@ -61,21 +62,24 @@ const FLASH_MS = 450;
 const configStore = useConfigStore();
 const layout = computed(() => layoutById(configStore.keyboardLayout));
 
-// One color per kind of finger, the same on both hands
-const FINGER_RGB = {
-  pinky: [139, 92, 246], // violet
-  ring: [59, 130, 246], // blue
-  middle: [16, 185, 129], // emerald
-  index: [245, 158, 11], // amber
-  thumb: [100, 116, 139], // slate
-};
-const rgbOf = (finger) => FINGER_RGB[FINGERS[finger].kind];
+const rgbOf = fingerRgb;
 const fingerColor = (finger) => `rgb(${rgbOf(finger).join(" ")})`;
 
-// A course lesson is about which finger goes where: the colors are always on
+// A course lesson, and "Dedos", are about which finger goes where: the
+// colors are always on
 const showFingers = computed(
-  () => configStore.fingerColors || configStore.type === "lesson"
+  () =>
+    configStore.fingerColors ||
+    configStore.type === "lesson" ||
+    configStore.type === "fingers"
 );
+
+// "Dedos": the keys of the fingers not being practiced step back
+const offFinger = (key) => {
+  if (configStore.type !== "fingers") return false;
+  const finger = fingerFor(key);
+  return finger !== "thumb" && !configStore.fingers.includes(finger);
+};
 
 // Shift belongs to whichever pinky isn't pressing the key; drawn as a pinky
 const fingerFor = (key) =>
@@ -200,6 +204,7 @@ const fingerStyle = (key) => {
 const keyStyle = (key) => {
   // A mistake's flash is drawn by the classes, and wins over everything
   if (flash.value?.wanted === key || flash.value?.pressed === key) return {};
+  if (offFinger(key) && !isNext(key)) return { opacity: 0.25 };
   const tint = missTint.value[key];
   if (!tint || isNext(key)) return showFingers.value ? fingerStyle(key) : {};
   // 12%..45% of the danger color: a hint, never louder than the next key

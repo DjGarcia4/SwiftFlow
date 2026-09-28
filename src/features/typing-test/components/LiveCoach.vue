@@ -2,10 +2,11 @@
   <!--
     Mid-session nudge: shows up once this session makes a weak letter plain,
     with a one-click jump into a drill aimed at it. Kept low on the screen,
-    away from the line being typed.
+    away from the line being typed -- and above the challenges' pill, which
+    comes back on a pause.
   -->
   <div
-    class="fixed bottom-4 left-4 right-4 z-30 flex justify-center sm:left-auto sm:right-6 sm:bottom-6 sm:w-[26rem]"
+    class="fixed bottom-20 left-4 right-4 z-30 flex justify-center sm:left-auto sm:right-6 sm:bottom-24 sm:w-[23rem]"
   >
     <Transition
       enter-active-class="transition-[opacity,translate] duration-500 ease-spring"
@@ -20,6 +21,7 @@
         class="w-full"
         :coach="visibleCoach"
         dismissible
+        hotkey="liveTrain"
         @train="trainNow"
         @dismiss="dismissed = true"
       />
@@ -34,6 +36,7 @@ import { useConfigStore } from "@/features/typing-test/store";
 import { computeLiveCoach } from "@/features/typing-test/utils/liveCoach";
 import { useTrainNow } from "@/features/typing-test/utils/useTrainNow";
 import { announce, sentences } from "@/shared/utils/announcer";
+import { useHotkey } from "@/features/command-palette/hotkeys";
 
 const configStore = useConfigStore();
 const trainNow = useTrainNow();
@@ -63,6 +66,14 @@ const visibleCoach = computed(() => {
   // The results screen has its own, inline version
   if (configStore.isCompleted || configStore.userInput.length === 0) return null;
   return coach.value;
+});
+
+// "D" trains, like the results' coach (with Alt while it's up mid-run)
+useHotkey("liveTrain", {
+  key: "d",
+  label: "palette.commands.train",
+  enabled: () => Boolean(visibleCoach.value),
+  run: () => trainNow(visibleCoach.value.keys),
 });
 
 // Said once when it shows up, not again on every keystroke that keeps it

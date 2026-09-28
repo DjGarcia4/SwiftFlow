@@ -16,7 +16,7 @@
           ? 'min-w-[1.25rem] px-1 py-0.5 text-[10px]'
           : 'min-w-[1.5rem] px-1.5 py-1 text-[11px]',
     ]"
-    >{{ combo }}</kbd
+    >{{ combo }}{{ suffix }}</kbd
   >
 </template>
 
@@ -32,6 +32,8 @@ const props = defineProps({
   small: { type: Boolean, default: false },
   // A badge on the corner of a small icon button (the nav's)
   corner: { type: Boolean, default: false },
+  // Tacked on after the keys: "–4" makes "⌥1" read "⌥1–4" for a row of them
+  suffix: { type: String, default: "" },
 });
 
 const hotkeys = useHotkeysStore();

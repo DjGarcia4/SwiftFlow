@@ -22,6 +22,7 @@ te arma la práctica para arreglarlo.
 | **Código**   | Fragmentos de JavaScript, TypeScript, Python, Java, Go y Rust |
 | **Zen**      | Sin límite: terminás cuando querés                            |
 | **Entrenar** | Texto armado alrededor de tus teclas más flojas               |
+| **Dedos**    | Solo las letras de los dedos que elijas, en tu teclado        |
 
 Con o sin puntuación y mayúsculas, salvo en código, que siempre se escribe tal cual.
 
@@ -49,7 +50,8 @@ Y combinables con cualquier modo:
   `oscuro`, `dvorak`, `historial`…) y **Tab** empieza de nuevo a mitad de una partida; `?`
   fuera del test muestra los atajos. Cada botón muestra su tecla al lado (en los resultados, la
   letra sola; en el test, con Alt/⌥): **L** retos, **F** dónde te frenaste, **C** compartir,
-  **H** historial…
+  **H** historial… También adentro de cada menú: **M** abre los modos y cada uno tiene su letra,
+  **1–9** eligen el tiempo o la cantidad, y en Dedos cada dedo es la tecla donde descansa
 - Efectos de sonido configurables (tecla, error, celebración)
 - Tema claro y oscuro, y alto contraste (sigue al del sistema hasta que lo cambies)
 - Accesible: todo se maneja con el teclado, los diálogos atrapan y devuelven el foco, y

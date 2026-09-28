@@ -37,6 +37,7 @@ export default {
       action: "Acción",
       here: "En esta pantalla",
       course: "Curso",
+      fingers: "Dedos",
       challenges: "Retos",
     },
     commands: {
@@ -92,6 +93,7 @@ export default {
       achievements: "logros medallas trofeos achievements badges",
       weekly: "reto semanal semana weekly",
       course: "curso leccion lecciones seguir course lesson",
+      fingers: "dedos dedo mano manos practicar fingers hand",
     },
     shortcuts: {
       title: "Atajos de teclado",
@@ -147,6 +149,7 @@ export default {
       action: "Action",
       here: "On this screen",
       course: "Course",
+      fingers: "Fingers",
       challenges: "Challenges",
     },
     commands: {
@@ -201,6 +204,7 @@ export default {
       achievements: "achievements badges trophies logros",
       weekly: "weekly challenge week semanal",
       course: "course lesson lessons continue curso leccion",
+      fingers: "fingers finger hand hands dedos mano",
     },
     shortcuts: {
       title: "Keyboard shortcuts",

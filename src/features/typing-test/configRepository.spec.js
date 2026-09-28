@@ -34,6 +34,7 @@ describe("loadConfig", () => {
       dictationSentences: 3,
       dictationRate: "normal",
       lessonId: null,
+      fingers: ["left-index", "right-index"],
     });
   });
 
@@ -64,6 +65,7 @@ describe("loadConfig", () => {
       dictationSentences: 3,
       dictationRate: "normal",
       lessonId: null,
+      fingers: ["left-index", "right-index"],
     });
   });
 });
@@ -90,6 +92,7 @@ describe("sanitizeConfig", () => {
       dictationSentences: 5,
       dictationRate: "slow",
       lessonId: "home-2",
+      fingers: ["left-pinky", "right-pinky"],
     };
     expect(sanitizeConfig(config, options)).toEqual(config);
   });
@@ -112,6 +115,19 @@ describe("sanitizeConfig", () => {
       dictationRate: "normal",
       lessonId: null,
     });
+  });
+
+  it("keeps known fingers in hand order, and never none", () => {
+    expect(
+      sanitizeConfig(
+        { type: "time", fingers: ["right-ring", "toe", "left-ring"] },
+        options
+      ).fingers
+    ).toEqual(["left-ring", "right-ring"]);
+    expect(sanitizeConfig({ type: "time", fingers: [] }, options).fingers).toEqual([
+      "left-index",
+      "right-index",
+    ]);
   });
 
   it("forgets a practice language it doesn't know, so it follows the app's", () => {

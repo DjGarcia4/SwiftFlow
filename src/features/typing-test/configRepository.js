@@ -9,6 +9,10 @@ import { isPracticeLanguage } from "@/features/typing-test/content/practiceLangu
 import { isStrictMode, isMinAccuracy } from "@/features/typing-test/utils/strictModes";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
 import { lessonById } from "@/features/course/course";
+import {
+  normalizeFingers,
+  DEFAULT_FINGERS,
+} from "@/features/typing-test/content/fingers";
 
 // How fast the dictation's voice speaks
 export const DICTATION_RATES = { slow: 0.75, normal: 0.95, fast: 1.15 };
@@ -39,6 +43,7 @@ const DEFAULTS = {
   dictationSentences: 3,
   dictationRate: "normal",
   lessonId: null, // null = the course's next lesson
+  fingers: DEFAULT_FINGERS, // "Dedos": the fingers being practiced
 };
 
 export const loadConfig = () => {
@@ -100,4 +105,7 @@ export const sanitizeConfig = (config, { types, times, words, languages }) => ({
     ? config.dictationRate
     : DEFAULTS.dictationRate,
   lessonId: lessonById(config.lessonId) ? config.lessonId : null,
+  fingers: normalizeFingers(config.fingers).length
+    ? normalizeFingers(config.fingers)
+    : [...DEFAULT_FINGERS],
 });

@@ -10,6 +10,11 @@
 import { t, catalogFor, LOCALES } from "@/shared/i18n";
 import { hotkeyLabel } from "@/features/command-palette/hotkeys";
 import { LESSONS, lessonIndex, lessonTitle } from "@/features/course/course";
+import {
+  FINGER_IDS,
+  FINGER_PRESETS,
+  describeFingers,
+} from "@/features/typing-test/content/fingers";
 import { KEYBOARD_LAYOUTS } from "@/features/typing-test/utils/keyboardLayouts";
 import { PRACTICE_LANGUAGES } from "@/features/typing-test/content/practiceLanguage";
 import { DICTATION_SENTENCE_COUNTS } from "@/features/typing-test/content/dictation";
@@ -50,6 +55,7 @@ const PLAYABLE_MODES = [
   "code",
   "zen",
   "drill",
+  "fingers",
   "custom",
 ];
 
@@ -256,7 +262,7 @@ export const buildCommands = (ctx) => {
   }
 
   // Numbers and the drill count their own way, from the same options
-  if (config.type === "numbers" || config.type === "drill") {
+  if (config.type === "numbers" || config.type === "drill" || config.type === "fingers") {
     for (const count of config.words) {
       add(
         {
@@ -320,6 +326,27 @@ export const buildCommands = (ctx) => {
         labelPath: language ? undefined : "typing.toolbar.allLanguages",
         extra: ["code", "codigo", "programar"],
       }
+    );
+  }
+
+  // "Dedos": the usual picks, and each finger alone
+  const fingerPicks = [
+    ...Object.entries(FINGER_PRESETS).map(([id, fingers]) => ({ id, fingers })),
+    ...FINGER_IDS.map((id) => ({ id, fingers: [id] })),
+  ];
+  for (const { id, fingers } of fingerPicks) {
+    add(
+      {
+        id: `fingers:${id}`,
+        group: group("fingers"),
+        label: describeFingers(fingers),
+        active: config.type === "fingers" && config.fingers.join() === fingers.join(),
+        run: onTheTest(() => {
+          setMode("fingers");
+          config.handleFingers(fingers);
+        }),
+      },
+      { groupId: "fingers", extra: words("palette.keywords.fingers") }
     );
   }
 

@@ -27,6 +27,7 @@ export const LANGUAGE_MODES = new Set([
   "dictation",
   "zen",
   "drill",
+  "fingers",
   "weekly",
   "lesson",
 ]);

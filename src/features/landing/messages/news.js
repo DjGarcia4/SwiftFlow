@@ -7,6 +7,14 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        simplerBar: {
+          title: "Una barra más simple",
+          text: "El modo es un solo botón que abre todos, agrupados y con una línea de qué es cada uno; puntuación, sin red y los modos exigentes van juntos en Opciones. Todo con su tecla, también adentro de cada menú. Al terminar, 2 segundos en los que ninguna tecla te saca del resumen. Y la tendencia del historial ahora dice hacia dónde vas.",
+        },
+        fingers: {
+          title: "Entrenar por dedos",
+          text: "Un modo nuevo, Dedos: elegí el meñique izquierdo, los dos índices o una mano entera, y el texto sale solo de sus letras en tu teclado, con palabras reales cuando las hay. El teclado en pantalla apaga el resto. Con logros y un reto diario.",
+        },
         keyHints: {
           title: "Cada botón con su tecla",
           text: "Al lado de cada botón está la tecla que lo presiona: L abre los retos, F muestra dónde te frenaste, C comparte, H va al historial. En el test van con Alt (⌥ en Mac). Y el curso se hace entero sin mouse: S sigue a la próxima lección, R la repite.",
@@ -138,6 +146,14 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        simplerBar: {
+          title: "A simpler bar",
+          text: "The mode is one button opening them all, grouped, with a line on what each one is; punctuation, no net and the demanding modes sit together under Options. Everything has its key, inside every menu too. When a run ends, 2 seconds where no key takes you away from the summary. And the history's trend now says where you're heading.",
+        },
+        fingers: {
+          title: "Train by finger",
+          text: "A new mode, Fingers: pick the left pinky, both index fingers or a whole hand, and the text comes from their letters only on your keyboard, with real words when there are any. The on-screen keyboard dims the rest. With achievements and a daily challenge.",
+        },
         keyHints: {
           title: "Every button, its key",
           text: "Beside each button is the key that presses it: L opens the challenges, F shows where you slowed down, C shares, H goes to the history. On the test they take Alt (⌥ on a Mac). And the course needs no mouse at all: S moves on to the next lesson, R repeats it.",

@@ -8,7 +8,7 @@
     <button
       v-if="configStore.selectedCustomText"
       type="button"
-      class="flex max-w-56 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1 text-xs font-extrabold transition-[background-color,border-color,color] duration-200"
+      class="relative flex max-w-56 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1 text-xs font-extrabold transition-[background-color,border-color,color] duration-200"
       :class="
         open
           ? 'border-primary bg-primary-tint text-primary'
@@ -17,6 +17,7 @@
       :aria-expanded="open"
       aria-haspopup="listbox"
       :title="configStore.selectedCustomText.name"
+      :aria-keyshortcuts="hotkeys.ariaFor('modeChip')"
       @click="open = !open"
     >
       <DocumentTextIcon class="w-4 h-4 flex-shrink-0 text-primary" />
@@ -25,6 +26,7 @@
         class="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200"
         :class="{ 'rotate-180': open }"
       />
+      <KeyHint id="modeChip" corner />
     </button>
     <button
       v-else
@@ -50,7 +52,7 @@
       >
         <ul role="listbox" aria-label="Tus textos" class="max-h-72 overflow-y-auto">
           <li
-            v-for="entry in configStore.customTexts"
+            v-for="(entry, index) in configStore.customTexts"
             :key="entry.id"
             role="option"
             :aria-selected="entry.id === configStore.selectedCustomText?.id"
@@ -67,14 +69,15 @@
               @click="pick(entry.id)"
             >
               <div
-                class="truncate text-sm font-extrabold"
+                class="flex items-center gap-2 truncate text-sm font-extrabold"
                 :class="
                   entry.id === configStore.selectedCustomText?.id
                     ? 'text-primary'
                     : 'text-charcoal'
                 "
               >
-                {{ entry.name }}
+                <span class="truncate">{{ entry.name }}</span>
+                <KeyCap v-if="index < 9" class="ml-auto">{{ index + 1 }}</KeyCap>
               </div>
               <div class="text-[11px] font-bold text-pencil-gray">
                 {{ countWords(entry.text) }} palabras
@@ -101,6 +104,7 @@
           >
             <PlusIcon class="w-4 h-4" />
             {{ t("typing.customText.new") }}
+            <KeyCap class="ml-auto">N</KeyCap>
           </button>
           <p v-else class="px-3 py-2 text-xs font-bold text-pencil-gray">
             {{ t("typing.customText.limit", MAX_CUSTOM_TEXTS) }}
@@ -121,10 +125,28 @@ import {
   PlusIcon,
 } from "@heroicons/vue/24/outline";
 import { useConfigStore } from "@/features/typing-test/store";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
+import {
+  useHotkey,
+  useHotkeysStore,
+  useMenuKeys,
+} from "@/features/command-palette/hotkeys";
 import { countWords, MAX_CUSTOM_TEXTS } from "@/features/typing-test/content/customTexts";
 
 const configStore = useConfigStore();
 const open = ref(false);
+
+// "J", the key of the mode's own chip, opens the list
+const hotkeys = useHotkeysStore();
+useHotkey("modeChip", {
+  key: "j",
+  label: "typing.toolbar.modeChip",
+  enabled: () => configStore.settingsShown && Boolean(configStore.selectedCustomText),
+  run: () => {
+    open.value = !open.value;
+  },
+});
 const root = ref(null);
 
 const pick = (id) => {
@@ -152,4 +174,26 @@ onUnmounted(() => {
   document.removeEventListener("pointerdown", handlePointerDown);
   document.removeEventListener("keydown", handleKeydown);
 });
+
+// Open, each text by its number and N for a new one
+useMenuKeys(
+  () => open.value,
+  (event) => {
+    const entry = /^[1-9]$/.test(event.key)
+      ? configStore.customTexts[Number(event.key) - 1]
+      : null;
+    if (entry) {
+      pick(entry.id);
+      return true;
+    }
+    if (
+      event.key.toLowerCase() === "n" &&
+      configStore.customTexts.length < MAX_CUSTOM_TEXTS
+    ) {
+      edit(null);
+      return true;
+    }
+    return false;
+  }
+);
 </script>

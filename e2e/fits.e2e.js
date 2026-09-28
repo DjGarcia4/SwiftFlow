@@ -11,6 +11,7 @@ const SETUPS = {
   lesson: { type: "lesson" },
   "dictation with the keyboard": { type: "dictation", showKeyboard: true },
   drill: { type: "drill" },
+  fingers: { type: "fingers" },
 };
 
 for (const [name, config] of Object.entries(SETUPS)) {

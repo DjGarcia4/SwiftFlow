@@ -19,6 +19,7 @@ export default {
       code: { name: "Código", detail: (n) => `${n} lenguajes` },
       zen: { name: "Zen", detail: "sin límite" },
       train: { name: "Entrenar", detail: "tus teclas y palabras flojas" },
+      fingers: { name: "Dedos", detail: "uno, varios o una mano" },
       custom: { name: "Mi texto", detail: "pegá lo que escribís" },
       weekly: { name: "Semanal", detail: "el mismo texto para todos" },
     },
@@ -71,7 +72,7 @@ export default {
       },
       keyboardOnly: {
         title: "Sin soltar el teclado",
-        text: "Cada botón muestra su tecla al lado, y Ctrl/⌘ K para todo lo demás: 30 segundos, palabras 50, tema oscuro. Tab empieza de nuevo.",
+        text: "Cada botón muestra su tecla al lado, también adentro de los menús, y Ctrl/⌘ K para todo lo demás: 30 segundos, palabras 50, tema oscuro.",
       },
       appearance: {
         title: "Texto a tu gusto",
@@ -141,6 +142,7 @@ export default {
       code: { name: "Code", detail: (n) => `${n} languages` },
       zen: { name: "Zen", detail: "no limit" },
       train: { name: "Train", detail: "your weak keys and words" },
+      fingers: { name: "Fingers", detail: "one, a few or a whole hand" },
       custom: { name: "My text", detail: "paste what you write" },
       weekly: { name: "Weekly", detail: "the same text for everyone" },
     },
@@ -205,7 +207,7 @@ export default {
       },
       keyboardOnly: {
         title: "Hands stay on the keys",
-        text: "Every button shows its key beside it, and Ctrl/⌘ K for the rest: 30 seconds, words 50, dark theme. Tab starts over.",
+        text: "Every button shows its key beside it, inside the menus too, and Ctrl/⌘ K for the rest: 30 seconds, words 50, dark theme.",
       },
       focus: {
         title: "Focus mode",

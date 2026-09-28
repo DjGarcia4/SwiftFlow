@@ -136,6 +136,17 @@ export const FINGERS = {
   thumb: finger("thumb", "thumb", null),
 };
 
+// One color per kind of finger, the same on both hands: the on-screen
+// keyboard and the finger picker paint them alike
+export const FINGER_RGB = {
+  pinky: [139, 92, 246], // violet
+  ring: [59, 130, 246], // blue
+  middle: [16, 185, 129], // emerald
+  index: [245, 158, 11], // amber
+  thumb: [100, 116, 139], // slate
+};
+export const fingerRgb = (finger) => FINGER_RGB[FINGERS[finger].kind];
+
 // The finger for a key on the drawn keyboard (Shift is either pinky, so
 // it has none of its own), or for any character, through the key that
 // makes it

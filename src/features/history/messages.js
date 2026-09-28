@@ -238,7 +238,8 @@ export default {
       english: "Completá una partida con textos en inglés",
       bilingual: "Jugá una partida en español y otra en inglés",
       keyboardOnly:
-        "Armá una partida con los comandos (Ctrl/⌘ K) y terminala sin tocar el mouse",
+        "Armá una partida con el teclado (Ctrl/⌘ K o la tecla de cada botón) y terminala sin tocar el mouse",
+      fingerAlone: "Practicá un solo dedo en el modo Dedos",
     },
     tiers: {
       1: "Novato",
@@ -282,6 +283,8 @@ export default {
       words: (n) => `${n} palabras`,
       numbers: (n) => `${n} números`,
       drill: (n) => `Entrenar · ${n} palabras`,
+      fingers: (n) => `Dedos · ${n} palabras`,
+      fingersWith: (fingers, n) => `Dedos · ${fingers} · ${n}`,
       weekly: (label) => `Semanal · ${label}`,
       custom: (name) => `Mi texto · ${name}`,
     },
@@ -631,14 +634,26 @@ export default {
         title: "Todos los tamaños",
         description: "Jugá las 4 cantidades de palabras disponibles",
       },
+      fingers_1: {
+        title: "Dedo por dedo",
+        description: "Completá una partida en el modo Dedos",
+      },
+      fingers_each: {
+        title: "Diez dedos, cero excusas",
+        description: "Practicá cada uno de los 8 dedos por separado en el modo Dedos",
+      },
+      fingers_pinkies: {
+        title: "Meñiques de acero",
+        description: "Solo con los meñiques: 25 palabras o más con 95% de precisión",
+      },
       keyboard_only_1: {
         title: "Sin soltar el teclado",
         description:
-          "Armá una partida con los comandos (Ctrl/⌘ K) y terminala sin tocar el mouse",
+          "Armá una partida con el teclado (Ctrl/⌘ K o la tecla de cada botón) y terminala sin tocar el mouse",
       },
       keyboard_only_25: {
         title: "El mouse junta polvo",
-        description: "Completá 25 partidas armadas con los comandos, sin tocar el mouse",
+        description: "Completá 25 partidas armadas con el teclado, sin tocar el mouse",
       },
       time_10min: {
         title: "Calentando motores",
@@ -965,7 +980,8 @@ export default {
       english: "Finish a run with English texts",
       bilingual: "Play one run in Spanish and another in English",
       keyboardOnly:
-        "Set up a run from the commands (Ctrl/⌘ K) and finish it without touching the mouse",
+        "Set up a run from the keyboard (Ctrl/⌘ K or each button's key) and finish it without touching the mouse",
+      fingerAlone: "Practice a single finger in Fingers mode",
     },
     tiers: {
       1: "Rookie",
@@ -1009,6 +1025,8 @@ export default {
       words: (n) => `${n} words`,
       numbers: (n) => `${n} numbers`,
       drill: (n) => `Train · ${n} words`,
+      fingers: (n) => `Fingers · ${n} words`,
+      fingersWith: (fingers, n) => `Fingers · ${fingers} · ${n}`,
       weekly: (label) => `Weekly · ${label}`,
       custom: (name) => `My text · ${name}`,
     },
@@ -1324,15 +1342,27 @@ export default {
         description: "Play all 4 durations (15s, 30s, 60s, 120s)",
       },
       all_word_options: { title: "Every size", description: "Play all 4 word counts" },
+      fingers_1: {
+        title: "Finger by finger",
+        description: "Finish a run in Fingers mode",
+      },
+      fingers_each: {
+        title: "Ten fingers, no excuses",
+        description: "Practice each of the 8 fingers on its own in Fingers mode",
+      },
+      fingers_pinkies: {
+        title: "Pinkies of steel",
+        description: "Pinkies only: 25 words or more at 95% accuracy",
+      },
       keyboard_only_1: {
         title: "Hands on the keys",
         description:
-          "Set up a run from the commands (Ctrl/⌘ K) and finish it without touching the mouse",
+          "Set up a run from the keyboard (Ctrl/⌘ K or each button's key) and finish it without touching the mouse",
       },
       keyboard_only_25: {
         title: "The mouse gathers dust",
         description:
-          "Finish 25 runs set up from the commands, without touching the mouse",
+          "Finish 25 runs set up from the keyboard, without touching the mouse",
       },
       time_10min: { title: "Warming up", description: "Practice 10 minutes in total" },
       time_1h: { title: "An hour of practice", description: "Practice 1 hour in total" },

@@ -69,6 +69,7 @@
           configStore.type === 'numbers' ||
           configStore.type === 'code' ||
           configStore.type === 'drill' ||
+          configStore.type === 'fingers' ||
           configStore.type === 'custom' ||
           configStore.type === 'dictation' ||
           configStore.type === 'lesson'
@@ -99,7 +100,8 @@
             v-if="
               configStore.type === 'words' ||
               configStore.type === 'numbers' ||
-              configStore.type === 'drill'
+              configStore.type === 'drill' ||
+              configStore.type === 'fingers'
             "
           >
             <IconButton
@@ -179,55 +181,11 @@
       </template>
     </div>
 
-    <!-- Desktop: one line, always. Every setting is one strip, so the bar
-         stays a single row however many modes there are, and the drill's
-         keys open in a popover instead of growing a second row. -->
+    <!-- Desktop: one line, always, and a short one: the mode as one button
+         opening all of them, what that mode lets you pick, and the options
+         that go with any mode behind one more button. -->
     <div class="hidden sm:flex flex-nowrap items-center justify-center gap-2 lg:gap-3">
-      <!-- Content type (code is always typed as-is) -->
-      <button
-        v-if="punctuationApplies"
-        type="button"
-        :aria-pressed="configStore.selectedContentTypes === 'punctuation'"
-        :title="t('typing.toolbar.punctuationHint')"
-        class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
-        :class="
-          configStore.selectedContentTypes === 'punctuation'
-            ? 'border-primary/50 bg-primary-tint text-primary'
-            : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
-        "
-        @click="configStore.handleContentTypes('punctuation')"
-      >
-        <AtSymbolIcon class="w-4 h-4" />
-        <span class="hidden 2xl:inline">{{ t("typing.toolbar.punctuation") }}</span>
-      </button>
-
-      <!-- "Sin red": mistakes stay hidden until the results -->
-      <button
-        type="button"
-        :aria-pressed="configStore.blindMode"
-        :title="t('typing.toolbar.blindHint')"
-        class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2.5 py-1.5 text-xs font-extrabold transition-[background-color,border-color,color,scale] duration-200 ease-spring active:scale-95"
-        :class="
-          configStore.blindMode
-            ? 'border-primary/50 bg-primary-tint text-primary'
-            : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
-        "
-        @click="configStore.toggleBlindMode"
-      >
-        <EyeSlashIcon class="w-4 h-4" />
-        <span class="hidden 2xl:inline">{{ t("typing.toolbar.blind") }}</span>
-      </button>
-
-      <!-- Sudden death, must-correct, minimum accuracy -->
-      <StrictModePicker />
-
-      <SegmentedControl
-        :label="t('typing.toolbar.mode')"
-        compact-labels
-        :options="modeOptions"
-        :model-value="configStore.type"
-        @select="configStore.handleType"
-      />
+      <ModePicker :options="modeOptions" />
 
       <!-- The mode's own setting: length, word count or language. Only
            this part scrolls if a long list (code languages) runs out of
@@ -235,13 +193,21 @@
       <div
         v-if="valueOptions"
         :key="configStore.type"
-        class="min-w-0 overflow-x-auto animate-rise [animation-duration:400ms]"
+        class="relative min-w-0 animate-rise [animation-duration:400ms]"
       >
-        <SegmentedControl
-          :label="valueOptions.label"
-          :options="valueOptions.options"
-          :model-value="valueOptions.selected"
-          @select="valueOptions.select"
+        <div class="overflow-x-auto">
+          <SegmentedControl
+            :label="valueOptions.label"
+            :options="valueOptions.options"
+            :model-value="valueOptions.selected"
+            @select="valueOptions.select"
+          />
+        </div>
+        <!-- One chip for the whole strip: ⌥1 for the first, and so on -->
+        <KeyHint
+          id="value:1"
+          corner
+          :suffix="valueCount > 1 ? `–${Math.min(valueCount, 9)}` : ''"
         />
       </div>
 
@@ -260,7 +226,7 @@
       >
         <button
           type="button"
-          class="flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2 py-1 text-xs font-extrabold transition-[background-color,border-color,color] duration-200"
+          class="relative flex flex-shrink-0 items-center gap-1.5 rounded-xl border-2 px-2 py-1 text-xs font-extrabold transition-[background-color,border-color,color] duration-200"
           :class="
             pickerOpen
               ? 'border-primary bg-primary-tint text-primary'
@@ -272,6 +238,7 @@
               ? t('typing.toolbar.changeKeys')
               : t('typing.toolbar.pickKeys')
           "
+          :aria-keyshortcuts="hotkeys.ariaFor('modeChip')"
           @click="pickerOpen = !pickerOpen"
         >
           <ViewfinderCircleIcon class="w-4 h-4" />
@@ -297,6 +264,7 @@
             class="w-3.5 h-3.5 transition-transform duration-200"
             :class="{ 'rotate-180': pickerOpen }"
           />
+          <KeyHint id="modeChip" corner />
         </button>
 
         <Transition
@@ -342,11 +310,71 @@
                       : t("typing.toolbar.noIdeaYet")
                 }}
               </p>
-              <DrillKeysPicker />
+              <DrillKeysPicker keyboard />
             </template>
           </div>
         </Transition>
       </div>
+
+      <!-- "Dedos": the fingers picked, opening the hands to pick them -->
+      <div v-if="configStore.type === 'fingers'" ref="fingersChipRoot" class="relative">
+        <button
+          type="button"
+          class="relative flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border-2 px-2 py-1 text-xs font-extrabold transition-[background-color,border-color,color] duration-200"
+          :class="
+            fingersOpen
+              ? 'border-primary bg-primary-tint text-primary'
+              : 'border-faded-gray/60 text-pencil-gray hover:text-charcoal'
+          "
+          :aria-expanded="fingersOpen"
+          :aria-keyshortcuts="hotkeys.ariaFor('modeChip')"
+          :title="t('typing.fingerPicker.chip')"
+          :aria-label="`${t('typing.fingerPicker.chip')}: ${describeFingers(configStore.fingers)}`"
+          @click="fingersOpen = !fingersOpen"
+        >
+          <HandRaisedIcon class="w-4 h-4" />
+          <span class="flex gap-0.5" aria-hidden="true">
+            <span
+              v-for="finger in configStore.fingers"
+              :key="finger"
+              class="h-2.5 w-2.5 rounded-full"
+              :style="{ backgroundColor: `rgb(${fingerRgb(finger).join(' ')})` }"
+            ></span>
+          </span>
+          {{ describeFingers(configStore.fingers) }}
+          <ChevronDownIcon
+            class="w-3.5 h-3.5 transition-transform duration-200"
+            :class="{ 'rotate-180': fingersOpen }"
+          />
+          <KeyHint id="modeChip" corner />
+        </button>
+        <Transition
+          enter-active-class="transition-[opacity,translate] duration-200 ease-out"
+          enter-from-class="opacity-0 -translate-y-1"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition-opacity duration-150 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="fingersOpen"
+            class="absolute right-0 top-full z-40 mt-3 w-max rounded-card border-2 border-faded-gray bg-paper-white p-4 shadow-xl"
+          >
+            <FingerPicker keyboard />
+          </div>
+        </Transition>
+      </div>
+
+      <ToolbarOptions :punctuation-applies="punctuationApplies" />
+    </div>
+
+    <!-- Mobile: the fingers being practiced, a row of their own in the sheet -->
+    <div
+      v-if="configStore.type === 'fingers'"
+      data-fingers-row
+      class="sm:hidden mt-3 pt-3 border-t-2 border-faded-gray"
+    >
+      <FingerPicker />
     </div>
 
     <!-- Mobile: the drill's target keys get a row of their own in the sheet,
@@ -435,7 +463,15 @@ import {
   ChevronDownIcon,
   TrophyIcon,
   PencilSquareIcon,
+  HandRaisedIcon,
 } from "@heroicons/vue/24/outline";
+import FingerPicker from "./FingerPicker.vue";
+import KeyHint from "@/features/command-palette/components/KeyHint.vue";
+import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
+import ModePicker from "./ModePicker.vue";
+import ToolbarOptions from "./ToolbarOptions.vue";
+import { describeFingers } from "@/features/typing-test/content/fingers";
+import { fingerRgb } from "@/features/typing-test/utils/keyboardMap";
 import IconButton from "@/shared/components/IconButton.vue";
 import SegmentedControl from "@/shared/components/SegmentedControl.vue";
 import DrillKeysPicker from "./DrillKeysPicker.vue";
@@ -460,6 +496,7 @@ const typeMeta = {
   code: { icon: "code", component: CodeBracketIcon },
   zen: { icon: "zen", component: SparklesIcon },
   drill: { icon: "target", component: ViewfinderCircleIcon },
+  fingers: { icon: "hand", component: HandRaisedIcon },
   custom: { icon: "document", component: PencilSquareIcon },
   weekly: { icon: "trophy", component: TrophyIcon },
 };
@@ -506,7 +543,7 @@ const valueOptions = computed(() => {
       select: configStore.handleTime,
     };
   }
-  if (type === "words" || type === "numbers" || type === "drill") {
+  if (type === "words" || type === "numbers" || type === "drill" || type === "fingers") {
     return {
       label: t("typing.toolbar.count"),
       options: configStore.words.map((count) => ({ value: count, label: `${count}` })),
@@ -542,11 +579,41 @@ const valueOptions = computed(() => {
   return null;
 });
 
+// The bar's keys (with Alt on the test, see hotkeys.js): 1-9 pick the
+// mode's setting in order -- ⌥1 is 15 s, or 10 words -- and J opens the
+// mode's own chip (the drill's keys, the fingers)
+const hotkeys = useHotkeysStore();
+const valueCount = computed(() => valueOptions.value?.options.length ?? 0);
+for (let position = 1; position <= 9; position++) {
+  useHotkey(`value:${position}`, {
+    key: String(position),
+    inPalette: false,
+    enabled: () => configStore.settingsShown && position <= valueCount.value,
+    run: () => {
+      const { options, select } = valueOptions.value;
+      select(options[position - 1].value);
+    },
+  });
+}
+useHotkey("modeChip", {
+  key: "j",
+  label: "typing.toolbar.modeChip",
+  enabled: () =>
+    configStore.settingsShown &&
+    (configStore.type === "drill" || configStore.type === "fingers"),
+  run: () => {
+    if (configStore.type === "fingers") fingersOpen.value = !fingersOpen.value;
+    else pickerOpen.value = !pickerOpen.value;
+  },
+});
+
 // The picker stays shut until asked for: the default targets are usually
 // the right ones. The desktop popover and the mobile sheet's row each keep
 // their own, since they're separate copies of the bar.
 const editingKeys = ref(false);
 const pickerOpen = ref(false);
+const fingersOpen = ref(false);
+const fingersChipRoot = ref(null);
 
 // What the drill is actually aiming at right now -- hand-picked if there is
 // a pick, otherwise whatever the history says is worth practicing.
@@ -569,11 +636,17 @@ const readyKeys = computed(() => {
 // the mode changes away from the drill.
 const drillChipRoot = ref(null);
 const handlePointerDown = (event) => {
+  if (fingersOpen.value && !fingersChipRoot.value?.contains(event.target)) {
+    fingersOpen.value = false;
+  }
   if (!pickerOpen.value || !drillChipRoot.value) return;
   if (!drillChipRoot.value.contains(event.target)) pickerOpen.value = false;
 };
 const handleKeydown = (event) => {
-  if (event.key === "Escape") pickerOpen.value = false;
+  if (event.key === "Escape") {
+    pickerOpen.value = false;
+    fingersOpen.value = false;
+  }
 };
 
 watch(
@@ -581,6 +654,7 @@ watch(
   () => {
     editingKeys.value = false;
     pickerOpen.value = false;
+    fingersOpen.value = false;
   }
 );
 

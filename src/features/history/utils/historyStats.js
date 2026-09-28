@@ -1,5 +1,6 @@
 // Pure helpers over a list of history results (most-recent-first), kept
 // separate from the store so they're trivial to unit test.
+import { describeFingers } from "@/features/typing-test/content/fingers";
 import { weeklyLabel } from "@/features/typing-test/content/weekly";
 import { t } from "@/shared/i18n";
 import { classicById } from "@/features/typing-test/content/classics";
@@ -75,6 +76,11 @@ const MODE_LABELS = {
   zen: () => t("shared.modes.zen"),
   // Sessions saved before the drill reported its word count have no value
   drill: (value) => labelled("drill", value),
+  // Which fingers, when the result says: "Dedos · Índices · 25"
+  fingers: (value, { fingers } = {}) =>
+    fingers?.length
+      ? t("history.modeLabels.fingersWith", describeFingers(fingers), value)
+      : labelled("fingers", value),
   weekly: (value) => labelled("weekly", value ? weeklyLabel(value) : null),
   custom: (value) => labelled("custom", value),
 };
@@ -89,9 +95,9 @@ export const formatModeName = (mode) => {
 };
 
 // "25 palabras", or "25 palabras · inglés" for a run on English texts
-export const formatModeLabel = ({ mode, modeValue, textLanguage }) => {
+export const formatModeLabel = ({ mode, modeValue, textLanguage, fingers }) => {
   const format = MODE_LABELS[mode];
-  const label = format ? format(modeValue) : mode;
+  const label = format ? format(modeValue, { fingers }) : mode;
   return textLanguage && textLanguage !== "es"
     ? t("history.inLanguage", label, t(`history.languages.${textLanguage}`))
     : label;

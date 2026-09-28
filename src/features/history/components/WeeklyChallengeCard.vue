@@ -26,15 +26,18 @@
     <button
       type="button"
       class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg border-2 border-amber-500 px-2.5 py-1 text-xs font-extrabold text-amber-600 transition-[background-color,color,scale] duration-200 ease-spring hover:bg-amber-500 hover:text-white active:scale-95"
+      :data-play-key="keyNumber ?? undefined"
       @click="play"
     >
       {{ week ? t("history.weeklyCard.improve") : t("history.weeklyCard.play") }}
       <ArrowRightIcon class="w-3.5 h-3.5" />
+      <KeyCap v-if="keyNumber">{{ keyNumber }}</KeyCap>
     </button>
   </div>
 </template>
 
 <script setup>
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
 import { t } from "@/shared/i18n";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
@@ -42,6 +45,11 @@ import { TrophyIcon, ArrowRightIcon } from "@heroicons/vue/24/outline";
 import { useHistoryStore } from "@/features/history/store";
 import { useConfigStore } from "@/features/typing-test/store";
 import { weeklyKey, weeklyLabel } from "@/features/typing-test/content/weekly";
+
+defineProps({
+  // The key that presses "Jugar" in the challenges widget; none elsewhere
+  keyNumber: { type: Number, default: null },
+});
 
 const emit = defineEmits(["play"]);
 

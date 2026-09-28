@@ -98,6 +98,7 @@ import {
   BookOpenIcon,
   SpeakerWaveIcon,
   AcademicCapIcon,
+  HandRaisedIcon,
 } from "@heroicons/vue/24/outline";
 import KeyboardIcon from "./icons/KeyboardIcon";
 import GhostIcon from "./icons/GhostIcon";
@@ -151,6 +152,7 @@ const props = defineProps({
         "book",
         "speaker",
         "academic-cap",
+        "hand",
       ].includes(value),
   },
   variant: {
@@ -216,6 +218,7 @@ const iconMap = {
   book: BookOpenIcon,
   speaker: SpeakerWaveIcon,
   "academic-cap": AcademicCapIcon,
+  hand: HandRaisedIcon,
 };
 
 // Computed icon component

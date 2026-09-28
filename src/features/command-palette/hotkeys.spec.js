@@ -51,6 +51,15 @@ describe("useHotkeysStore", () => {
     expect(hotkeys.comboFor("history")).toBeNull();
   });
 
+  it("takes digits too, by the physical key under Alt", () => {
+    const hotkeys = useHotkeysStore();
+    const second = { key: "2", run: vi.fn() };
+    hotkeys.register("value:2", second);
+    hotkeys.captured = true;
+    expect(hotkeys.match(press("™", { code: "Digit2", altKey: true }))).toBe(second);
+    expect(hotkeys.match(press("2"))).toBeNull();
+  });
+
   it("leaves Ctrl, ⌘ and Shift combinations, and text fields, alone", () => {
     const hotkeys = useHotkeysStore();
     hotkeys.register("restart", { key: "r", run: vi.fn() });

@@ -79,23 +79,26 @@ describe("ToolBar", () => {
     ).toEqual(["r", "t"]);
   });
 
-  it("keeps the desktop bar to one line: mode, setting and targets side by side", () => {
+  it("keeps the desktop bar short: the mode as one button, then its setting", async () => {
     const store = useConfigStore();
     store.handleType("drill");
-    const wrapper = mount(ToolBar);
+    const wrapper = mount(ToolBar, { attachTo: document.body });
 
-    // The mode and its setting are one strip each, not a button per option
-    const strips = wrapper
-      .findAll("[role=radiogroup]")
-      .map((group) => group.attributes("aria-label"));
-    expect(strips.filter((name) => name === "Modo" || name === "Cantidad")).toHaveLength(
-      2
+    const modeButton = wrapper.find("[data-mode-button]");
+    expect(modeButton.attributes("aria-label")).toBe("Modo: Entrenar. Cambiar de modo");
+    // The count is still one strip, not a button per option
+    expect(wrapper.find("[role=radiogroup][aria-label=Cantidad]").exists()).toBe(true);
+
+    // Every mode is in the menu, grouped, the one that's on checked
+    await modeButton.trigger("click");
+    const menu = wrapper.find("[role=radiogroup][aria-label=Modo]");
+    expect(menu.find("[role=radio][aria-checked=true]").attributes("aria-label")).toBe(
+      "Entrenar"
     );
-    expect(
-      wrapper
-        .find("[role=radiogroup][aria-label=Modo] [role=radio][aria-checked=true]")
-        .text()
-    ).toBe("Entrenar");
+    expect(menu.text()).toContain("Práctica");
+    await menu.find("[data-mode=fingers]").trigger("click");
+    expect(store.type).toBe("fingers");
+    wrapper.unmount();
   });
 
   it("says when the drill is on words, with a way back to letters", async () => {

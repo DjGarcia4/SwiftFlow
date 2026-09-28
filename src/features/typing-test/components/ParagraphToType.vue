@@ -914,25 +914,36 @@
           />
 
           <!-- Show play button when paused -->
-          <IconButton
-            v-if="!isCompleted && configStore.isPaused"
-            icon="play"
-            variant="primary"
-            size="lg"
-            :tooltip="t('typing.buttons.resume')"
-            @click="play"
-          />
+          <div v-if="!isCompleted && configStore.isPaused" class="relative">
+            <IconButton
+              icon="play"
+              variant="primary"
+              size="lg"
+              :tooltip="t('typing.buttons.resume')"
+              :aria-keyshortcuts="hotkeys.ariaFor('resume')"
+              @click="play"
+            />
+            <KeyHint id="resume" corner />
+          </div>
         </template>
 
         <!-- Zen mode has no limit, so the only way to end it is manually -->
-        <IconButton
-          v-if="configStore.type === 'zen' && !isCompleted"
-          icon="check"
-          variant="primary"
-          size="lg"
-          :tooltip="t('typing.buttons.finish')"
-          @click="finishZen"
-        />
+        <div v-if="configStore.type === 'zen' && !isCompleted" class="relative">
+          <IconButton
+            icon="check"
+            variant="primary"
+            size="lg"
+            :tooltip="t('typing.buttons.finish')"
+            :aria-keyshortcuts="configStore.isPaused ? 'Escape' : undefined"
+            @click="finishZen"
+          />
+          <!-- Paused, Esc ends the run: in zen, that's this button -->
+          <KeyCap
+            v-if="configStore.isPaused && configStore.userInput.length > 0"
+            class="absolute -bottom-2 -right-2 z-10 pointer-events-none"
+            >Esc</KeyCap
+          >
+        </div>
 
         <div v-if="isCompleted" class="relative">
           <IconButton
@@ -1045,6 +1056,7 @@ import {
   generateDrillText,
   generateWordDrillText,
 } from "@/features/typing-test/content/drill";
+import { generateFingerText } from "@/features/typing-test/content/fingers";
 import {
   resolveDrillKeys,
   suggestedDrillKeys,
@@ -1071,7 +1083,12 @@ import { useTextAppearanceStore } from "@/shared/stores/textAppearance";
 import { usePaletteStore } from "@/features/command-palette/store";
 import TextAppearanceMenu from "./TextAppearanceMenu.vue";
 import KeyHint from "@/features/command-palette/components/KeyHint.vue";
-import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
+import KeyCap from "@/features/command-palette/components/KeyCap.vue";
+import {
+  useHotkey,
+  useHotkeysStore,
+  RESULTS_GRACE_MS,
+} from "@/features/command-palette/hotkeys";
 import { textStyleFor } from "@/shared/utils/textAppearance";
 import {
   playKeystrokeSound,
@@ -1168,9 +1185,10 @@ const handleEscapeKeydown = (event) => {
 // Global keydown listener for space key when completed
 // Keys still in flight when a session ends -- the space after the last
 // word, most of all when the clock runs out mid-word -- shouldn't throw its
-// results away before they've been seen. For a moment after the end, and
-// for a held-down key, space does nothing.
-const RESTART_GRACE_MS = 1000;
+// results away before they've been seen. For a moment after the end (the
+// same as every other key, see hotkeys.js), and for a held-down key, space
+// does nothing.
+const RESTART_GRACE_MS = RESULTS_GRACE_MS;
 const restartReady = ref(false);
 let restartGraceTimeout = null;
 
@@ -1227,6 +1245,11 @@ const pickRandomParagraph = () => {
 // appends more), keying the text block so it fades in fresh.
 const textVersion = ref(0);
 
+// A "Dedos" ghost is for the same fingers and length: the left pinky's
+// time says nothing about both hands'
+const fingersGhostValue = () =>
+  `${configStore.selectedWords}:${configStore.fingers.join("+")}`;
+
 // The kind of session about to be played, to find its ghost. Written out
 // rather than through currentModeValue, which is declared further down and
 // this runs during setup. Code goes by the language filter: a race needs
@@ -1238,13 +1261,15 @@ const raceKey = computed(() => {
       ? configStore.selectedTime
       : type === "words" || type === "numbers" || type === "drill"
         ? configStore.selectedWords
-        : type === "code"
-          ? configStore.selectedCodeLanguage
-          : type === "weekly"
-            ? weeklyKey()
-            : type === "custom"
-              ? (configStore.selectedCustomText?.id ?? null)
-              : null;
+        : type === "fingers"
+          ? fingersGhostValue()
+          : type === "code"
+            ? configStore.selectedCodeLanguage
+            : type === "weekly"
+              ? weeklyKey()
+              : type === "custom"
+                ? (configStore.selectedCustomText?.id ?? null)
+                : null;
   return ghostKey({
     mode: type,
     modeValue,
@@ -1326,6 +1351,17 @@ const refreshReferenceText = () => {
     );
     return;
   }
+  if (configStore.type === "fingers") {
+    configStore.setReferenceText(
+      generateFingerText(
+        configStore.fingers,
+        configStore.selectedWords,
+        configStore.keyboardLayout
+      )
+    );
+    return;
+  }
+
   if (configStore.type === "custom") {
     // Empty until there's a text: the typing area says so and waits
     configStore.setReferenceText(configStore.selectedCustomText?.text ?? "");
@@ -1560,7 +1596,8 @@ const currentModeValue = () => {
   if (
     configStore.type === "words" ||
     configStore.type === "numbers" ||
-    configStore.type === "drill"
+    configStore.type === "drill" ||
+    configStore.type === "fingers"
   ) {
     return configStore.selectedWords;
   }
@@ -1580,7 +1617,9 @@ const currentModeValue = () => {
 const ghostModeValue = () =>
   configStore.type === "custom"
     ? (configStore.selectedCustomText?.id ?? null)
-    : currentModeValue();
+    : configStore.type === "fingers"
+      ? fingersGhostValue()
+      : currentModeValue();
 
 // Watch for completion
 watch(isCompleted, (completed) => {
@@ -1656,6 +1695,8 @@ watch(isCompleted, (completed) => {
         // ones this session was practice for
         drillKeys: sessionDrillKeys,
         drillWords: drillingWords ? [...configStore.drillWords] : undefined,
+        // The fingers a "Dedos" run practiced
+        fingers: configStore.type === "fingers" ? [...configStore.fingers] : undefined,
         // The words stumbled on, for "palabras que te cuestan"
         wordStats: sessionWordStats({
           mode: configStore.type,
@@ -2084,8 +2125,11 @@ watch(
     configStore.minAccuracy,
     configStore.dictationSentences,
     configStore.lessonId,
-    // A lesson's keys are where they are on this keyboard
-    configStore.type === "lesson" && configStore.keyboardLayout,
+    configStore.fingers,
+    // A lesson's keys, and the fingers' letters, are where they are on this
+    // keyboard
+    (configStore.type === "lesson" || configStore.type === "fingers") &&
+      configStore.keyboardLayout,
     // A new language, a new text -- for the modes that have one
     resultLanguage(configStore.type, configStore.textLanguage),
   ],
@@ -2109,6 +2153,7 @@ watch(
     configStore.selectedContentTypes,
     configStore.drillKeys,
     configStore.drillWords,
+    configStore.fingers,
     configStore.raceMode,
     configStore.pacerWpm,
     configStore.selectedCustomText?.id,
@@ -2344,7 +2389,7 @@ useHotkey("ghost", {
 });
 const pacerMenu = ref(null);
 useHotkey("pacer", {
-  key: "m",
+  key: "b",
   label: "palette.commands.pickPacer",
   enabled: buttonsShown,
   run: async () => {
@@ -2362,10 +2407,18 @@ useHotkey("share", {
   run: () => handleShare(),
 });
 useHotkey("train", {
-  key: "e",
+  key: "d",
   label: "palette.commands.train",
   enabled: () => isCompleted.value && Boolean(resultsCoach.value),
   run: () => trainNow(resultsCoach.value.keys),
+});
+// Paused: P picks it back up (typing does too)
+useHotkey("resume", {
+  key: "p",
+  label: "typing.buttons.resume",
+  enabled: () =>
+    !isCompleted.value && configStore.isPaused && configStore.userInput.length > 0,
+  run: () => play(),
 });
 useHotkey("leaveDrill", {
   key: "v",
