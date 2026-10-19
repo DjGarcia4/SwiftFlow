@@ -367,6 +367,7 @@ export default {
       fingersWith: (fingers, n) => `Dedos · ${fingers} · ${n}`,
       weekly: (label) => `Semanal · ${label}`,
       custom: (name) => `Mi texto · ${name}`,
+      rhythm: (track) => `Ritmo · ${track}`,
     },
     keyLabels: { space: "espacio", enter: "enter", tab: "tab" },
     inLanguage: (label, language) => `${label} · ${language}`,
@@ -738,6 +739,19 @@ export default {
       finger_tamed: {
         title: "Dedo domado",
         description: "Que un dedo falle la mitad que antes, en tus últimas sesiones",
+      },
+      rhythm_full_combo: {
+        title: "A tiempo",
+        description: "Una pista entera de Ritmo sin un solo fallo",
+      },
+      rhythm_metronome: {
+        title: "Metrónomo",
+        description:
+          "Una pista de Ritmo con 90% de letras y ±35 ms de dispersión o menos",
+      },
+      rhythm_star: {
+        title: "Estrella",
+        description: "Prendé el modo estrella en Ritmo: 50 letras seguidas a tiempo",
       },
       keyboard_only_1: {
         title: "Sin soltar el teclado",
@@ -1201,6 +1215,7 @@ export default {
       fingersWith: (fingers, n) => `Fingers · ${fingers} · ${n}`,
       weekly: (label) => `Weekly · ${label}`,
       custom: (name) => `My text · ${name}`,
+      rhythm: (track) => `Rhythm · ${track}`,
     },
     keyLabels: { space: "space", enter: "enter", tab: "tab" },
     inLanguage: (label, language) => `${label} · ${language}`,
@@ -1539,6 +1554,18 @@ export default {
         title: "Tamed finger",
         description:
           "Get a finger to miss half as much as before, over your latest sessions",
+      },
+      rhythm_full_combo: {
+        title: "On time",
+        description: "A whole Rhythm track without a single miss",
+      },
+      rhythm_metronome: {
+        title: "Metronome",
+        description: "A Rhythm track at 90% of letters and a ±35 ms spread or less",
+      },
+      rhythm_star: {
+        title: "Star",
+        description: "Light the star mode in Rhythm: 50 letters in a row on time",
       },
       keyboard_only_1: {
         title: "Hands on the keys",

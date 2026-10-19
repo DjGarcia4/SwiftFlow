@@ -267,3 +267,46 @@ repaso), **Tu velocidad** (el filtro por modo, los números, la tendencia, la co
   E errores, L logros y récords
 
 Landing: novedades.
+
+## Fase 19 — Ritmo
+
+Escribir al compás de la música: las letras bajan hacia una línea y hay que tocarlas justo
+cuando llegan, como en un juego de ritmo. La velocidad la pone la canción, no vos.
+
+- **Modo Ritmo** en el grupo de práctica, con la tecla **R**. Un componente propio
+  (`RhythmGame.vue`): la mecánica es otra y no tiene que tocar `ParagraphToType.vue`
+- **Música sintetizada con Web Audio**, sin archivos ni canciones con derechos: varias pistas
+  propias (batería, bajo y acordes) a distinto tempo, de tranquila a frenética. Las notas se
+  programan con el reloj del audio, así que el tiempo de cada una es exacto
+- **La partitura sale de las palabras** del idioma que practicás: cada letra cae en un tiempo
+  (o medio tiempo, según la dificultad) y entre palabra y palabra hay un silencio. Fácil,
+  Normal, Difícil y Experto cambian las subdivisiones y el largo de las palabras
+- **Letras sostenidas**, como en Guitar Hero: a veces la última letra de una palabra trae una
+  cola y hay que mantenerla apretada durante el silencio hasta que se termina. Suma puntos por
+  cada momento apretada; soltarla antes solo pierde el resto, no el combo
+- **Cada golpe se califica**: Perfecto (±45 ms), Bien (±100 ms), Temprano/Tarde (±160 ms) y
+  Fallo si la letra pasa de largo o tocás otra. Un toque sin nota cerca no cuenta
+- **La pantalla de inicio elige**: las cuatro pistas con su tempo y su clima, y los cuatro
+  niveles con barras que se llenan y qué cambia en cada uno. ↑↓ cambian la pista y ←→ el nivel
+  (también en la barra: ⌥1–4 la pista y J el nivel)
+- **Combo y multiplicador** hasta ×8 (sube cada 10 seguidos), y con 50 seguidos se prende el
+  **modo estrella**: el doble de puntos por un rato
+- Las notas tienen el **color del dedo** que las toca, como en el selector de dedos
+- **Calibración**: un desfase en ms (con una prueba de doce clics) para el retraso del
+  teclado y los parlantes, que se guarda
+- HUD: puntaje y multiplicador, la pista con su tempo y dificultad, la precisión y cuánto
+  falta. Abajo, la palabra actual y las que vienen
+- **Que se vea vivo**: una demo que se juega sola detrás de la pantalla de inicio, cuenta
+  regresiva 3-2-1, un haz de luz por el carril de la próxima letra y un anillo que se cierra
+  sobre el lugar donde cae, ondas y chispas al acertar, sacudida y bordes rojos al fallar, un
+  ecualizador al ritmo, los hitos del multiplicador en grande, y en modo estrella la línea
+  tornasolada y las tarjetas brillando. Todo con los colores del tema y quieto con
+  movimiento reducido
+- **Resultado**: un sello con el rango (S a D), confeti si fue muy buena, puntaje, precisión, combo máximo, conteo de cada calificación y desvío
+  promedio (si vas adelantado o atrasado). Se guarda en el historial como un modo más, con sus
+  récords por pista
+- Esc corta la partida (no se guarda), Tab la vuelve a empezar
+- Logros: A tiempo (una pista entera sin fallos), Metrónomo (una pista con ±35 ms de dispersión o menos y 90 % de letras),
+  Estrella (prender el modo estrella). Reto diario: terminar una pista de Ritmo
+
+Landing: el modo en la tira y su conteo, tarjeta chica "Al ritmo", novedades, README.

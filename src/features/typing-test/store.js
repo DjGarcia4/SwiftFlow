@@ -72,6 +72,7 @@ export const useConfigStore = defineStore("config", () => {
     "custom",
     "weekly",
     "lesson",
+    "rhythm",
   ]);
   const contentTypes = ref(["punctuation"]);
   const times = ref([15, 30, 60, 120]);
@@ -562,10 +563,20 @@ export const useConfigStore = defineStore("config", () => {
     return userInput.value.length >= referenceText.value.length;
   });
 
+  // A game playing on its own clock ("Ritmo"): it has no text here, so it
+  // says when it's mid-run itself
+  const gameRunning = ref(false);
+  const setGameRunning = (running) => {
+    gameRunning.value = running;
+  };
+
   // The settings bar is up: not mid-run (paused is fine) and not on the
   // results. Its buttons' keys only work while it is.
   const settingsShown = computed(
-    () => !isCompleted.value && (userInput.value.length === 0 || isPaused.value)
+    () =>
+      !gameRunning.value &&
+      !isCompleted.value &&
+      (userInput.value.length === 0 || isPaused.value)
   );
 
   const progressPercentage = computed(() => {
@@ -1050,6 +1061,8 @@ export const useConfigStore = defineStore("config", () => {
     errors,
     isCompleted,
     settingsShown,
+    gameRunning,
+    setGameRunning,
     progressPercentage,
     bestWpm,
     isBeatingBest,

@@ -7,7 +7,7 @@
 // positioning in this codebase.
 let audioContext = null;
 
-const getAudioContext = () => {
+export const getAudioContext = () => {
   if (typeof window === "undefined") return null;
 
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;

@@ -23,8 +23,17 @@ te arma la práctica para arreglarlo.
 | **Zen**      | Sin límite: terminás cuando querés                            |
 | **Entrenar** | Texto armado alrededor de tus teclas más flojas               |
 | **Dedos**    | Solo las letras de los dedos que elijas, en tu teclado        |
+| **Ritmo**    | Las letras caen al compás de la música y se tocan a tiempo    |
 
 Con o sin puntuación y mayúsculas, salvo en código, que siempre se escribe tal cual.
+
+**Ritmo** es un juego aparte: cuatro pistas sintetizadas en el navegador (de 84 a 148 BPM,
+sin archivos de audio) y cuatro dificultades. Las palabras del idioma que practicás caen
+cada letra por el carril de su dedo, y cada golpe se califica por cuán cerca del tiempo
+llegó (perfecto, bien, temprano/tarde, fallo); algunas traen una cola y se mantienen
+apretadas hasta que termina, como en Guitar Hero. El combo sube el multiplicador hasta ×8 y a
+los 50 seguidos se prende el modo estrella. Al final: puntaje, letras acertadas, puntería,
+desvío promedio y una calibración del desfase para tu teclado y tus parlantes.
 
 Y combinables con cualquier modo:
 
@@ -69,7 +78,7 @@ teclado.
 
 - Gráfico de WPM y errores a lo largo de la sesión
 - Tarjeta para compartir el resultado, con un diseño distinto si fue récord
-- 84 logros en 12 categorías, con aviso al desbloquearlos
+- 87 logros en 12 categorías, con aviso al desbloquearlos
 
 ### En el historial
 

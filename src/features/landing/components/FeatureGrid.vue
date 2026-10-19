@@ -234,6 +234,7 @@ import {
   EyeIcon,
   CommandLineIcon,
   HandRaisedIcon,
+  MusicalNoteIcon,
   BookOpenIcon,
   SpeakerWaveIcon,
 } from "@heroicons/vue/24/outline";
@@ -288,6 +289,7 @@ const MODES = [
   { id: "zen", icon: SparklesIcon },
   { id: "train", icon: ViewfinderCircleIcon },
   { id: "fingers", icon: HandRaisedIcon },
+  { id: "rhythm", icon: MusicalNoteIcon },
   { id: "custom", icon: PencilSquareIcon },
   { id: "weekly", icon: TrophyIcon },
 ].map((mode) => ({

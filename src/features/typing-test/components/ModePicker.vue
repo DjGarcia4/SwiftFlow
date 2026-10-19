@@ -141,7 +141,7 @@ ModeIcon.props = ["icon"];
 const GROUPS = [
   { id: "tests", modes: ["time", "words", "numbers", "weekly"] },
   { id: "texts", modes: ["quote", "classics", "dictation", "code", "custom"] },
-  { id: "practice", modes: ["drill", "fingers", "zen", "lesson"] },
+  { id: "practice", modes: ["drill", "fingers", "rhythm", "zen", "lesson"] },
 ];
 
 // With the menu open, one key per mode, no Alt: the name's letter where it
@@ -161,6 +161,7 @@ const MODE_KEYS = {
   zen: "z",
   weekly: "s",
   lesson: "u",
+  rhythm: "r",
 };
 
 const byId = computed(

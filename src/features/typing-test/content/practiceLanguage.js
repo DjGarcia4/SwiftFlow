@@ -30,6 +30,7 @@ export const LANGUAGE_MODES = new Set([
   "fingers",
   "weekly",
   "lesson",
+  "rhythm",
 ]);
 
 // What a result stores about it: nothing for Spanish, which every result

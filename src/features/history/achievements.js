@@ -334,6 +334,25 @@ export const ACHIEVEMENTS = [
     icon: "hand",
     check: (ctx) => ctx.hasTamedFinger,
   },
+  // "Ritmo": a whole track without a miss, on the beat, and the star mode
+  {
+    id: "rhythm_full_combo",
+    category: "special",
+    icon: "music",
+    check: (ctx) => ctx.rhythmFullCombo,
+  },
+  {
+    id: "rhythm_metronome",
+    category: "special",
+    icon: "music",
+    check: (ctx) => ctx.rhythmMetronome,
+  },
+  {
+    id: "rhythm_star",
+    category: "special",
+    icon: "music",
+    check: (ctx) => ctx.rhythmStar,
+  },
 
   // Languages — practicing English too
   {
@@ -770,6 +789,16 @@ export const computeAchievements = (
         r.fingers?.length > 0 &&
         r.fingers.every((finger) => finger.endsWith("-pinky"))
     ),
+    rhythmFullCombo: results.some((r) => r.mode === "rhythm" && r.rhythm?.fullCombo),
+    // Tight around the beat over a whole track, and hitting nearly all of it
+    rhythmMetronome: results.some(
+      (r) =>
+        r.mode === "rhythm" &&
+        r.accuracy >= 90 &&
+        Number.isFinite(r.rhythm?.spread) &&
+        r.rhythm.spread <= 35
+    ),
+    rhythmStar: results.some((r) => r.mode === "rhythm" && r.rhythm?.stars > 0),
     englishCount: results.filter((r) => r.textLanguage === "en").length,
     bilingualDay: hasBilingualDay(results),
     englishClassicsRead: new Set(

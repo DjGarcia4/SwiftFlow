@@ -56,11 +56,19 @@ const PLAYABLE_MODES = [
   "zen",
   "drill",
   "fingers",
+  "rhythm",
   "custom",
 ];
 
 // Modes where punctuation is a choice (same as the bar)
-const NO_PUNCTUATION_CHOICE = ["code", "weekly", "custom", "dictation", "lesson"];
+const NO_PUNCTUATION_CHOICE = [
+  "code",
+  "weekly",
+  "custom",
+  "dictation",
+  "lesson",
+  "rhythm",
+];
 
 const PAGES = [
   { id: "test", path: "/", name: "home" },

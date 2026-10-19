@@ -107,7 +107,8 @@ export default {
       paused: "Pausado. Escribí para continuar, o Esc para terminar la partida.",
     },
     toolbar: {
-      modeChip: "Abrir lo del modo (dedos, teclas, textos)",
+      modeChip:
+        "Abrir lo del modo (dedos, teclas, textos) o cambiar la dificultad del ritmo",
       mode: "Modo",
       duration: "Duración",
       count: "Cantidad",
@@ -311,6 +312,7 @@ export default {
         zen: "sin límite",
         weekly: "el mismo texto para todos",
         lesson: "el curso desde cero",
+        rhythm: "al compás de la música",
       },
     },
     options: {
@@ -479,7 +481,8 @@ export default {
       paused: "Paused. Type to keep going, or Esc to end the run.",
     },
     toolbar: {
-      modeChip: "Open the mode's own picker (fingers, keys, texts)",
+      modeChip:
+        "Open the mode's own picker (fingers, keys, texts) or change the rhythm's difficulty",
       mode: "Mode",
       duration: "Duration",
       count: "Count",
@@ -674,6 +677,7 @@ export default {
         zen: "no limit",
         weekly: "the same text for everyone",
         lesson: "the course from scratch",
+        rhythm: "to the beat of the music",
       },
     },
     options: {

@@ -6,6 +6,7 @@ import history from "@/features/history/messages";
 import course from "@/features/course/messages";
 import landing from "@/features/landing/messages";
 import palette from "@/features/command-palette/messages";
+import rhythm from "@/features/rhythm/messages";
 
 registerMessages("shared", shared);
 registerMessages("typing", typing);
@@ -13,3 +14,4 @@ registerMessages("history", history);
 registerMessages("course", course);
 registerMessages("landing", landing);
 registerMessages("palette", palette);
+registerMessages("rhythm", rhythm);

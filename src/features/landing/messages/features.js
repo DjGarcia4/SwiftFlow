@@ -1,7 +1,13 @@
 // Landing: what it does (the feature grid) and the demos it shows, in both
 // languages. The samples of what gets typed follow the page's language.
-const MODE_COUNT_ES = { 9: "Nueve", 10: "Diez", 11: "Once", 12: "Doce" };
-const MODE_COUNT_EN = { 9: "Nine", 10: "Ten", 11: "Eleven", 12: "Twelve" };
+const MODE_COUNT_ES = { 9: "Nueve", 10: "Diez", 11: "Once", 12: "Doce", 13: "Trece" };
+const MODE_COUNT_EN = {
+  9: "Nine",
+  10: "Ten",
+  11: "Eleven",
+  12: "Twelve",
+  13: "Thirteen",
+};
 
 export default {
   es: {
@@ -20,6 +26,7 @@ export default {
       zen: { name: "Zen", detail: "sin límite" },
       train: { name: "Entrenar", detail: "tus teclas y palabras flojas" },
       fingers: { name: "Dedos", detail: "uno, varios o una mano" },
+      rhythm: { name: "Ritmo", detail: "al compás de la música" },
       custom: { name: "Mi texto", detail: "pegá lo que escribís" },
       weekly: { name: "Semanal", detail: "el mismo texto para todos" },
     },
@@ -143,6 +150,7 @@ export default {
       zen: { name: "Zen", detail: "no limit" },
       train: { name: "Train", detail: "your weak keys and words" },
       fingers: { name: "Fingers", detail: "one, a few or a whole hand" },
+      rhythm: { name: "Rhythm", detail: "to the beat of the music" },
       custom: { name: "My text", detail: "paste what you write" },
       weekly: { name: "Weekly", detail: "the same text for everyone" },
     },

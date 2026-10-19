@@ -83,6 +83,7 @@ const MODE_LABELS = {
       : labelled("fingers", value),
   weekly: (value) => labelled("weekly", value ? weeklyLabel(value) : null),
   custom: (value) => labelled("custom", value),
+  rhythm: (value) => labelled("rhythm", value ? t(`rhythm.tracks.${value}`) : null),
 };
 
 // The mode on its own, without the value formatModeLabel tacks on --

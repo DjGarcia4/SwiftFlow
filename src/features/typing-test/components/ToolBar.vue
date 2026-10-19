@@ -35,6 +35,20 @@
 
       <LessonChip v-if="configStore.type === 'lesson'" class="self-center" />
 
+      <section v-if="configStore.type === 'rhythm'">
+        <p
+          class="mb-1.5 text-[10px] font-extrabold uppercase tracking-wide text-pencil-gray"
+        >
+          {{ t("rhythm.toolbar.difficulty") }}
+        </p>
+        <SegmentedControl
+          :label="t('rhythm.toolbar.difficulty')"
+          :options="difficultyOptions"
+          :model-value="rhythm.difficulty"
+          @select="rhythm.setDifficulty"
+        />
+      </section>
+
       <section
         v-if="configStore.type === 'custom'"
         class="flex flex-wrap items-center gap-2"
@@ -102,6 +116,17 @@
 
       <!-- The course: which lesson, and the way to the whole course -->
       <LessonChip v-if="configStore.type === 'lesson'" />
+
+      <!-- "Ritmo": how hard, besides which song. J walks through them -->
+      <div v-if="configStore.type === 'rhythm'" class="relative" data-rhythm-difficulty>
+        <SegmentedControl
+          :label="t('rhythm.toolbar.difficulty')"
+          :options="difficultyOptions"
+          :model-value="rhythm.difficulty"
+          @select="rhythm.setDifficulty"
+        />
+        <KeyHint id="modeChip" corner />
+      </div>
 
       <!-- Drill targets: a chip showing them, opening the picker -->
       <div
@@ -251,7 +276,10 @@
         </Transition>
       </div>
 
-      <ToolbarOptions :punctuation-applies="punctuationApplies" />
+      <ToolbarOptions
+        v-if="configStore.type !== 'rhythm'"
+        :punctuation-applies="punctuationApplies"
+      />
     </div>
 
     <!-- Mobile: the fingers being practiced, a row of their own in the sheet -->
@@ -326,7 +354,10 @@
     </div>
 
     <!-- Phone: the options for any mode, folded at the bottom of the sheet -->
-    <div class="sm:hidden mt-4 pt-4 border-t-2 border-faded-gray">
+    <div
+      v-if="configStore.type !== 'rhythm'"
+      class="sm:hidden mt-4 pt-4 border-t-2 border-faded-gray"
+    >
       <ToolbarOptions inline :punctuation-applies="punctuationApplies" />
     </div>
   </div>
@@ -352,7 +383,11 @@ import {
   TrophyIcon,
   PencilSquareIcon,
   HandRaisedIcon,
+  MusicalNoteIcon,
 } from "@heroicons/vue/24/outline";
+import { useRhythmStore } from "@/features/rhythm/store";
+import { TRACKS } from "@/features/rhythm/tracks";
+import { DIFFICULTY_IDS } from "@/features/rhythm/chart";
 import FingerPicker from "./FingerPicker.vue";
 import KeyHint from "@/features/command-palette/components/KeyHint.vue";
 import { useHotkey, useHotkeysStore } from "@/features/command-palette/hotkeys";
@@ -370,6 +405,11 @@ import { resolveDrillKeys } from "@/features/typing-test/utils/drillTargets";
 
 const configStore = useConfigStore();
 const historyStore = useHistoryStore();
+const rhythm = useRhythmStore();
+
+const difficultyOptions = computed(() =>
+  DIFFICULTY_IDS.map((id) => ({ value: id, label: t(`rhythm.difficulties.${id}`) }))
+);
 
 // Icon + label for each typing mode (the mobile buttons take IconButton's
 // icon names, the desktop strip takes the components themselves)
@@ -387,12 +427,16 @@ const typeMeta = {
   fingers: { icon: "hand", component: HandRaisedIcon },
   custom: { icon: "document", component: PencilSquareIcon },
   weekly: { icon: "trophy", component: TrophyIcon },
+  rhythm: { icon: "music", component: MusicalNoteIcon },
 };
 
 // Whether punctuation is a choice: code, the weekly text and your own
 // texts are typed exactly as written
 const punctuationApplies = computed(
-  () => !["code", "weekly", "custom", "dictation", "lesson"].includes(configStore.type)
+  () =>
+    !["code", "weekly", "custom", "dictation", "lesson", "rhythm"].includes(
+      configStore.type
+    )
 );
 
 // Dictation needs a voice: a browser without speech doesn't offer it
@@ -450,6 +494,17 @@ const valueOptions = computed(() => {
       select: configStore.handleDictationSentences,
     };
   }
+  if (type === "rhythm") {
+    return {
+      label: t("rhythm.toolbar.track"),
+      options: TRACKS.map((track) => ({
+        value: track.id,
+        label: `${t(`rhythm.tracks.${track.id}`)} · ${track.bpm}`,
+      })),
+      selected: rhythm.track,
+      select: rhythm.setTrack,
+    };
+  }
   if (type === "code") {
     return {
       label: t("typing.toolbar.language"),
@@ -488,9 +543,12 @@ useHotkey("modeChip", {
   label: "typing.toolbar.modeChip",
   enabled: () =>
     configStore.settingsShown &&
-    (configStore.type === "drill" || configStore.type === "fingers"),
+    ["drill", "fingers", "rhythm"].includes(configStore.type),
   run: () => {
-    if (configStore.type === "fingers") fingersOpen.value = !fingersOpen.value;
+    if (configStore.type === "rhythm") {
+      const index = DIFFICULTY_IDS.indexOf(rhythm.difficulty);
+      rhythm.setDifficulty(DIFFICULTY_IDS[(index + 1) % DIFFICULTY_IDS.length]);
+    } else if (configStore.type === "fingers") fingersOpen.value = !fingersOpen.value;
     else pickerOpen.value = !pickerOpen.value;
   },
 });

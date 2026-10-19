@@ -7,6 +7,10 @@ export default {
       new: "Nuevo",
       date: (month, year) => `${month} de ${year}`,
       entries: {
+        rhythm: {
+          title: "Ritmo",
+          text: "Un modo nuevo para escribir al compás: las letras bajan hacia una línea, cada una por el carril de su dedo, y se tocan justo cuando llegan; las que traen cola se mantienen apretadas, como en Guitar Hero. Cuatro pistas propias, de 84 a 148 BPM, con cuatro dificultades, combo, multiplicador hasta ×8 y modo estrella. Al final, tu puntería y si vas adelantado o atrasado, con una calibración para tu teclado. Con logros y un reto diario.",
+        },
         historyChapters: {
           title: "Un historial que se recorre",
           text: "El historial, en nueve capítulos, cada uno con una línea de qué muestra, y una guía al costado que marca por dónde vas (los números del 1 al 9 te llevan a cualquiera). Tus récords tienen el suyo: tu mejor marca en grande, cada categoría con su récord para retarlo con el marcapasos, y las que todavía no tienen, listas para estrenar.",
@@ -154,6 +158,10 @@ export default {
       new: "New",
       date: (month, year) => `${month} ${year}`,
       entries: {
+        rhythm: {
+          title: "Rhythm",
+          text: "A new mode for typing to the beat: letters fall toward a line, each down its finger's lane, and you hit them right as they land; the ones with a tail you hold down, Guitar Hero style. Four tracks of our own, from 84 to 148 BPM, with four difficulties, a combo, a multiplier up to ×8 and star mode. At the end, your timing and whether you run early or late, with a calibration for your keyboard. With achievements and a daily challenge.",
+        },
         historyChapters: {
           title: "A history you can find your way in",
           text: "The history in nine chapters, each with a line on what it shows, and a guide at the side marking where you are (the numbers 1 to 9 take you to any of them). Your records got their own: your best mark up big, every category with its record to race with the pacer, and the ones without one yet, ready to try.",

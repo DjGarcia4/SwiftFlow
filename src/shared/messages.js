@@ -65,6 +65,7 @@ export default {
       fingers: "Dedos",
       custom: "Mi texto",
       weekly: "Semanal",
+      rhythm: "Ritmo",
     },
   },
   en: {
@@ -132,6 +133,7 @@ export default {
       fingers: "Fingers",
       custom: "My text",
       weekly: "Weekly",
+      rhythm: "Rhythm",
     },
   },
 };

@@ -79,7 +79,8 @@
     </Transition>
 
     <!-- Always dead-centered on screen, independent of everything above -->
-    <ParagraphToType />
+    <RhythmGame v-if="configStore.type === 'rhythm'" />
+    <ParagraphToType v-else />
 
     <!-- Combo pushes live out here, not inside ParagraphToType: that box is
          transformed, which would make it the containing block for anything
@@ -104,6 +105,7 @@
 import { ref, computed, watch } from "vue";
 import { Cog6ToothIcon } from "@heroicons/vue/24/outline";
 import ParagraphToType from "@/features/typing-test/components/ParagraphToType.vue";
+import RhythmGame from "@/features/rhythm/components/RhythmGame.vue";
 import ToolBar from "@/features/typing-test/components/ToolBar.vue";
 import ComboToast from "@/features/typing-test/components/ComboToast.vue";
 import LiveCoach from "@/features/typing-test/components/LiveCoach.vue";
@@ -145,6 +147,7 @@ const showCourseInvite = computed(
     !courseInviteDismissed.value &&
     historyStore.sessionsCount === 0 &&
     configStore.type !== "lesson" &&
+    configStore.type !== "rhythm" &&
     configStore.userInput.length === 0
 );
 const configSheet = ref(null);
@@ -164,7 +167,9 @@ const isTyping = computed(() => {
   );
 });
 
-const hideConfig = computed(() => isTyping.value || configStore.isCompleted);
+const hideConfig = computed(
+  () => isTyping.value || configStore.isCompleted || configStore.gameRunning
+);
 
 // Close the mobile config sheet automatically if typing starts or finishes
 watch(hideConfig, (hidden) => {
