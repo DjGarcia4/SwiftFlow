@@ -341,6 +341,7 @@ const layoutsText = () => {
 };
 
 const SMALL_CARDS = [
+  { id: "rhythm", icon: MusicalNoteIcon },
   { id: "english", icon: GlobeAltIcon },
   { id: "layouts", icon: LanguageIcon },
   { id: "keyboardOnly", icon: CommandLineIcon },

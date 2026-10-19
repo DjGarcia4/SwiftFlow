@@ -68,6 +68,10 @@ export default {
       ],
     },
     small: {
+      rhythm: {
+        title: "Al ritmo",
+        text: "Las letras caen al compás de la música, cada una por el carril de su dedo: tocalas justo a tiempo, mantené las que traen cola y llegá al modo estrella.",
+      },
       english: {
         title: "En español o en inglés",
         text: "Elegí en qué idioma practicás, aparte del de la app: palabras, citas, clásicos, dictado y el curso.",
@@ -192,6 +196,10 @@ export default {
       ],
     },
     small: {
+      rhythm: {
+        title: "To the beat",
+        text: "Letters fall in time with the music, each down its finger's lane: hit them right on time, hold the ones with a tail and reach star mode.",
+      },
       english: {
         title: "In Spanish or English",
         text: "Pick the language you practice in, apart from the app's: words, quotes, classics, dictation and the course.",
